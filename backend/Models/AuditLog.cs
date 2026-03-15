@@ -10,12 +10,8 @@
 
         public string Action { get; set; }
 
-        public string TableName { get; set; }
-
-        public int RecordId { get; set; }
+        public string Entity { get; set; }
 
         public DateTime CreatedAt { get; set; }
-
-        public string IpAddress { get; set; }
     }
 }

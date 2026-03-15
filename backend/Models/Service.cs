@@ -8,9 +8,11 @@
 
         public string Description { get; set; }
 
-        public string FileUrl { get; set; }
+        public string RequiredDocuments { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public string ProcessingTime { get; set; }
+
+        public decimal Fee { get; set; }
 
         public ICollection<Application> Applications { get; set; }
     }

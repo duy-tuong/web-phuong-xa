@@ -6,7 +6,7 @@
 
         public string FileName { get; set; }
 
-        public string Url { get; set; }
+        public string FilePath { get; set; }
 
         public string Type { get; set; }
 
@@ -14,6 +14,6 @@
 
         public User User { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime UploadedAt { get; set; }
     }
 }

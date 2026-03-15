@@ -8,8 +8,6 @@
 
         public string Description { get; set; }
 
-        public DateTime CreatedAt { get; set; }
-
         public ICollection<Article> Articles { get; set; }
     }
 }
