@@ -1,0 +1,648 @@
+﻿<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ná»™p há»“ sÆ¡ trá»±c tuyáº¿n - PhÆ°á»ng Cao LÃ£nh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f7a5a",
+                        "secondary": "#db2777",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f231d",
+                        "footer": "#f1f5f9"
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .glass-panel {
+            @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
+<header class="w-full z-50 bg-[#f3f4f6]">
+<div class="relative overflow-hidden border-b border-primary/20">
+<div class="max-w-[1200px] mx-auto px-6 py-4 relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-20 h-20 rounded-full border-2 border-primary/30 bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
+<img alt="Quá»‘c huy" class="w-16 h-16 object-contain" src="https://lh3.googleusercontent.com/aida-public/AONxMztD2n2Bf54wWIf9qFXXA7eEEDXz2oYxXkQ5ZkR_9H1bHqBwQp_0B_Z_x9kUfW1E4pE_W5T9_t1B_nJ0_H_8wQ5V_V_qX0_rG_c_E_x_L_N_Q_A"/>
+</div>
+<div class="flex flex-col text-center md:text-left">
+<span class="text-red-600 font-bold text-sm tracking-wider">Cá»”NG THÃ”NG TIN ÄIá»†N Tá»¬</span>
+<h1 class="text-3xl font-black text-primary uppercase leading-tight">PHÆ¯á»œNG CAO LÃƒNH</h1>
+<p class="text-slate-600 font-medium">ThÃ nh phá»‘ Cao LÃ£nh - Tá»‰nh Äá»“ng ThÃ¡p</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-3 hidden lg:flex">
+<div class="flex items-center gap-4 text-sm font-medium text-slate-600">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">calendar_today</span> Thá»© Hai, 23/10/2023</span>
+<div class="w-px h-4 bg-slate-300"></div>
+<div class="flex items-center gap-2">
+<a class="text-primary font-bold" href="#">VN</a>
+<span class="text-slate-300">|</span>
+<a class="hover:text-primary transition-colors" href="#">EN</a>
+</div>
+<div class="w-px h-4 bg-slate-300"></div>
+<a class="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">login</span> ÄÄƒng nháº­p
+    </a>
+</div>
+<div class="relative w-full flex justify-end">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="bg-white border border-slate-300 rounded-[4px] py-1.5 pl-3 pr-10 text-sm focus:ring-1 focus:ring-primary outline-none w-[280px] transition-all shadow-sm" placeholder="Nháº­p tá»« khÃ³a tÃ¬m kiáº¿m..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full bg-[#0f7a5a] sticky top-0 z-40">
+<div class="max-w-[1200px] mx-auto px-6 flex items-center justify-between">
+<nav class="flex items-center gap-1 overflow-x-auto no-scrollbar">
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap bg-black/20 flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span> Trang chá»§
+                </a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Giá»›i thiá»‡u</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Tin tá»©c</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Dá»‹ch vá»¥ hÃ nh chÃ­nh</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">ThÆ° viá»‡n</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">LiÃªn há»‡</a>
+</nav>
+<div class="hidden lg:flex items-center gap-2 text-white text-sm font-medium bg-black/10 px-4 py-2 rounded-[4px] whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px] text-yellow-300">partly_cloudy_day</span>
+<span>Cao LÃ£nh 25â€“32Â°C</span>
+</div>
+</div>
+</div>
+<div class="bg-white border-b border-slate-200">
+<div class="max-w-[1200px] w-full mx-auto px-6 py-2 flex items-center gap-6 overflow-x-auto no-scrollbar">
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">search</span> Tra cá»©u há»“ sÆ¡
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">upload_file</span> Ná»™p há»“ sÆ¡ trá»±c tuyáº¿n
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">description</span> Biá»ƒu máº«u
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px]">call</span> ÄÆ°á»ng dÃ¢y nÃ³ng: 1900 xxxx
+        </a>
+</div>
+</div>
+<div class="bg-slate-50 border-b border-slate-200 py-2">
+<div class="max-w-[1200px] w-full mx-auto px-6 flex items-center overflow-hidden">
+<span class="font-bold text-xs whitespace-nowrap mr-4 bg-secondary text-white px-2 py-1 rounded-[4px] uppercase flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">notifications_active</span> ThÃ´ng bÃ¡o nhanh
+        </span>
+<div class="flex items-center gap-6 text-sm whitespace-nowrap flex-1 animate-[marquee_20s_linear_infinite] text-slate-700">
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Triá»ƒn khai tiÃªm váº¯c xin Ä‘á»£t 3 cho tráº» em dÆ°á»›i 5 tuá»•i</a>
+<span class="text-slate-300">â€¢</span>
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Lá»‹ch tiáº¿p dÃ¢n: Thá»© 3 vÃ  Thá»© 5 hÃ ng tuáº§n táº¡i Trá»¥ sá»Ÿ UBND</a>
+<span class="text-slate-300">â€¢</span>
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">ThÃ´ng bÃ¡o há»— trá»£ vay vá»‘n sáº£n xuáº¥t kinh doanh nÄƒm 2023</a>
+</div>
+<style>
+            @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;scrollbar-width: none;}
+        </style>
+</div>
+</div>
+</header>
+<main class="pt-8 pb-20">
+<section class="max-w-[1200px] mx-auto px-6">
+<div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+<a class="hover:text-primary flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[18px]">home</span> Trang chá»§</a>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+<a class="hover:text-primary" href="#">Dá»‹ch vá»¥ hÃ nh chÃ­nh</a>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+<span class="text-slate-900 font-medium">Ná»™p há»“ sÆ¡ trá»±c tuyáº¿n</span>
+</div>
+<div class="mb-8">
+<h1 class="text-3xl font-black text-slate-900 mb-2">Ná»™p há»“ sÆ¡ trá»±c tuyáº¿n</h1>
+<p class="text-slate-600">Thá»±c hiá»‡n cÃ¡c thá»§ tá»¥c hÃ nh chÃ­nh cÃ´ng trá»±c tuyáº¿n má»™t cÃ¡ch nhanh chÃ³ng, minh báº¡ch vÃ  thuáº­n tiá»‡n.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+<div class="lg:col-span-1 space-y-6">
+<div class="bg-white rounded-[12px] shadow-sm border border-slate-200 overflow-hidden">
+<div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">search</span>
+<h3 class="font-bold text-slate-900">Tra cá»©u tráº¡ng thÃ¡i há»“ sÆ¡</h3>
+</div>
+<div class="p-4 space-y-4">
+<div>
+<label class="block text-xs font-medium text-slate-700 mb-1" for="ma-ho-so-sidebar">MÃ£ há»“ sÆ¡</label>
+<input class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="ma-ho-so-sidebar" placeholder="VD: H01.23.456" type="text"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-slate-700 mb-1" for="sdt-cccd-sidebar">Sá»‘ Ä‘iá»‡n thoáº¡i / CCCD</label>
+<input class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="sdt-cccd-sidebar" placeholder="Nháº­p sá»‘ ÄT hoáº·c CCCD" type="text"/>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm text-sm">
+<span class="material-symbols-outlined text-[18px]">search</span> Tra cá»©u
+    </button>
+<div class="mt-4 pt-4 border-t border-slate-100 bg-slate-50 p-3 rounded-lg border">
+<div class="flex justify-between items-start mb-2">
+<div class="text-xs font-bold text-slate-900">H01.23.456</div>
+<div class="text-[10px] text-slate-500">23/10/2023</div>
+</div>
+<div class="text-xs text-slate-700 mb-2 line-clamp-1">ÄÄƒng kÃ½ káº¿t hÃ´n</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+<span class="text-xs font-medium text-yellow-600">Äang xá»­ lÃ½</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-[12px] shadow-sm border border-slate-200 overflow-hidden">
+<div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">file_download</span>
+<h3 class="font-bold text-slate-900">Táº£i biá»ƒu máº«u hÃ nh chÃ­nh</h3>
+</div>
+<div class="p-4 space-y-3">
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-red-100 text-red-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-red-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">ÄÆ¡n Ä‘Äƒng kÃ½ khai sinh</div>
+<div class="text-xs text-slate-500 line-clamp-1">DÃ¹ng cho Ä‘Äƒng kÃ½ khai sinh má»›i, cáº¥p láº¡i</div>
+</div>
+</a>
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-blue-100 text-blue-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">description</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">ÄÆ¡n xÃ¡c nháº­n cÆ° trÃº</div>
+<div class="text-xs text-slate-500 line-clamp-1">XÃ¡c nháº­n thÃ´ng tin cÆ° trÃº cá»§a cÃ´ng dÃ¢n</div>
+</div>
+</a>
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-red-100 text-red-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-red-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">ÄÆ¡n Ä‘Äƒng kÃ½ káº¿t hÃ´n</div>
+<div class="text-xs text-slate-500 line-clamp-1">Thá»§ tá»¥c Ä‘Äƒng kÃ½ káº¿t hÃ´n trong nÆ°á»›c</div>
+</div>
+</a>
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-blue-100 text-blue-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">description</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">ÄÆ¡n xin cáº¥p phÃ©p xÃ¢y dá»±ng</div>
+<div class="text-xs text-slate-500 line-clamp-1">Cho nhÃ  á»Ÿ riÃªng láº» vÃ  cÃ´ng trÃ¬nh</div>
+</div>
+</a>
+<a class="block text-center text-xs font-medium text-primary hover:underline mt-2 pt-2 border-t border-slate-100" href="#">
+    Xem táº¥t cáº£ biá»ƒu máº«u
+</a>
+</div>
+</div>
+<div class="bg-primary text-white rounded-xl shadow-sm overflow-hidden relative">
+<div class="absolute inset-0 bg-white/10 mix-blend-overlay"></div>
+<div class="relative p-6">
+<h3 class="font-bold text-lg mb-2">Há»— trá»£ ká»¹ thuáº­t</h3>
+<p class="text-white/80 text-sm mb-4">Gáº·p khÃ³ khÄƒn trong quÃ¡ trÃ¬nh ná»™p há»“ sÆ¡? LiÃªn há»‡ vá»›i chÃºng tÃ´i Ä‘á»ƒ Ä‘Æ°á»£c trá»£ giÃºp.</p>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined bg-white/20 p-2 rounded-full">call</span>
+<div>
+<div class="text-xs text-white/70">Tá»•ng Ä‘Ã i há»— trá»£</div>
+<div class="font-bold">1900 xxxx (PhÃ­m 1)</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined bg-white/20 p-2 rounded-full">mail</span>
+<div>
+<div class="text-xs text-white/70">Email há»— trá»£</div>
+<div class="font-bold text-sm">hotro@dongthap.gov.vn</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-3">
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="keyword">Tá»« khÃ³a tÃ¬m kiáº¿m</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="keyword" placeholder="Nháº­p tÃªn thá»§ tá»¥c..." type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="category">LÄ©nh vá»±c</label>
+<div class="relative">
+<select class="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow appearance-none" id="category">
+<option value="">Táº¥t cáº£ lÄ©nh vá»±c</option>
+<option value="hotich">Há»™ tá»‹ch</option>
+<option value="datdai">Äáº¥t Ä‘ai</option>
+<option value="kinhdoanh">Kinh doanh</option>
+<option value="xaydung">XÃ¢y dá»±ng</option>
+<option value="laodong">Lao Ä‘á»™ng - ThÆ°Æ¡ng binh vÃ  XÃ£ há»™i</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="md:col-span-2 flex justify-end gap-3 mt-2">
+<button class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors">Thiáº¿t láº­p láº¡i</button>
+<button class="px-4 py-2 text-white bg-primary hover:bg-primary/90 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">search</span> TÃ¬m kiáº¿m
+                            </button>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-bold text-slate-900">Danh sÃ¡ch thá»§ tá»¥c (<span class="text-primary">24</span>)</h2>
+<div class="flex items-center gap-2 text-sm">
+<span class="text-slate-600">Sáº¯p xáº¿p theo:</span>
+<select class="border-none bg-transparent font-medium text-primary focus:ring-0 cursor-pointer">
+<option>Má»©c Ä‘á»™ sá»­ dá»¥ng</option>
+<option>TÃªn A-Z</option>
+<option>Má»›i cáº­p nháº­t</option>
+</select>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded border border-blue-200">Má»©c Ä‘á»™ 4</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">LÄ©nh vá»±c: Há»™ tá»‹ch</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">ÄÄƒng kÃ½ khai sinh</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Thá»§ tá»¥c Ä‘Äƒng kÃ½ khai sinh cho tráº» em sinh ra táº¡i Viá»‡t Nam, cÃ³ cha hoáº·c máº¹ lÃ  cÃ´ng dÃ¢n Viá»‡t Nam...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thá»i gian GQ: 1 ngÃ y lÃ m viá»‡c</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lá»‡ phÃ­: Miá»…n phÃ­</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Ná»™p há»“ sÆ¡
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiáº¿t
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded border border-blue-200">Má»©c Ä‘á»™ 4</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">LÄ©nh vá»±c: Há»™ tá»‹ch</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">ÄÄƒng kÃ½ káº¿t hÃ´n</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Thá»§ tá»¥c Ä‘Äƒng kÃ½ káº¿t hÃ´n giá»¯a cÃ´ng dÃ¢n Viá»‡t Nam cÆ° trÃº á»Ÿ trong nÆ°á»›c...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thá»i gian GQ: Ngay trong ngÃ y</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lá»‡ phÃ­: Miá»…n phÃ­</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Ná»™p há»“ sÆ¡
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiáº¿t
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded border border-green-200">Má»©c Ä‘á»™ 3</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">LÄ©nh vá»±c: Kinh doanh</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">Cáº¥p Giáº¥y chá»©ng nháº­n Ä‘Äƒng kÃ½ há»™ kinh doanh</h3>
+<p class="text-sm text-slate-600 line-clamp-2">ÄÄƒng kÃ½ thÃ nh láº­p má»›i há»™ kinh doanh cÃ¡ thá»ƒ trÃªn Ä‘á»‹a bÃ n phÆ°á»ng...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thá»i gian GQ: 3 ngÃ y lÃ m viá»‡c</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lá»‡ phÃ­: 100.000 VNÄ</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Ná»™p há»“ sÆ¡
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiáº¿t
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded border border-blue-200">Má»©c Ä‘á»™ 4</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">LÄ©nh vá»±c: Há»™ tá»‹ch</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">ÄÄƒng kÃ½ khai tá»­</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Thá»§ tá»¥c Ä‘Äƒng kÃ½ khai tá»­ cho ngÆ°á»i cháº¿t táº¡i Ä‘á»‹a phÆ°Æ¡ng...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thá»i gian GQ: Ngay trong ngÃ y</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lá»‡ phÃ­: Miá»…n phÃ­</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Ná»™p há»“ sÆ¡
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiáº¿t
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded border border-green-200">Má»©c Ä‘á»™ 3</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">LÄ©nh vá»±c: Äáº¥t Ä‘ai</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">XÃ¡c nháº­n tÃ¬nh tráº¡ng báº¥t Ä‘á»™ng sáº£n</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Xin xÃ¡c nháº­n tÃ¬nh tráº¡ng nhÃ  Ä‘áº¥t, khÃ´ng cÃ³ tranh cháº¥p khiáº¿u kiá»‡n Ä‘á»ƒ thá»±c hiá»‡n cÃ¡c giao dá»‹ch dÃ¢n sá»±...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thá»i gian GQ: 5 ngÃ y lÃ m viá»‡c</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lá»‡ phÃ­: 50.000 VNÄ</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Ná»™p há»“ sÆ¡
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiáº¿t
+                                </button>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-8">
+<nav class="flex items-center gap-1">
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-medium" href="#">1</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors" href="#">2</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors" href="#">3</a>
+<span class="w-10 h-10 flex items-center justify-center text-slate-500">...</span>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors" href="#">5</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-gray-100 py-12 border-t border-slate-200">
+<div class="max-w-[1200px] mx-auto px-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+<div class="flex flex-col gap-4">
+<div class="flex items-start gap-4">
+<img alt="Quá»‘c huy" class="w-12 h-12 rounded-full border border-gray-300 p-1 object-contain bg-white" src="https://lh3.googleusercontent.com/aida-public/AONxMztD2n2Bf54wWIf9qFXXA7eEEDXz2oYxXkQ5ZkR_9H1bHqBwQp_0B_Z_x9kUfW1E4pE_W5T9_t1B_nJ0_H_8wQ5V_V_qX0_rG_c_E_x_L_N_Q_A"/>
+<div class="flex flex-col">
+<span class="text-red-600 font-bold text-sm tracking-wide">Cá»”NG THÃ”NG TIN ÄIá»†N Tá»¬</span>
+<span class="text-primary font-bold text-lg leading-tight uppercase">PHÆ¯á»œNG CAO LÃƒNH</span>
+</div>
+</div>
+<p class="text-slate-700 text-sm leading-relaxed mt-2">Trang thÃ´ng tin chÃ­nh thá»©c cá»§a á»¦y ban nhÃ¢n dÃ¢n PhÆ°á»ng Cao LÃ£nh, ThÃ nh phá»‘ Cao LÃ£nh, Tá»‰nh Äá»“ng ThÃ¡p. Cung cáº¥p thÃ´ng tin kinh táº¿ - xÃ£ há»™i, dá»‹ch vá»¥ cÃ´ng vÃ  tin tá»©c Ä‘á»‹a phÆ°Æ¡ng.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-primary font-bold text-lg uppercase tracking-wide">THÃ”NG TIN LIÃŠN Há»†</h3>
+<ul class="flex flex-col gap-3 text-sm text-slate-700">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">location_on</span>
+<span>Trá»¥ sá»Ÿ UBND PhÆ°á»ng Cao LÃ£nh, Sá»‘ 01, ÄÆ°á»ng Äiá»‡n BiÃªn Phá»§, KhÃ³m 1, PhÆ°á»ng Cao LÃ£nh, TP. Cao LÃ£nh, Äá»“ng ThÃ¡p</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">phone</span>
+<span>Äiá»‡n thoáº¡i: 0277.3851.XXX</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">mail</span>
+<span>Email: ubndphuongcaolanh@dongthap.gov.vn</span>
+</li>
+</ul>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-primary font-bold text-lg uppercase tracking-wide">LIÃŠN Káº¾T Há»®U ÃCH</h3>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">account_balance</span> Cá»•ng ThÃ´ng tin Ä‘iá»‡n tá»­ ChÃ­nh phá»§
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">public</span> Cá»•ng Dá»‹ch vá»¥ cÃ´ng Quá»‘c gia
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">language</span> Cá»•ng ThÃ´ng tin Ä‘iá»‡n tá»­ tá»‰nh Äá»“ng ThÃ¡p
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">domain</span> UBND ThÃ nh phá»‘ Cao LÃ£nh
+                        </a>
+</div>
+</div>
+</div>
+<div class="border-t border-gray-300 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
+<p>Â© 2024 Cá»•ng ThÃ´ng tin Ä‘iá»‡n tá»­ PhÆ°á»ng Cao LÃ£nh. Ghi rÃµ nguá»“n khi phÃ¡t hÃ nh láº¡i thÃ´ng tin.</p>
+<p class="font-medium">Äang online: <span class="text-primary font-bold">15</span> | Tá»•ng truy cáº­p: <span class="text-primary font-bold">1,234,567</span></p>
+</div>
+</div>
+</footer>
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" id="modal-tracking">
+<div class="w-full max-w-2xl bg-white rounded-[12px] shadow-xl overflow-hidden">
+<div class="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
+<h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">search</span>
+                Tra cá»©u tráº¡ng thÃ¡i há»“ sÆ¡
+            </h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors" onclick="document.getElementById('modal-tracking').classList.add('hidden'); document.getElementById('modal-tracking').classList.remove('flex')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="ma-ho-so">MÃ£ há»“ sÆ¡ <span class="text-red-500">*</span></label>
+<input class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="ma-ho-so" placeholder="VD: H01.23.456" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="so-dien-thoai">Sá»‘ Ä‘iá»‡n thoáº¡i <span class="text-red-500">*</span></label>
+<input class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="so-dien-thoai" placeholder="Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i Ä‘Ã£ Ä‘Äƒng kÃ½" type="text"/>
+</div>
+</div>
+<div class="flex justify-end mb-8">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">search</span> Tra cá»©u
+                </button>
+</div>
+<div class="border-t border-slate-200 pt-6">
+<h3 class="text-sm font-bold text-slate-900 mb-6">Tráº¡ng thÃ¡i há»“ sÆ¡: H01.23.456</h3>
+<div class="relative flex justify-between">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 rounded-full z-0"></div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-1 bg-primary rounded-full z-0"></div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-[16px]">done</span>
+</div>
+<span class="text-xs font-bold text-primary text-center">ÄÃ£ tiáº¿p nháº­n</span>
+<span class="text-[10px] text-slate-500">23/10/2023</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md border-4 border-primary/20 bg-clip-padding">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</div>
+<span class="text-xs font-bold text-primary text-center">Äang xá»­ lÃ½</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
+</div>
+<span class="text-xs font-medium text-slate-500 text-center">Chá» tráº£ káº¿t quáº£</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+</div>
+<span class="text-xs font-medium text-slate-500 text-center">HoÃ n táº¥t</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" id="modal-forms">
+<div class="w-full max-w-3xl bg-white rounded-[12px] shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+<div class="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50 shrink-0">
+<h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">file_download</span>
+                Táº£i biá»ƒu máº«u hÃ nh chÃ­nh
+            </h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors" onclick="document.getElementById('modal-forms').classList.add('hidden'); document.getElementById('modal-forms').classList.remove('flex')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-6 overflow-y-auto">
+<div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+<button class="px-4 py-1.5 bg-primary text-white rounded-full text-sm font-medium whitespace-nowrap">Táº¥t cáº£</button>
+<button class="px-4 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Há»™ tá»‹ch</button>
+<button class="px-4 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Äáº¥t Ä‘ai</button>
+<button class="px-4 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap">XÃ¢y dá»±ng</button>
+</div>
+<div class="space-y-4">
+<div class="border border-slate-200 rounded-lg p-4 hover:border-primary/50 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">Há»™ tá»‹ch</span>
+</div>
+<h4 class="font-bold text-slate-900 mb-1">Tá» khai Ä‘Äƒng kÃ½ khai sinh</h4>
+<p class="text-sm text-slate-600 line-clamp-1">Biá»ƒu máº«u dÃ¹ng cho thá»§ tá»¥c Ä‘Äƒng kÃ½ khai sinh má»›i, cáº¥p láº¡i, hoáº·c cáº£i chÃ­nh.</p>
+</div>
+<button class="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">download</span> Táº£i vá»
+                        </button>
+</div>
+</div>
+<div class="border border-slate-200 rounded-lg p-4 hover:border-primary/50 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">Äáº¥t Ä‘ai</span>
+</div>
+<h4 class="font-bold text-slate-900 mb-1">ÄÆ¡n Ä‘á» nghá»‹ xÃ¡c nháº­n tÃ¬nh tráº¡ng báº¥t Ä‘á»™ng sáº£n</h4>
+<p class="text-sm text-slate-600 line-clamp-1">Máº«u sá»‘ 01/XN-BÄS Ã¡p dá»¥ng cho cÃ¡c giao dá»‹ch liÃªn quan Ä‘áº¿n nhÃ  Ä‘áº¥t.</p>
+</div>
+<button class="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">download</span> Táº£i vá»
+                        </button>
+</div>
+</div>
+<div class="border border-slate-200 rounded-lg p-4 hover:border-primary/50 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">XÃ¢y dá»±ng</span>
+</div>
+<h4 class="font-bold text-slate-900 mb-1">ÄÆ¡n xin cáº¥p phÃ©p xÃ¢y dá»±ng nhÃ  á»Ÿ riÃªng láº»</h4>
+<p class="text-sm text-slate-600 line-clamp-1">KÃ¨m theo hÆ°á»›ng dáº«n chi tiáº¿t cÃ¡c báº£n váº½ cáº§n thiáº¿t.</p>
+</div>
+<button class="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">download</span> Táº£i vá»
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Demo scripts for showing modals
+    document.addEventListener('DOMContentLoaded', () => {
+        const links = document.querySelectorAll('.lg\\:col-span-1 .p-4 a');
+        if(links.length > 0) {
+            links[0].addEventListener('click', (e) => {
+                e.preventDefault();
+                const modal = document.getElementById('modal-tracking');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+            links[1].addEventListener('click', (e) => {
+                e.preventDefault();
+                const modal = document.getElementById('modal-forms');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+        }
+    });
+</script>
+</body></html>

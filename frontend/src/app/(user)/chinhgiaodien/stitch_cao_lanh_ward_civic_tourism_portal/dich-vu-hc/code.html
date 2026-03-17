@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nộp hồ sơ trực tuyến - Phường Cao Lãnh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f7a5a",
+                        "secondary": "#db2777",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f231d",
+                        "footer": "#f1f5f9"
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .glass-panel {
+            @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden">
+<header class="w-full z-50 bg-[#f3f4f6] relative">
+<div class="absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none" style="background-image: url('../../images/backgourd.png');"></div>
+<div class="relative overflow-hidden border-b border-primary/20">
+<div class="max-w-[1200px] mx-auto px-6 py-4 relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-28 h-28 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 shadow-lg">
+<img alt="Logo Phường Cao Lãnh" class="w-full h-full object-cover" src="../../images/logo.png"/>
+</div>
+<div class="flex flex-col text-center md:text-left">
+<span class="text-red-600 font-bold text-sm tracking-wider">CỔNG THÔNG TIN ĐIỆN TỬ</span>
+<h1 class="text-3xl font-black text-primary uppercase leading-tight">PHƯỜNG CAO LÃNH</h1>
+<p class="text-slate-600 font-medium">Thành phố Cao Lãnh - Tỉnh Đồng Tháp</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-3 hidden lg:flex">
+<div class="flex items-center gap-4 text-sm font-medium text-slate-600">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">calendar_today</span> Thứ Hai, 23/10/2023</span>
+<div class="w-px h-4 bg-slate-300"></div>
+<div class="flex items-center gap-2">
+<a class="text-primary font-bold" href="#">VN</a>
+<span class="text-slate-300">|</span>
+<a class="hover:text-primary transition-colors" href="#">EN</a>
+</div>
+<div class="w-px h-4 bg-slate-300"></div>
+<a class="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">login</span> Đăng nhập
+    </a>
+</div>
+<div class="relative w-full flex justify-end">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="bg-white border border-slate-300 rounded-[4px] py-1.5 pl-3 pr-10 text-sm focus:ring-1 focus:ring-primary outline-none w-[280px] transition-all shadow-sm" placeholder="Nhập từ khóa tìm kiếm..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full bg-[#0f7a5a] sticky top-0 z-40">
+<div class="max-w-[1200px] mx-auto px-6 flex items-center justify-between">
+<nav class="flex items-center gap-1 overflow-x-auto no-scrollbar">
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap bg-black/20 flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span> Trang chủ
+                </a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Giới thiệu</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Tin tức</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Dịch vụ hành chính</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Thư viện</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Liên hệ</a>
+</nav>
+<div class="hidden lg:flex items-center gap-2 text-white text-sm font-medium bg-black/10 px-4 py-2 rounded-[4px] whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px] text-yellow-300">partly_cloudy_day</span>
+<span>Cao Lãnh 25–32°C</span>
+</div>
+</div>
+</div>
+<div class="bg-white border-b border-slate-200">
+<div class="max-w-[1200px] w-full mx-auto px-6 py-2 flex items-center gap-6 overflow-x-auto no-scrollbar">
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">search</span> Tra cứu hồ sơ
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">upload_file</span> Nộp hồ sơ trực tuyến
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">description</span> Biểu mẫu
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px]">call</span> Đường dây nóng: 1900 xxxx
+        </a>
+</div>
+</div>
+<div class="bg-slate-50 border-b border-slate-200 py-2">
+<div class="max-w-[1200px] w-full mx-auto px-6 flex items-center overflow-hidden">
+<span class="font-bold text-xs whitespace-nowrap mr-4 bg-secondary text-white px-2 py-1 rounded-[4px] uppercase flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">notifications_active</span> Thông báo nhanh
+        </span>
+<div class="flex items-center gap-6 text-sm whitespace-nowrap flex-1 animate-[marquee_20s_linear_infinite] text-slate-700">
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Triển khai tiêm vắc xin đợt 3 cho trẻ em dưới 5 tuổi</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Lịch tiếp dân: Thứ 3 và Thứ 5 hàng tuần tại Trụ sở UBND</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Thông báo hỗ trợ vay vốn sản xuất kinh doanh năm 2023</a>
+</div>
+<style>
+            @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;scrollbar-width: none;}
+        </style>
+</div>
+</div>
+</header>
+<main class="pt-8 pb-20">
+<section class="max-w-[1200px] mx-auto px-6">
+<div class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+<a class="hover:text-primary flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[18px]">home</span> Trang chủ</a>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+<a class="hover:text-primary" href="#">Dịch vụ hành chính</a>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+<span class="text-slate-900 font-medium">Nộp hồ sơ trực tuyến</span>
+</div>
+<div class="mb-8">
+<h1 class="text-3xl font-black text-slate-900 mb-2">Nộp hồ sơ trực tuyến</h1>
+<p class="text-slate-600">Thực hiện các thủ tục hành chính công trực tuyến một cách nhanh chóng, minh bạch và thuận tiện.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+<div class="lg:col-span-1 space-y-6">
+<div class="bg-white rounded-[12px] shadow-sm border border-slate-200 overflow-hidden">
+<div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">search</span>
+<h3 class="font-bold text-slate-900">Tra cứu trạng thái hồ sơ</h3>
+</div>
+<div class="p-4 space-y-4">
+<div>
+<label class="block text-xs font-medium text-slate-700 mb-1" for="ma-ho-so-sidebar">Mã hồ sơ</label>
+<input class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="ma-ho-so-sidebar" placeholder="VD: H01.23.456" type="text"/>
+</div>
+<div>
+<label class="block text-xs font-medium text-slate-700 mb-1" for="sdt-cccd-sidebar">Số điện thoại / CCCD</label>
+<input class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="sdt-cccd-sidebar" placeholder="Nhập số ĐT hoặc CCCD" type="text"/>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm text-sm">
+<span class="material-symbols-outlined text-[18px]">search</span> Tra cứu
+    </button>
+<div class="mt-4 pt-4 border-t border-slate-100 bg-slate-50 p-3 rounded-lg border">
+<div class="flex justify-between items-start mb-2">
+<div class="text-xs font-bold text-slate-900">H01.23.456</div>
+<div class="text-[10px] text-slate-500">23/10/2023</div>
+</div>
+<div class="text-xs text-slate-700 mb-2 line-clamp-1">Đăng ký kết hôn</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-yellow-400"></div>
+<span class="text-xs font-medium text-yellow-600">Đang xử lý</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-[12px] shadow-sm border border-slate-200 overflow-hidden">
+<div class="bg-slate-50 border-b border-slate-200 px-4 py-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">file_download</span>
+<h3 class="font-bold text-slate-900">Tải biểu mẫu hành chính</h3>
+</div>
+<div class="p-4 space-y-3">
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-red-100 text-red-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-red-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">Đơn đăng ký khai sinh</div>
+<div class="text-xs text-slate-500 line-clamp-1">Dùng cho đăng ký khai sinh mới, cấp lại</div>
+</div>
+</a>
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-blue-100 text-blue-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">description</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">Đơn xác nhận cư trú</div>
+<div class="text-xs text-slate-500 line-clamp-1">Xác nhận thông tin cư trú của công dân</div>
+</div>
+</a>
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-red-100 text-red-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-red-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">Đơn đăng ký kết hôn</div>
+<div class="text-xs text-slate-500 line-clamp-1">Thủ tục đăng ký kết hôn trong nước</div>
+</div>
+</a>
+<a class="flex items-start gap-3 group" href="#">
+<div class="w-8 h-8 bg-blue-100 text-blue-600 rounded flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-200 transition-colors">
+<span class="material-symbols-outlined text-[18px]">description</span>
+</div>
+<div>
+<div class="text-sm font-medium text-slate-900 group-hover:text-primary transition-colors">Đơn xin cấp phép xây dựng</div>
+<div class="text-xs text-slate-500 line-clamp-1">Cho nhà ở riêng lẻ và công trình</div>
+</div>
+</a>
+<a class="block text-center text-xs font-medium text-primary hover:underline mt-2 pt-2 border-t border-slate-100" href="#">
+    Xem tất cả biểu mẫu
+</a>
+</div>
+</div>
+<div class="bg-primary text-white rounded-xl shadow-sm overflow-hidden relative">
+<div class="absolute inset-0 bg-white/10 mix-blend-overlay"></div>
+<div class="relative p-6">
+<h3 class="font-bold text-lg mb-2">Hỗ trợ kỹ thuật</h3>
+<p class="text-white/80 text-sm mb-4">Gặp khó khăn trong quá trình nộp hồ sơ? Liên hệ với chúng tôi để được trợ giúp.</p>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined bg-white/20 p-2 rounded-full">call</span>
+<div>
+<div class="text-xs text-white/70">Tổng đài hỗ trợ</div>
+<div class="font-bold">1900 xxxx (Phím 1)</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined bg-white/20 p-2 rounded-full">mail</span>
+<div>
+<div class="text-xs text-white/70">Email hỗ trợ</div>
+<div class="font-bold text-sm">hotro@dongthap.gov.vn</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-3">
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="keyword">Từ khóa tìm kiếm</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="keyword" placeholder="Nhập tên thủ tục..." type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="category">Lĩnh vực</label>
+<div class="relative">
+<select class="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow appearance-none" id="category">
+<option value="">Tất cả lĩnh vực</option>
+<option value="hotich">Hộ tịch</option>
+<option value="datdai">Đất đai</option>
+<option value="kinhdoanh">Kinh doanh</option>
+<option value="xaydung">Xây dựng</option>
+<option value="laodong">Lao động - Thương binh và Xã hội</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="md:col-span-2 flex justify-end gap-3 mt-2">
+<button class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors">Thiết lập lại</button>
+<button class="px-4 py-2 text-white bg-primary hover:bg-primary/90 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">search</span> Tìm kiếm
+                            </button>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-bold text-slate-900">Danh sách thủ tục (<span class="text-primary">24</span>)</h2>
+<div class="flex items-center gap-2 text-sm">
+<span class="text-slate-600">Sắp xếp theo:</span>
+<select class="border-none bg-transparent font-medium text-primary focus:ring-0 cursor-pointer">
+<option>Mức độ sử dụng</option>
+<option>Tên A-Z</option>
+<option>Mới cập nhật</option>
+</select>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded border border-blue-200">Mức độ 4</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Lĩnh vực: Hộ tịch</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">Đăng ký khai sinh</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Thủ tục đăng ký khai sinh cho trẻ em sinh ra tại Việt Nam, có cha hoặc mẹ là công dân Việt Nam...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thời gian GQ: 1 ngày làm việc</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lệ phí: Miễn phí</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Nộp hồ sơ
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiết
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded border border-blue-200">Mức độ 4</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Lĩnh vực: Hộ tịch</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">Đăng ký kết hôn</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Thủ tục đăng ký kết hôn giữa công dân Việt Nam cư trú ở trong nước...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thời gian GQ: Ngay trong ngày</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lệ phí: Miễn phí</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Nộp hồ sơ
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiết
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded border border-green-200">Mức độ 3</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Lĩnh vực: Kinh doanh</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">Cấp Giấy chứng nhận đăng ký hộ kinh doanh</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Đăng ký thành lập mới hộ kinh doanh cá thể trên địa bàn phường...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thời gian GQ: 3 ngày làm việc</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lệ phí: 100.000 VNĐ</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Nộp hồ sơ
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiết
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded border border-blue-200">Mức độ 4</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Lĩnh vực: Hộ tịch</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">Đăng ký khai tử</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Thủ tục đăng ký khai tử cho người chết tại địa phương...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thời gian GQ: Ngay trong ngày</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lệ phí: Miễn phí</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Nộp hồ sơ
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiết
+                                </button>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded border border-green-200">Mức độ 3</span>
+<span class="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Lĩnh vực: Đất đai</span>
+</div>
+<h3 class="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors mb-2">Xác nhận tình trạng bất động sản</h3>
+<p class="text-sm text-slate-600 line-clamp-2">Xin xác nhận tình trạng nhà đất, không có tranh chấp khiếu kiện để thực hiện các giao dịch dân sự...</p>
+<div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> Thời gian GQ: 5 ngày làm việc</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">payments</span> Lệ phí: 50.000 VNĐ</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto mt-4 md:mt-0">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]">send</span> Nộp hồ sơ
+                                </button>
+<button class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap text-center">
+                                    Xem chi tiết
+                                </button>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-8">
+<nav class="flex items-center gap-1">
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-medium" href="#">1</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors" href="#">2</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors" href="#">3</a>
+<span class="w-10 h-10 flex items-center justify-center text-slate-500">...</span>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors" href="#">5</a>
+<a class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-gray-100 py-12 border-t border-slate-200 relative overflow-hidden">
+<div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('../../images/backgourd.png');"></div>
+<div class="max-w-[1200px] mx-auto px-6 relative z-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+<div class="flex flex-col gap-4">
+<div class="flex items-start gap-4">
+<div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0">
+<img alt="Logo Phường Cao Lãnh" class="w-full h-full object-cover" src="../../images/logo.png"/>
+</div>
+<div class="flex flex-col">
+<span class="text-red-600 font-bold text-sm tracking-wide">CỔNG THÔNG TIN ĐIỆN TỬ</span>
+<span class="text-primary font-bold text-lg leading-tight uppercase">PHƯỜNG CAO LÃNH</span>
+</div>
+</div>
+<p class="text-slate-700 text-sm leading-relaxed mt-2">Trang thông tin chính thức của Ủy ban nhân dân Phường Cao Lãnh, Thành phố Cao Lãnh, Tỉnh Đồng Tháp. Cung cấp thông tin kinh tế - xã hội, dịch vụ công và tin tức địa phương.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-primary font-bold text-lg uppercase tracking-wide">THÔNG TIN LIÊN HỆ</h3>
+<ul class="flex flex-col gap-3 text-sm text-slate-700">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">location_on</span>
+<span>Trụ sở UBND Phường Cao Lãnh, Số 01, Đường Điện Biên Phủ, Khóm 1, Phường Cao Lãnh, TP. Cao Lãnh, Đồng Tháp</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">phone</span>
+<span>Điện thoại: 0277.3851.XXX</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">mail</span>
+<span>Email: ubndphuongcaolanh@dongthap.gov.vn</span>
+</li>
+</ul>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-primary font-bold text-lg uppercase tracking-wide">LIÊN KẾT HỮU ÍCH</h3>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">account_balance</span> Cổng Thông tin điện tử Chính phủ
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">public</span> Cổng Dịch vụ công Quốc gia
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">language</span> Cổng Thông tin điện tử tỉnh Đồng Tháp
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">domain</span> UBND Thành phố Cao Lãnh
+                        </a>
+</div>
+</div>
+</div>
+<div class="border-t border-gray-300 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
+<p>© 2024 Cổng Thông tin điện tử Phường Cao Lãnh. Ghi rõ nguồn khi phát hành lại thông tin.</p>
+<p class="font-medium">Đang online: <span class="text-primary font-bold">15</span> | Tổng truy cập: <span class="text-primary font-bold">1,234,567</span></p>
+</div>
+</div>
+</footer>
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" id="modal-tracking">
+<div class="w-full max-w-2xl bg-white rounded-[12px] shadow-xl overflow-hidden">
+<div class="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
+<h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">search</span>
+                Tra cứu trạng thái hồ sơ
+            </h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors" onclick="document.getElementById('modal-tracking').classList.add('hidden'); document.getElementById('modal-tracking').classList.remove('flex')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="ma-ho-so">Mã hồ sơ <span class="text-red-500">*</span></label>
+<input class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="ma-ho-so" placeholder="VD: H01.23.456" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-slate-700 mb-1" for="so-dien-thoai">Số điện thoại <span class="text-red-500">*</span></label>
+<input class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-shadow" id="so-dien-thoai" placeholder="Nhập số điện thoại đã đăng ký" type="text"/>
+</div>
+</div>
+<div class="flex justify-end mb-8">
+<button class="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">search</span> Tra cứu
+                </button>
+</div>
+<div class="border-t border-slate-200 pt-6">
+<h3 class="text-sm font-bold text-slate-900 mb-6">Trạng thái hồ sơ: H01.23.456</h3>
+<div class="relative flex justify-between">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 rounded-full z-0"></div>
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-1 bg-primary rounded-full z-0"></div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-[16px]">done</span>
+</div>
+<span class="text-xs font-bold text-primary text-center">Đã tiếp nhận</span>
+<span class="text-[10px] text-slate-500">23/10/2023</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md border-4 border-primary/20 bg-clip-padding">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</div>
+<span class="text-xs font-bold text-primary text-center">Đang xử lý</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
+</div>
+<span class="text-xs font-medium text-slate-500 text-center">Chờ trả kết quả</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2 w-1/4">
+<div class="w-8 h-8 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+</div>
+<span class="text-xs font-medium text-slate-500 text-center">Hoàn tất</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" id="modal-forms">
+<div class="w-full max-w-3xl bg-white rounded-[12px] shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+<div class="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50 shrink-0">
+<h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">file_download</span>
+                Tải biểu mẫu hành chính
+            </h2>
+<button class="text-slate-400 hover:text-slate-600 transition-colors" onclick="document.getElementById('modal-forms').classList.add('hidden'); document.getElementById('modal-forms').classList.remove('flex')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-6 overflow-y-auto">
+<div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+<button class="px-4 py-1.5 bg-primary text-white rounded-full text-sm font-medium whitespace-nowrap">Tất cả</button>
+<button class="px-4 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Hộ tịch</button>
+<button class="px-4 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Đất đai</button>
+<button class="px-4 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Xây dựng</button>
+</div>
+<div class="space-y-4">
+<div class="border border-slate-200 rounded-lg p-4 hover:border-primary/50 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">Hộ tịch</span>
+</div>
+<h4 class="font-bold text-slate-900 mb-1">Tờ khai đăng ký khai sinh</h4>
+<p class="text-sm text-slate-600 line-clamp-1">Biểu mẫu dùng cho thủ tục đăng ký khai sinh mới, cấp lại, hoặc cải chính.</p>
+</div>
+<button class="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">download</span> Tải về
+                        </button>
+</div>
+</div>
+<div class="border border-slate-200 rounded-lg p-4 hover:border-primary/50 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">Đất đai</span>
+</div>
+<h4 class="font-bold text-slate-900 mb-1">Đơn đề nghị xác nhận tình trạng bất động sản</h4>
+<p class="text-sm text-slate-600 line-clamp-1">Mẫu số 01/XN-BĐS áp dụng cho các giao dịch liên quan đến nhà đất.</p>
+</div>
+<button class="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">download</span> Tải về
+                        </button>
+</div>
+</div>
+<div class="border border-slate-200 rounded-lg p-4 hover:border-primary/50 transition-colors">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">Xây dựng</span>
+</div>
+<h4 class="font-bold text-slate-900 mb-1">Đơn xin cấp phép xây dựng nhà ở riêng lẻ</h4>
+<p class="text-sm text-slate-600 line-clamp-1">Kèm theo hướng dẫn chi tiết các bản vẽ cần thiết.</p>
+</div>
+<button class="flex items-center gap-1 text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shrink-0">
+<span class="material-symbols-outlined text-[18px]">download</span> Tải về
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Demo scripts for showing modals
+    document.addEventListener('DOMContentLoaded', () => {
+        const links = document.querySelectorAll('.lg\\:col-span-1 .p-4 a');
+        if(links.length > 0) {
+            links[0].addEventListener('click', (e) => {
+                e.preventDefault();
+                const modal = document.getElementById('modal-tracking');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+            links[1].addEventListener('click', (e) => {
+                e.preventDefault();
+                const modal = document.getElementById('modal-forms');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+        }
+    });
+</script>
+</body></html>

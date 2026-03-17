@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trang Liên Hệ Phường Cao Lãnh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f7a5a",
+                        "secondary": "#db2777",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231d",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<header class="w-full z-50 bg-[#f3f4f6] relative">
+<div class="absolute inset-0 bg-cover bg-center opacity-20 pointer-events-none" style="background-image: url('../../images/backgourd.png');"></div>
+<div class="relative overflow-hidden border-b border-primary/20">
+<div class="max-w-[1200px] mx-auto px-6 py-4 relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-28 h-28 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 shadow-lg">
+<img alt="Logo Phường Cao Lãnh" class="w-full h-full object-cover" src="../../images/logo.png"/>
+</div>
+<div class="flex flex-col text-center md:text-left">
+<span class="text-red-600 font-bold text-sm tracking-wider">CỔNG THÔNG TIN ĐIỆN TỬ</span>
+<h1 class="text-3xl font-black text-primary uppercase leading-tight">PHƯỜNG CAO LÃNH</h1>
+<p class="text-slate-600 font-medium">Thành phố Cao Lãnh - Tỉnh Đồng Tháp</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-3 hidden lg:flex">
+<div class="flex items-center gap-4 text-sm font-medium text-slate-600">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">calendar_today</span> Thứ Hai, 23/10/2023</span>
+<div class="w-px h-4 bg-slate-300"></div>
+<div class="flex items-center gap-2">
+<a class="text-primary font-bold" href="#">VN</a>
+<span class="text-slate-300">|</span>
+<a class="hover:text-primary transition-colors" href="#">EN</a>
+</div>
+<div class="w-px h-4 bg-slate-300"></div>
+<a class="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors shadow-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">login</span> Đăng nhập
+    </a>
+</div>
+<div class="relative w-full flex justify-end">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="bg-white border border-slate-300 rounded-[4px] py-1.5 pl-3 pr-10 text-sm focus:ring-1 focus:ring-primary outline-none w-[280px] transition-all shadow-sm" placeholder="Nhập từ khóa tìm kiếm..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full bg-[#0f7a5a] sticky top-0 z-40">
+<div class="max-w-[1200px] mx-auto px-6 flex items-center justify-between">
+<nav class="flex items-center gap-1 overflow-x-auto no-scrollbar">
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap bg-black/20 flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span> Trang chủ
+                </a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Giới thiệu</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Tin tức</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Dịch vụ hành chính</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Thư viện</a>
+<a class="text-white text-[15px] font-bold py-3.5 px-5 hover:bg-black/20 transition-colors whitespace-nowrap" href="#">Liên hệ</a>
+</nav>
+<div class="hidden lg:flex items-center gap-2 text-white text-sm font-medium bg-black/10 px-4 py-2 rounded-[4px] whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px] text-yellow-300">partly_cloudy_day</span>
+<span>Cao Lãnh 25–32°C</span>
+</div>
+</div>
+</div>
+<div class="bg-white border-b border-slate-200">
+<div class="max-w-[1200px] w-full mx-auto px-6 py-2 flex items-center gap-6 overflow-x-auto no-scrollbar">
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">search</span> Tra cứu hồ sơ
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">upload_file</span> Nộp hồ sơ trực tuyến
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px] text-primary">description</span> Biểu mẫu
+        </a>
+<div class="w-px h-4 bg-slate-300 shrink-0"></div>
+<a class="flex items-center gap-2 text-sm font-medium text-secondary hover:text-primary transition-colors whitespace-nowrap" href="#">
+<span class="material-symbols-outlined text-[18px]">call</span> Đường dây nóng: 1900 xxxx
+        </a>
+</div>
+</div>
+<div class="bg-slate-50 border-b border-slate-200 py-2">
+<div class="max-w-[1200px] w-full mx-auto px-6 flex items-center overflow-hidden">
+<span class="font-bold text-xs whitespace-nowrap mr-4 bg-secondary text-white px-2 py-1 rounded-[4px] uppercase flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">notifications_active</span> Thông báo nhanh
+        </span>
+<div class="flex items-center gap-6 text-sm whitespace-nowrap flex-1 animate-[marquee_20s_linear_infinite] text-slate-700">
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Triển khai tiêm vắc xin đợt 3 cho trẻ em dưới 5 tuổi</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Lịch tiếp dân: Thứ 3 và Thứ 5 hàng tuần tại Trụ sở UBND</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-primary transition-colors font-medium flex items-center gap-1" href="#">Thông báo hỗ trợ vay vốn sản xuất kinh doanh năm 2023</a>
+</div>
+<style>
+            @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;scrollbar-width: none;}
+        </style>
+</div>
+</div>
+</header>
+<main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+<div class="mb-10 text-center lg:text-left">
+<h1 class="text-slate-900 dark:text-slate-100 text-4xl font-black leading-tight tracking-[-0.033em] mb-2">Liên Hệ Ủy Ban Nhân Dân Phường</h1>
+<p class="text-slate-600 dark:text-slate-400 text-lg">Địa chỉ, thông tin liên hệ và gửi góp ý trực tuyến cho phường Cao Lãnh</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+<div class="space-y-8">
+<div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+<h2 class="text-xl font-bold mb-6 text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700 pb-4">Thông tin liên hệ</h2>
+<ul class="space-y-6">
+<li class="flex items-start gap-4">
+<div class="bg-primary/10 p-3 rounded-xl text-primary mt-1">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Địa chỉ</p>
+<p class="text-slate-900 dark:text-slate-100 font-semibold text-lg">Số 123, Đường A, Phường Cao Lãnh, Đồng Tháp</p>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="bg-primary/10 p-3 rounded-xl text-primary mt-1">
+<span class="material-symbols-outlined">call</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Hotline</p>
+<p class="text-slate-900 dark:text-slate-100 font-semibold text-lg">0277 3851 234</p>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="bg-primary/10 p-3 rounded-xl text-primary mt-1">
+<span class="material-symbols-outlined">mail</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Email</p>
+<p class="text-slate-900 dark:text-slate-100 font-semibold text-lg">phuongcaolanh@dongthap.gov.vn</p>
+</div>
+</li>
+<li class="flex items-start gap-4">
+<div class="bg-primary/10 p-3 rounded-xl text-primary mt-1">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Giờ làm việc</p>
+<p class="text-slate-900 dark:text-slate-100 font-semibold text-base">Thứ 2 - Thứ 6: Sáng 7:30 - 11:30<br/>Chiều 13:30 - 17:00</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 h-80 bg-slate-200 dark:bg-slate-700 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Bản đồ Phường Cao Lãnh" data-location="Cao Lãnh, Đồng Tháp" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAdWVmiGLbxtR4BwsnmH2qqcAf5La-8F5fFuX6D7alGsB2I7DtvLzqFXT4S8VkWf4EILC46qHE9TlOqaUU1-kNB2vCMy_9qVGTwabLCeKpz9wgC68NCu2hirxGbD0TEggfTeOzVpQvIeP6LEd82DMlZMdXreLIkqp18cOYveGCYtvd8Ih18k5YB-Tdcub5j6wGdmzE3fNOrbIrPYMb8G39jfiKRX43FrvpgznT9d3VgUShnRQi2nWko4HojTJOaAyC22KynpOsk4JNN');"></div>
+<div class="absolute bottom-4 left-4 bg-white dark:bg-slate-800 py-2 px-4 rounded-lg shadow-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">directions</span>
+<span class="text-sm font-semibold">Chỉ đường</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit">
+<h2 class="text-2xl font-bold mb-2 text-slate-900 dark:text-slate-100">Góp ý &amp; Liên hệ</h2>
+<p class="text-slate-600 dark:text-slate-400 mb-8 text-sm">Vui lòng điền thông tin bên dưới để gửi phản ánh, kiến nghị hoặc góp ý cho Ủy ban Nhân dân phường.</p>
+<form class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="fullname">Họ và tên <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm" id="fullname" placeholder="Nhập họ và tên của bạn" required="" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="phone">Số điện thoại <span class="text-red-500">*</span></label>
+<input class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm" id="phone" placeholder="Ví dụ: 0901234567" required="" type="tel"/>
+</div>
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="email">Email</label>
+<input class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm" id="email" placeholder="email@example.com" type="email"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="category">Chuyên mục góp ý <span class="text-red-500">*</span></label>
+<select class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm" id="category" required="">
+<option disabled="" selected="" value="">Chọn chuyên mục</option>
+<option value="hanh-chinh">Thủ tục hành chính</option>
+<option value="an-ninh">An ninh trật tự</option>
+<option value="moi-truong">Vệ sinh môi trường</option>
+<option value="khac">Khác</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" for="message">Nội dung chi tiết <span class="text-red-500">*</span></label>
+<textarea class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:border-primary focus:ring-primary shadow-sm resize-none" id="message" placeholder="Mô tả chi tiết nội dung bạn muốn gửi..." required="" rows="5"></textarea>
+</div>
+<div class="pt-4">
+<button class="w-full bg-[#059669] hover:bg-[#047857] text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md flex justify-center items-center gap-2" type="button">
+<span class="material-symbols-outlined">send</span>
+                            Gửi Phản Hồi
+                        </button>
+</div>
+</form>
+</div>
+</div>
+<div class="max-w-3xl mx-auto mb-16">
+<h2 class="text-2xl font-bold mb-8 text-center text-slate-900 dark:text-slate-100">Các câu hỏi thường gặp</h2>
+<div class="space-y-4">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+<button class="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors focus:outline-none">
+<span class="font-semibold text-slate-900 dark:text-slate-100">Thủ tục hành chính làm ở đâu?</span>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</button>
+<div class="px-6 pb-4 text-slate-600 dark:text-slate-400 text-sm hidden">
+                        Bạn có thể thực hiện thủ tục hành chính trực tiếp tại Bộ phận Một cửa của UBND Phường Cao Lãnh hoặc nộp hồ sơ trực tuyến qua Cổng Dịch vụ công Quốc gia đối với các thủ tục có hỗ trợ.
+                    </div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+<button class="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors focus:outline-none">
+<span class="font-semibold text-slate-900 dark:text-slate-100">Lịch tiếp công dân của lãnh đạo như thế nào?</span>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</button>
+<div class="px-6 pb-4 text-slate-600 dark:text-slate-400 text-sm hidden">
+                        Chủ tịch UBND phường tiếp công dân định kỳ vào sáng thứ 5 hàng tuần. Ngoài ra, cán bộ tiếp dân làm việc trong các ngày làm việc hành chính từ thứ 2 đến thứ 6.
+                    </div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+<button class="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors focus:outline-none">
+<span class="font-semibold text-slate-900 dark:text-slate-100">Thời gian xử lý phản ánh, kiến nghị là bao lâu?</span>
+<span class="material-symbols-outlined text-slate-400">expand_more</span>
+</button>
+<div class="px-6 pb-4 text-slate-600 dark:text-slate-400 text-sm hidden">
+                        Thời gian xử lý thông thường từ 3 - 5 ngày làm việc tùy thuộc vào tính chất phức tạp của phản ánh, kiến nghị. Chúng tôi sẽ phản hồi qua email hoặc số điện thoại bạn cung cấp.
+                    </div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-gray-100 py-12 border-t border-slate-200 relative overflow-hidden">
+<div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('../../images/backgourd.png');"></div>
+<div class="max-w-[1200px] mx-auto px-6 relative z-10">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+<div class="flex flex-col gap-4">
+<div class="flex items-start gap-4">
+<div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0">
+<img alt="Logo Phường Cao Lãnh" class="w-full h-full object-cover" src="../../images/logo.png"/>
+</div>
+<div class="flex flex-col">
+<span class="text-red-600 font-bold text-sm tracking-wide">CỔNG THÔNG TIN ĐIỆN TỬ</span>
+<span class="text-primary font-bold text-lg leading-tight uppercase">PHƯỜNG CAO LÃNH</span>
+</div>
+</div>
+<p class="text-slate-700 text-sm leading-relaxed mt-2">Trang thông tin chính thức của Ủy ban nhân dân Phường Cao Lãnh, Thành phố Cao Lãnh, Tỉnh Đồng Tháp. Cung cấp thông tin kinh tế - xã hội, dịch vụ công và tin tức địa phương.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-primary font-bold text-lg uppercase tracking-wide">THÔNG TIN LIÊN HỆ</h3>
+<ul class="flex flex-col gap-3 text-sm text-slate-700">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">location_on</span>
+<span>Trụ sở UBND Phường Cao Lãnh, Số 01, Đường Điện Biên Phủ, Khóm 1, Phường Cao Lãnh, TP. Cao Lãnh, Đồng Tháp</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">phone</span>
+<span>Điện thoại: 0277.3851.XXX</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">mail</span>
+<span>Email: ubndphuongcaolanh@dongthap.gov.vn</span>
+</li>
+</ul>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-primary font-bold text-lg uppercase tracking-wide">LIÊN KẾT HỮU ÍCH</h3>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">account_balance</span> Cổng Thông tin điện tử Chính phủ
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">public</span> Cổng Dịch vụ công Quốc gia
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">language</span> Cổng Thông tin điện tử tỉnh Đồng Tháp
+                        </a>
+<a class="flex items-center gap-3 bg-white border border-gray-200 hover:border-primary hover:text-primary transition-colors rounded-md px-4 py-2 text-sm text-slate-700 font-medium" href="#">
+<span class="material-symbols-outlined text-primary text-[20px]">domain</span> UBND Thành phố Cao Lãnh
+                        </a>
+</div>
+</div>
+</div>
+<div class="border-t border-gray-300 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
+<p>© 2024 Cổng Thông tin điện tử Phường Cao Lãnh. Ghi rõ nguồn khi phát hành lại thông tin.</p>
+<p class="font-medium">Đang online: <span class="text-primary font-bold">15</span> | Tổng truy cập: <span class="text-primary font-bold">1,234,567</span></p>
+</div>
+</div>
+</footer>
+
+</body></html>
