@@ -1,8 +1,28 @@
+import { getContactFaqItems } from "@/services/pageContentService";
+import ContactHero from "@/components/contact/ContactHero";
+import ContactInfo from "@/components/contact/ContactInfo";
+import ContactForm from "@/components/contact/ContactForm";
+import ContactFaq from "@/components/contact/ContactFaq";
+
 export default function LienHePage() {
+  const faqItems = getContactFaqItems();
+
   return (
-    <section className="space-y-3">
-      <h2 className="text-2xl font-semibold">Lien he</h2>
-      <p className="text-slate-600">Dia chi, hotline va thong tin lien he se duoc cap nhat theo du lieu that.</p>
-    </section>
+    <main className="bg-[#f8fafc] pb-16">
+      <ContactHero />
+
+      <section className="pt-10 md:pt-12">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
+            <ContactInfo />
+            <ContactForm />
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-12">
+        <ContactFaq faqItems={faqItems} />
+      </section>
+    </main>
   );
 }

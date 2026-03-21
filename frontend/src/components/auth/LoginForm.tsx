@@ -1,0 +1,130 @@
+"use client";
+
+import { useState, FormEvent } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+const DEMO_ACCOUNT = {
+  identifier: "demo@caolanh.gov.vn",
+  password: "123456",
+  fullName: "Nguyễn Văn A",
+};
+
+type LoginFormProps = {
+  onSuccess: (session: { fullName: string; identifier: string }) => void;
+};
+
+export default function LoginForm({ onSuccess }: LoginFormProps) {
+  const [loginForm, setLoginForm] = useState({ identifier: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage("");
+    setIsLoading(true);
+
+    window.setTimeout(() => {
+      const isValidDemoAccount =
+        loginForm.identifier.trim() === DEMO_ACCOUNT.identifier && loginForm.password === DEMO_ACCOUNT.password;
+
+      if (!isValidDemoAccount) {
+        setErrorMessage("Tài khoản demo không đúng. Hãy dùng thông tin mẫu bên dưới để đăng nhập thử.");
+        setIsLoading(false);
+        return;
+      }
+
+      onSuccess({
+        fullName: DEMO_ACCOUNT.fullName,
+        identifier: DEMO_ACCOUNT.identifier,
+      });
+      setIsLoading(false);
+    }, 2000);
+  };
+
+  const submitButtonClassName = isLoading
+    ? "mt-1 flex w-full cursor-not-allowed items-center justify-center rounded-lg bg-red-400 px-4 py-2.5 text-sm font-semibold text-white opacity-90"
+    : "mt-1 flex w-full items-center justify-center rounded-lg bg-[#8b1d1d] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#741717]";
+
+  return (
+    <>
+      <div className="mb-4 rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4 text-sm text-emerald-800">
+        <p className="font-semibold">Tài khoản demo để đăng nhập thử</p>
+        <p className="mt-1">Email: demo@caolanh.gov.vn</p>
+        <p>Mật khẩu: 123456</p>
+      </div>
+
+      {errorMessage ? (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</div>
+      ) : null}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <label className="block text-sm font-medium text-slate-700" htmlFor="identifier">
+          Email / Tên đăng nhập
+        </label>
+        <input
+          id="identifier"
+          name="identifier"
+          type="text"
+          value={loginForm.identifier}
+          onChange={(event) => setLoginForm((prev) => ({ ...prev, identifier: event.target.value }))}
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
+          placeholder="Nhập email hoặc tên đăng nhập"
+          required
+        />
+
+        <label className="block text-sm font-medium text-slate-700" htmlFor="loginPassword">
+          Mật khẩu
+        </label>
+        <div className="relative">
+          <input
+            id="loginPassword"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={loginForm.password}
+            onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
+            placeholder="Nhập mật khẩu"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-800"
+            aria-label="Ẩn hoặc hiện mật khẩu"
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
+
+        <div className="pt-1 text-right">
+          <button type="button" className="text-sm font-medium text-[#8b1d1d] hover:underline">
+            Quên mật khẩu?
+          </button>
+        </div>
+
+        <button type="submit" disabled={isLoading} className={submitButtonClassName}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Đang xử lý...
+            </>
+          ) : (
+            "Đăng nhập"
+          )}
+        </button>
+
+        <p className="mt-4 px-4 text-center text-xs leading-relaxed text-gray-500">
+          Bằng việc đăng nhập, bạn đồng ý với{" "}
+          <a href="#" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
+            Điều khoản dịch vụ
+          </a>
+          &{" "}
+          <a href="#" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
+            Chính sách bảo mật
+          </a>
+          .
+        </p>
+      </form>
+    </>
+  );
+}

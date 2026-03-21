@@ -1,18 +1,20 @@
-import Link from "next/link";
+import FeaturedVideoSection from "@/components/thu-vien/FeaturedVideoSection";
+import MediaHeroSection from "@/components/thu-vien/MediaHeroSection";
+import PhotoLibrarySection from "@/components/thu-vien/PhotoLibrarySection";
+import VideoLibrarySection from "@/components/thu-vien/VideoLibrarySection";
 
 export default function ThuVienTongHopPage() {
   return (
-    <section className="space-y-4">
-      <h2 className="text-2xl font-semibold">Thu vien media tong hop</h2>
-      <p className="text-slate-600">Trang tong hop media theo thiet ke chinhgiaodien.</p>
-      <div className="flex flex-wrap gap-3">
-        <Link href="/thu-vien/hinh-anh" className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 border border-slate-200">
-          Thu vien hinh anh
-        </Link>
-        <Link href="/thu-vien/video" className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 border border-slate-200">
-          Thu vien video
-        </Link>
+    <main className="flex flex-grow flex-col">
+      <MediaHeroSection />
+
+      <div className="w-full bg-[#f8fafc]">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-4 py-16 sm:px-6 lg:px-8">
+          <FeaturedVideoSection />
+          <PhotoLibrarySection />
+          <VideoLibrarySection />
+        </div>
       </div>
-    </section>
+    </main>
   );
 }

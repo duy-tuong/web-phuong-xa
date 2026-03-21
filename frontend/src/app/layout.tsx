@@ -7,9 +7,13 @@ const publicSans = Public_Sans({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Cong thong tin dien tu Phuong Cao Lanh",
-  description: "Cong thong tin dien tu va dich vu hanh chinh Phuong Cao Lanh",
+export const metadata: Metadata = { //  SEO metadata
+  title: {
+    default: "Cổng thông tin điện tử Phường Cao Lãnh",
+    template: "%s | Cổng thông tin điện tử Phường Cao Lãnh",
+  },
+  description:
+    "Cổng thông tin điện tử chính thức của UBND Phường Cao Lãnh, cung cấp tin tức, dịch vụ hành chính công và thông tin phục vụ nhân dân.",
 };
 
 export default function RootLayout({
@@ -20,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={`${publicSans.variable} antialiased`}>
-        {children}
+        <main className="min-h-screen flex flex-col">{children}</main>
       </body>
     </html>
   );
