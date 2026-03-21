@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Public_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import "react-quill-new/dist/quill.snow.css";
 
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Cong thong tin dien tu Phuong Cao Lanh",
-  description: "Cong thong tin dien tu va dich vu hanh chinh Phuong Cao Lanh",
+  title: "Cổng thông tin điện tử Phường Cao Lãnh",
+  description: "Cổng thông tin điện tử và dịch vụ hành chính Phường Cao Lãnh",
 };
 
 export default function RootLayout({
@@ -19,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${publicSans.variable} antialiased`}>
+      <body className={`${plusJakarta.variable} antialiased bg-[hsl(45,22%,96%)]`}>
         {children}
       </body>
     </html>
