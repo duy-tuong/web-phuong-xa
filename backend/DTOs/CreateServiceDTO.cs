@@ -1,0 +1,20 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace backend.DTOs
+{
+    public class CreateServiceDTO
+    {
+        [Required]
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string RequiredDocuments { get; set; }
+
+        public string ProcessingTime { get; set; }
+
+        public decimal Fee { get; set; }
+
+        public string? TemplateFile { get; set; }
+    }
+}

@@ -1,0 +1,176 @@
+using backend.Data;
+using backend.DTOs;
+using backend.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")] // Toàn b? Controller ch? Admin m?i ???c truy c?p
+    public class UsersController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+
+        public UsersController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // ?? GET ALL USERS (CÓ TÌM KI?M VÀ PHÂN TRANG)
+        [HttpGet]
+        public async Task<IActionResult> GetUsers(string? keyword, int page = 1, int pageSize = 10)
+        {
+            var query = _context.Users
+                .Include(u => u.Role)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(u => u.Username.Contains(keyword) 
+                                      || u.Email.Contains(keyword) 
+                                      || u.FullName.Contains(keyword));
+            }
+
+            var total = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+
+            var users = await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.FullName,
+                    Role = u.Role.Name,
+                    u.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new { total, page, pageSize, totalPages, data = users });
+        }
+
+        // ?? GET USER BY ID
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.Id == id)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.FullName,
+                    u.RoleId,
+                    Role = u.Role.Name,
+                    u.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(user);
+        }
+
+        // ?? CREATE USER (Admin t?o tài kho?n cho cán b?)
+        [HttpPost]
+        public async Task<IActionResult> CreateUser(CreateUserDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var usernameExists = await _context.Users.AnyAsync(u => u.Username == dto.Username);
+            if (usernameExists) return BadRequest("Username already exists.");
+
+            var emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+            if (emailExists) return BadRequest("Email already in use.");
+
+            var roleExists = await _context.Roles.AnyAsync(r => r.Id == dto.RoleId);
+            if (!roleExists) return BadRequest("Role does not exist.");
+
+            var user = new User
+            {
+                Username = dto.Username,
+                Email = dto.Email,
+                FullName = dto.FullName,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                RoleId = dto.RoleId,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User created successfully", userId = user.Id });
+        }
+
+        // ?? UPDATE USER INFO & ROLE
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound("User not found.");
+
+            // Check email uniqueness but exclude current user
+            var emailExists = await _context.Users.AnyAsync(u => u.Email == dto.Email && u.Id != id);
+            if (emailExists) return BadRequest("Email already in use by another account.");
+
+            var roleExists = await _context.Roles.AnyAsync(r => r.Id == dto.RoleId);
+            if (!roleExists) return BadRequest("Role does not exist.");
+
+            user.Email = dto.Email;
+            user.FullName = dto.FullName;
+            user.RoleId = dto.RoleId;
+
+            // N?u admin có truy?n lên Password m?i thì m?i update pass
+            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User updated successfully" });
+        }
+
+        // ?? DELETE USER
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound("User not found.");
+
+            // Tránh Admin t? xóa chính mình n?u l? tay
+            var currentUserUsername = User.Identity?.Name;
+            if (user.Username == currentUserUsername)
+            {
+                return BadRequest("You cannot delete your own account.");
+            }
+
+            // Ki?m tra xem User này có ?ang s? h?u Bài vi?t nào không (ràng bu?c khóa ngo?i)
+            var hasArticles = await _context.Articles.AnyAsync(a => a.AuthorId == id);
+            if (hasArticles)
+            {
+                return BadRequest("Cannot delete this user because they are the author of existing articles. Reassign the articles first.");
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User deleted successfully." });
+        }
+    }
+}

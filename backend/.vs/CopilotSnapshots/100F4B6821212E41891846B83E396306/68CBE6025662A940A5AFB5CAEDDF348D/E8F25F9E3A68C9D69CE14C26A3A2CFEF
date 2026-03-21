@@ -1,0 +1,18 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace backend.DTOs
+{
+    public class UpdateServiceDTO
+    {
+        [Required]
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public string RequiredDocuments { get; set; }
+
+        public string ProcessingTime { get; set; }
+
+        public decimal Fee { get; set; }
+    }
+}

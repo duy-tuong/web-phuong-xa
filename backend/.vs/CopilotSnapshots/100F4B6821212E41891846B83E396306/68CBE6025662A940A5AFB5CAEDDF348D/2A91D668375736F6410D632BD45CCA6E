@@ -1,0 +1,160 @@
+﻿using backend.Data;
+using backend.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+namespace backend.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class MediaController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _env;
+
+        public MediaController(AppDbContext context, IWebHostEnvironment env)
+        {
+            _context = context;
+            _env = env;
+        }
+
+        // ?? GET ALL MEDIA (CH? ADMIN/EDITOR XEM ???C) KHÔNG C?N DÀNH CHO DÂN
+        [Authorize(Roles = "Admin,Editor")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllMedia(int page = 1, int pageSize = 20)
+        {
+            var query = _context.Media.Include(m => m.User).AsQueryable();
+
+            var total = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+
+            var mediaFiles = await query
+                .OrderByDescending(m => m.UploadedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new
+                {
+                    m.Id,
+                    m.FileName,
+                    m.FilePath,
+                    m.Type,
+                    m.FileType,
+                    m.FileSize,
+                    UploadedBy = m.User.Username,
+                    m.UploadedAt
+                })
+                .ToListAsync();
+
+            return Ok(new { total, page, pageSize, totalPages, data = mediaFiles });
+        }
+
+        // ?? UPLOAD FILE (?NH/TÀI LI?U) - DÀNH CHO CÁN B? VI?T BÀI
+        [Authorize(Roles = "Admin,Editor")]
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadMedia(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            // Ki?m tra dung l??ng (Ví d?: t?i ?a 5MB)
+            var maxFileSize = 5 * 1024 * 1024;
+            if (file.Length > maxFileSize)
+                return BadRequest("File size exceeds the 5MB limit.");
+
+            // Danh sách các ??nh d?ng ???c phép upload
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+                return BadRequest("Invalid file type. Only JPG, PNG, GIF, PDF, DOC, DOCX are allowed.");
+
+            // T?o th? m?c "uploads" n?u ch?a có
+            var uploadDir = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+            if (!Directory.Exists(uploadDir))
+            {
+                Directory.CreateDirectory(uploadDir);
+            }
+
+            // ??i tên file ?? tránh upload ?è ho?c ký t? l?i 
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // L?y ID ng??i upload
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out int currentUserId))
+            {
+                return Unauthorized("User ID not found in token");
+            }
+
+            // T?o ???ng d?n public URL ?? l?u vào DB (Ví d?: /uploads/abc.jpg)
+            var relativePath = $"/uploads/{uniqueFileName}";
+            var fileType = (extension == ".pdf" || extension.Contains(".doc")) ? "Document" : "Image";
+
+            var media = new Media
+            {
+                FileName = file.FileName,   // L?u tên g?c
+                FilePath = relativePath,    // L?u ???ng d?n
+                Type = fileType,
+                FileType = file.ContentType, // L?u MIME type
+                FileSize = file.Length,     // L?u kích thước (byte)
+                UploadedBy = currentUserId,
+                UploadedAt = DateTime.Now
+            };
+
+            _context.Media.Add(media);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "File uploaded successfully",
+                media.Id,
+                url = relativePath,
+                type = fileType,
+                fileType = media.FileType,
+                fileSize = media.FileSize
+            });
+        }
+
+        // ?? DELETE MEDIA
+        [Authorize(Roles = "Admin,Editor")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMedia(int id)
+        {
+            var media = await _context.Media.FindAsync(id);
+
+            if (media == null)
+                return NotFound("Media not found.");
+
+            // Ch? Admin ho?c CHÍNH NG??I ?Ã UPLOAD m?i ???c xóa
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (currentUserRole != "Admin" && media.UploadedBy != currentUserId)
+            {
+                return Forbid();
+            }
+
+            // Xóa file c?ng trong ? ??a
+            var uploadDir = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var physicalPath = Path.Combine(uploadDir, media.FilePath.TrimStart('/'));
+
+            if (System.IO.File.Exists(physicalPath))
+            {
+                System.IO.File.Delete(physicalPath);
+            }
+
+            // Xóa record trong Database
+            _context.Media.Remove(media);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Media deleted successfully." });
+        }
+    }
+}
