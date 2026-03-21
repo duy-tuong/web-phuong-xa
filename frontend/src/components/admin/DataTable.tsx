@@ -103,7 +103,7 @@ export default function DataTable<T extends { id: string }>({
                     index > 0 && "pt-2 border-t border-dashed border-stone-100"
                   )}
                 >
-                  <span className="w-[112px] shrink-0 text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+                  <span className="w-[112px] shrink-0 text-xs font-bold uppercase tracking-wide text-stone-600">
                     {col.label}
                   </span>
                   <div className="min-w-0 flex-1 text-right text-sm text-stone-700">
@@ -126,7 +126,7 @@ export default function DataTable<T extends { id: string }>({
               {columns.map((col) => (
                 <TableHead
                   key={col.key}
-                  className={`text-xs font-semibold text-stone-600 uppercase tracking-wider ${col.className || ""}`}
+                  className={`text-sm font-bold text-stone-700 uppercase tracking-wide ${col.className || ""}`}
                 >
                   {col.label}
                 </TableHead>
