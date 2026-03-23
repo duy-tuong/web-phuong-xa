@@ -6,11 +6,7 @@ import logoImage from "@/app/(user)/chinhgiaodien/images/logo.png";
 
 export default function Footer() {
   return (
-<<<<<<< HEAD
-    <footer className="relative overflow-hidden border-t border-slate-200 bg-gray-100 py-12">
-=======
     <footer className="relative overflow-hidden border-t border-slate-200 bg-gray-100 py-10">
->>>>>>> frontend-user-minh-hieu
       <div
         className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-20"
         style={{ backgroundImage: `url(${bgImage.src})` }}
@@ -34,33 +30,6 @@ export default function Footer() {
             </p>
           </div>
 
-<<<<<<< HEAD
-          <div className="flex flex-col gap-4">
-            <h3 className="text-lg font-bold uppercase tracking-wide text-emerald-700">Thông tin liên hệ</h3>
-            <ul className="flex flex-col gap-3 text-sm text-slate-700">
-              <li>Trụ sở UBND Phường Cao Lãnh, Số 01, Điện Biên Phủ, TP Cao Lãnh, Đồng Tháp</li>
-              <li>Điện thoại: 0277.3851.XXX</li>
-              <li>Email: ubndphuongcaolanh@dongthap.gov.vn</li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <h3 className="text-lg font-bold uppercase tracking-wide text-emerald-700">Liên kết hữu ích</h3>
-            <div className="flex flex-col gap-2">
-              <Link href="#" className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-emerald-700 hover:text-emerald-700">
-                Cổng Thông tin điện tử Chính phủ
-              </Link>
-              <Link href="#" className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-emerald-700 hover:text-emerald-700">
-                Cổng Dịch vụ công Quốc gia
-              </Link>
-              <Link href="#" className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-emerald-700 hover:text-emerald-700">
-                Cổng Thông tin điện tử tỉnh Đồng Tháp
-              </Link>
-              <Link href="#" className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:border-emerald-700 hover:text-emerald-700">
-                UBND Thành phố Cao Lãnh
-              </Link>
-            </div>
-=======
           <div className="flex flex-col gap-3">
             <h3 className="text-lg font-bold uppercase tracking-wide text-emerald-700">Thông tin liên hệ</h3>
             <ul className="space-y-2 text-sm text-slate-700">
@@ -99,16 +68,11 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
->>>>>>> frontend-user-minh-hieu
           </div>
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-300 pt-6 text-sm text-slate-600 md:flex-row">
-<<<<<<< HEAD
-          <p>© 2024 Cổng Thông tin điện tử Phường Cao Lãnh. Ghi rõ nguồn khi phát hành lại thông tin.</p>
-=======
           <p>© 2025 Cổng Thông tin điện tử Phường Cao Lãnh — Thành phố Cao Lãnh, Tỉnh Đồng Tháp. Ghi rõ nguồn khi phát hành lại.</p>
->>>>>>> frontend-user-minh-hieu
           <p className="font-medium">
             Đang online: <span className="font-bold text-emerald-700">15</span> | Tổng truy cập: <span className="font-bold text-emerald-700">1,234,567</span>
           </p>

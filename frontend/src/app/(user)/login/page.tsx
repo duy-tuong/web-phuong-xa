@@ -17,8 +17,26 @@ export default function LoginPage() {
 
   const handleSuccess = (session: MockSession) => {
     window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+    dispatchAuthChange();
+
+    const redirect = new URLSearchParams(window.location.search).get("redirect");
+    const role = window.localStorage.getItem("admin_role") || window.localStorage.getItem("user_role");
+    const isStaff = role === "Admin" || role === "Editor";
+
+    if (isStaff) {
+      // luôn vào khu admin; nếu có redirect /admin/... thì đi theo
+      const target = redirect && redirect.startsWith("/admin") ? redirect : "/admin";
+
+      // delay 0ms để cookie `admin_token` chắc chắn đã được ghi trước request /admin
+      window.setTimeout(() => window.location.replace(target), 0);
+      return;
+    }
+
+    window.location.replace("/trang-ca-nhan");
+  };
+
+  const dispatchAuthChange = () => {
     window.dispatchEvent(new Event(AUTH_EVENT_NAME));
-    router.push("/trang-ca-nhan");
   };
 
   return (
