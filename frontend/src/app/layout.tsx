@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Public_Sans } from "next/font/google";
 import "./globals.css";
-import "react-quill-new/dist/quill.snow.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+const publicSans = Public_Sans({
+  variable: "--font-public-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Cổng thông tin điện tử Phường Cao Lãnh",
-  description: "Cổng thông tin điện tử và dịch vụ hành chính Phường Cao Lãnh",
+  //  SEO metadata
+  title: {
+    default: "Cổng thông tin điện tử Phường Cao Lãnh",
+    template: "%s | Cổng thông tin điện tử Phường Cao Lãnh",
+  },
+  description:
+    "Cổng thông tin điện tử chính thức của UBND Phường Cao Lãnh, cung cấp tin tức, dịch vụ hành chính công và thông tin phục vụ nhân dân.",
 };
 
 export default function RootLayout({
@@ -21,8 +24,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${plusJakarta.variable} antialiased bg-[hsl(45,22%,96%)]`}>
-        {children}
+      <body className={`${publicSans.variable} antialiased`}>
+        <main className="min-h-screen flex flex-col">{children}</main>
       </body>
     </html>
   );

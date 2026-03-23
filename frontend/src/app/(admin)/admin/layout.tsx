@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client";
 
 import { useEffect, useState } from "react";
@@ -51,4 +52,10 @@ export default function AdminLayout({
       </div>
     </div>
   );
+=======
+import type { ReactNode } from "react";
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
+	return <div className="min-h-screen bg-slate-100">{children}</div>;
+>>>>>>> frontend-user-minh-hieu
 }
