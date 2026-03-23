@@ -1247,6 +1247,14 @@
             "minLength": 1,
             "type": "string"
           },
+          "excerpt": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImage": {
+            "type": "string",
+            "nullable": true
+          },
           "content": {
             "minLength": 1,
             "type": "string"
@@ -1328,6 +1336,10 @@
           "fee": {
             "type": "number",
             "format": "double"
+          },
+          "templateFile": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1429,6 +1441,14 @@
             "minLength": 1,
             "type": "string"
           },
+          "excerpt": {
+            "type": "string",
+            "nullable": true
+          },
+          "featuredImage": {
+            "type": "string",
+            "nullable": true
+          },
           "content": {
             "minLength": 1,
             "type": "string"
@@ -1497,6 +1517,10 @@
           "fee": {
             "type": "number",
             "format": "double"
+          },
+          "templateFile": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

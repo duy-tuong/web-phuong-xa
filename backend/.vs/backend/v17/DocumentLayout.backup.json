@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|d:\\hk6_25_26\\backend\\web-phuong-xa\\backend\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|solutionrelative:controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|d:\\hk6_25_26\\backend\\web-phuong-xa\\backend\\controllers\\auditlogscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|solutionrelative:controllers\\auditlogscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -25,10 +29,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|d:\\hk6_25_26\\backend\\web-phuong-xa\\backend\\controllers\\mediacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|solutionrelative:controllers\\mediacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|d:\\hk6_25_26\\backend\\web-phuong-xa\\backend\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|solutionrelative:controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|d:\\hk6_25_26\\backend\\web-phuong-xa\\backend\\dtos\\updateuserdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -97,6 +97,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|d:\\hk6_25_26\\backend\\web-phuong-xa\\backend\\dtos\\updatearticledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|solutionrelative:dtos\\updatearticledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|d:\\hk6_25_26\\backend\\web-phuong-xa\\backend\\controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{183A3ED0-3369-4EE9-A558-2CC71D84FDAC}|backend.csproj|solutionrelative:controllers\\rolescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -106,32 +110,19 @@
       "DocumentGroups": [
         {
           "DockedHeight": 256,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 23,
-              "Title": "UpdateArticleDTO.cs",
-              "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\UpdateArticleDTO.cs",
-              "RelativeDocumentMoniker": "DTOs\\UpdateArticleDTO.cs",
-              "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\UpdateArticleDTO.cs",
-              "RelativeToolTip": "DTOs\\UpdateArticleDTO.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAMBRwAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 24,
+              "Title": "RolesController.cs",
+              "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\RolesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\RolesController.cs",
+              "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\RolesController.cs",
+              "RelativeToolTip": "Controllers\\RolesController.cs",
+              "ViewState": "AgIAAI0AAAAAAAAAAABMwJAAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T12:41:37.156Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 22,
-              "Title": "CreateArticleDTO.cs",
-              "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\CreateArticleDTO.cs",
-              "RelativeDocumentMoniker": "DTOs\\CreateArticleDTO.cs",
-              "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\CreateArticleDTO.cs",
-              "RelativeToolTip": "DTOs\\CreateArticleDTO.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAMBRwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T12:40:12.256Z",
+              "WhenOpened": "2026-03-21T15:20:16.242Z",
               "EditorCaption": ""
             },
             {
@@ -144,8 +135,7 @@
               "RelativeToolTip": "Models\\AuditLog.cs",
               "ViewState": "AgIAAA8AAAAAAAAAAMBRwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T12:33:36.854Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-21T12:33:36.854Z"
             },
             {
               "$type": "Document",
@@ -157,8 +147,7 @@
               "RelativeToolTip": "Models\\Media.cs",
               "ViewState": "AgIAABMAAAAAAAAAAMBRwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T12:33:29.492Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-21T12:33:29.492Z"
             },
             {
               "$type": "Document",
@@ -170,12 +159,11 @@
               "RelativeToolTip": "Models\\Service.cs",
               "ViewState": "AgIAABEAAAAAAAAAAMBRwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T12:33:22.583Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-21T12:33:22.583Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Article.cs",
               "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Models\\Article.cs",
               "RelativeDocumentMoniker": "Models\\Article.cs",
@@ -183,25 +171,24 @@
               "RelativeToolTip": "Models\\Article.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-21T12:33:14.026Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-21T12:33:14.026Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "AuditLogsController.cs",
               "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\AuditLogsController.cs",
               "RelativeDocumentMoniker": "Controllers\\AuditLogsController.cs",
               "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\AuditLogsController.cs",
               "RelativeToolTip": "Controllers\\AuditLogsController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAFIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-19T04:10:32.498Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "AuditLogService.cs",
               "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Services\\AuditLogService.cs",
               "RelativeDocumentMoniker": "Services\\AuditLogService.cs",
@@ -209,12 +196,48 @@
               "RelativeToolTip": "Services\\AuditLogService.cs",
               "ViewState": "AgIAACMAAAAAAAAAAEBSwCcAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-19T04:10:23.025Z",
+              "WhenOpened": "2026-03-19T04:10:23.025Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "UsersController.cs",
+              "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\UsersController.cs",
+              "RelativeDocumentMoniker": "Controllers\\UsersController.cs",
+              "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\UsersController.cs",
+              "RelativeToolTip": "Controllers\\UsersController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAK8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T03:36:08.123Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 22,
+              "Title": "CreateArticleDTO.cs",
+              "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\CreateArticleDTO.cs",
+              "RelativeDocumentMoniker": "DTOs\\CreateArticleDTO.cs",
+              "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\CreateArticleDTO.cs",
+              "RelativeToolTip": "DTOs\\CreateArticleDTO.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAMBRwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-21T12:40:12.256Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "UpdateArticleDTO.cs",
+              "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\UpdateArticleDTO.cs",
+              "RelativeDocumentMoniker": "DTOs\\UpdateArticleDTO.cs",
+              "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\DTOs\\UpdateArticleDTO.cs",
+              "RelativeToolTip": "DTOs\\UpdateArticleDTO.cs",
+              "ViewState": "AgIAABMAAAAAAAAAAMBRwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-21T12:41:37.156Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "DashboardController.cs",
               "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\DashboardController.cs",
               "RelativeDocumentMoniker": "Controllers\\DashboardController.cs",
@@ -226,28 +249,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "MediaController.cs",
               "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\MediaController.cs",
               "RelativeDocumentMoniker": "Controllers\\MediaController.cs",
               "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\MediaController.cs",
               "RelativeToolTip": "Controllers\\MediaController.cs",
-              "ViewState": "AgIAAJsAAAAAAAAAAEBRwJ8AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAJoAAAAAAAAAAIBVwJ8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-19T03:48:17.927Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "UsersController.cs",
-              "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\UsersController.cs",
-              "RelativeDocumentMoniker": "Controllers\\UsersController.cs",
-              "ToolTip": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Controllers\\UsersController.cs",
-              "RelativeToolTip": "Controllers\\UsersController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAAK8AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-19T03:36:08.123Z"
+              "WhenOpened": "2026-03-19T03:48:17.927Z"
             },
             {
               "$type": "Document",
@@ -287,7 +297,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\HK6_25_26\\BackEnd\\web-phuong-xa\\backend\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
@@ -331,8 +341,7 @@
               "RelativeToolTip": "Controllers\\ServicesController.cs",
               "ViewState": "AgIAAJ4AAAAAAAAAAEBQwKIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-17T16:00:48.601Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-17T16:00:48.601Z"
             },
             {
               "$type": "Document",
@@ -368,8 +377,7 @@
               "RelativeToolTip": "Controllers\\ArticlesController.cs",
               "ViewState": "AgIAAO4AAAAAAAAAAIBVwNQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-18T11:19:22.511Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-18T11:19:22.511Z"
             },
             {
               "$type": "Document",
@@ -393,8 +401,7 @@
               "RelativeToolTip": "DTOs\\UpdateServiceDTO.cs",
               "ViewState": "AgIAABEAAAAAAAAAAMBRwA8AAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-17T16:00:13.116Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-17T16:00:13.116Z"
             },
             {
               "$type": "Document",
@@ -406,8 +413,7 @@
               "RelativeToolTip": "DTOs\\CreateServiceDTO.cs",
               "ViewState": "AgIAABEAAAAAAAAAAMBRwBQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-17T15:59:40.668Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-17T15:59:40.668Z"
             }
           ]
         },
