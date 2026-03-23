@@ -7,8 +7,7 @@ const publicSans = Public_Sans({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  //  SEO metadata
+export const metadata: Metadata = { //  SEO metadata
   title: {
     default: "Cổng thông tin điện tử Phường Cao Lãnh",
     template: "%s | Cổng thông tin điện tử Phường Cao Lãnh",
