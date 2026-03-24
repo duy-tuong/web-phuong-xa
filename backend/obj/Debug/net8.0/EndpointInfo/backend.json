@@ -524,6 +524,37 @@
         }
       }
     },
+    "/api/Auth/change-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Auth/debug-token": {
       "get": {
         "tags": [
@@ -1328,6 +1359,24 @@
   },
   "components": {
     "schemas": {
+      "ChangePasswordDTO": {
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "newPassword": {
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateApplicationDTO": {
         "required": [
           "applicantName",
@@ -1371,6 +1420,10 @@
           "title": {
             "minLength": 1,
             "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
           },
           "excerpt": {
             "type": "string",
@@ -1566,6 +1619,10 @@
             "minLength": 1,
             "type": "string"
           },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
           "excerpt": {
             "type": "string",
             "nullable": true
@@ -1667,6 +1724,14 @@
             "maxLength": 100,
             "minLength": 1,
             "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
           },
           "password": {
             "type": "string",

@@ -7,6 +7,8 @@ namespace backend.DTOs
         [Required]
         public string Title { get; set; }
 
+        public string? Slug { get; set; }
+
         public string? Excerpt { get; set; }
 
         public string? FeaturedImage { get; set; }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace backend.Controllers
@@ -29,17 +30,39 @@ namespace backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTO model)
         {
+            //var existingUser = await _context.Users
+            //    .FirstOrDefaultAsync(x => x.Username == model.Username);
+
+            //if (existingUser != null)
+            //{
+            //    return BadRequest("Username already exists");
+            //}
+
+            //var role = await _context.Roles
+            //    .FirstOrDefaultAsync(r => r.Name == "Viewer");
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(x => x.Username == model.Username);
+    .FirstOrDefaultAsync(x => x.Username == model.Username);
 
             if (existingUser != null)
             {
                 return BadRequest("Username already exists");
             }
 
+            var existingEmail = await _context.Users
+                .FirstOrDefaultAsync(x => x.Email == model.Email);
+
+            if (existingEmail != null)
+            {
+                return BadRequest("Email already exists");
+            }
+
             var role = await _context.Roles
                 .FirstOrDefaultAsync(r => r.Name == "Viewer");
 
+            if (role == null)
+            {
+                return StatusCode(500, "Role 'Viewer' not found");
+            }
             var user = new User
             {
                 Username = model.Username,
@@ -87,7 +110,8 @@ namespace backend.Controllers
             {
                 token,
                 username = user.Username,
-                role = user.Role.Name
+                role = user.Role.Name,
+                fullName = user.FullName
             });
         }
 
@@ -95,9 +119,71 @@ namespace backend.Controllers
         // GET CURRENT USER
         [Authorize]
         [HttpGet("me")]
-        public IActionResult Me()
+        public async Task<IActionResult> Me()
         {
-            return Ok(User.Identity.Name);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.Id == userId)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.FullName,
+                    u.Phone,
+                    u.AvatarUrl,
+                    u.RoleId,
+                    role = u.Role.Name,
+                    u.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(user);
+        }
+
+        // CHANGE PASSWORD
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var verified = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+            if (!verified)
+            {
+                return BadRequest("Current password is incorrect.");
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password updated successfully" });
         }
 
         [HttpGet("debug-token")]

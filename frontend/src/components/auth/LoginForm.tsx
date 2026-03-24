@@ -38,26 +38,41 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       const token: string | undefined = res.data?.token;
       const role: string | undefined = res.data?.role;
       const returnedUsername: string | undefined = res.data?.username;
+      const returnedFullName: string | undefined = res.data?.fullName;
 
       if (!token || !returnedUsername) {
         setErrorMessage("Đăng nhập thất bại (thiếu token).");
         return;
       }
 
+      const displayName = returnedFullName ?? returnedUsername;
+
       // Lưu cho user-side (Header/trang cá nhân vẫn dùng mock session)
       localStorage.setItem("user_token", token);
       localStorage.setItem("user_role", role ?? "");
       localStorage.setItem("user_username", returnedUsername);
 
+      const clearAdminSession = () => {
+        localStorage.removeItem("admin_role");
+        localStorage.removeItem("admin_token");
+        localStorage.removeItem("admin_display_name");
+        document.cookie = "admin_token=; Path=/; Max-Age=0; SameSite=Lax";
+        document.cookie = "admin_role=; Path=/; Max-Age=0; SameSite=Lax";
+      };
+
       // Quan trọng: bật quyền admin cho middleware
       if (role === "Admin" || role === "Editor") {
         localStorage.setItem("admin_role", role);
         localStorage.setItem("admin_token", token);
-        localStorage.setItem("admin_display_name", returnedUsername);
+        localStorage.setItem("admin_display_name", displayName);
         document.cookie = `admin_token=${encodeURIComponent(token)}; Path=/; Max-Age=86400; SameSite=Lax`;
+        document.cookie = `admin_role=${encodeURIComponent(role)}; Path=/; Max-Age=86400; SameSite=Lax`;
+      } else {
+        // Tránh trường hợp trước đó từng login admin, cookie vẫn còn.
+        clearAdminSession();
       }
 
-      onSuccess({ fullName: returnedUsername, identifier: returnedUsername });
+      onSuccess({ fullName: displayName, identifier: returnedUsername });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setErrorMessage("Sai tài khoản hoặc mật khẩu.");

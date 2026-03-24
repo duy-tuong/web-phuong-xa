@@ -1,16 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockServices } from "@/lib/mock-data";
+import { Input } from "@/components/ui/input";
 import { Service } from "@/types";
 import { Landmark, Pencil, Trash2, FileDown } from "lucide-react";
 import { format } from "date-fns";
+import api from "@/services/api";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("vi-VN", {
@@ -20,19 +21,56 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-const OTHER_OPTION_VALUE = "__other__";
+type ServiceApi = {
+  id?: number | string;
+  Id?: number | string;
+  name?: string;
+  Name?: string;
+  description?: string;
+  Description?: string;
+  requiredDocuments?: string;
+  RequiredDocuments?: string;
+  processingTime?: string;
+  ProcessingTime?: string;
+  fee?: number;
+  Fee?: number;
+  templateFile?: string | null;
+  TemplateFile?: string | null;
+};
 
-const buildUniqueOptions = (values: string[]) => {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).map(
-    (value) => ({
-      label: value,
-      value,
-    })
-  );
+const resolvePublicUrl = (value: string) => {
+  if (!value) return "";
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    return value;
+  }
+  const base = api.defaults.baseURL ?? "";
+  const origin = base.replace(/\/api\/?$/, "");
+  return origin ? `${origin}${value}` : value;
+};
+
+const getTemplateLabel = (value: string) => {
+  if (!value) return "";
+  const clean = value.split("?")[0];
+  const parts = clean.split("/");
+  return parts[parts.length - 1] || value;
 };
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>(mockServices);
+  const [adminRole, setAdminRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAdminRole(localStorage.getItem("admin_role"));
+  }, []);
+
+  const isEditor = adminRole === "Editor";
+
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingTemplate, setIsUploadingTemplate] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -45,45 +83,12 @@ export default function ServicesPage() {
   const [formProcessingTime, setFormProcessingTime] = useState("");
   const [formFee, setFormFee] = useState("0");
   const [formTemplateFile, setFormTemplateFile] = useState("");
-  const [isCustomName, setIsCustomName] = useState(false);
-  const [isCustomRequiredDocuments, setIsCustomRequiredDocuments] = useState(false);
-  const [isCustomProcessingTime, setIsCustomProcessingTime] = useState(false);
+  const [formTemplateName, setFormTemplateName] = useState("");
+  const templateInputRef = useRef<HTMLInputElement | null>(null);
 
   // Delete state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingService, setDeletingService] = useState<Service | null>(null);
-
-  const serviceNameOptions = useMemo(
-    () => buildUniqueOptions(services.map((service) => service.name)),
-    [services]
-  );
-
-  const requiredDocumentOptions = useMemo(
-    () => buildUniqueOptions(services.map((service) => service.requiredDocuments)),
-    [services]
-  );
-
-  const processingTimeOptions = useMemo(
-    () => buildUniqueOptions(services.map((service) => service.processingTime)),
-    [services]
-  );
-
-  const hasOptionValue = (
-    options: { label: string; value: string }[],
-    value: string
-  ) => {
-    return options.some((option) => option.value === value);
-  };
-
-  const getSelectValue = (
-    options: { label: string; value: string }[],
-    value: string,
-    isCustom: boolean
-  ) => {
-    if (isCustom) return OTHER_OPTION_VALUE;
-    if (!value) return "";
-    return hasOptionValue(options, value) ? value : OTHER_OPTION_VALUE;
-  };
 
   // ---------- Handlers ----------
 
@@ -95,9 +100,7 @@ export default function ServicesPage() {
     setFormProcessingTime("");
     setFormFee("0");
     setFormTemplateFile("");
-    setIsCustomName(false);
-    setIsCustomRequiredDocuments(false);
-    setIsCustomProcessingTime(false);
+    setFormTemplateName("");
     setModalOpen(true);
   };
 
@@ -109,56 +112,64 @@ export default function ServicesPage() {
     setFormProcessingTime(service.processingTime);
     setFormFee(String(service.fee));
     setFormTemplateFile(service.templateFile || "");
-    setIsCustomName(!hasOptionValue(serviceNameOptions, service.name));
-    setIsCustomRequiredDocuments(
-      !hasOptionValue(requiredDocumentOptions, service.requiredDocuments)
-    );
-    setIsCustomProcessingTime(
-      !hasOptionValue(processingTimeOptions, service.processingTime)
-    );
+    setFormTemplateName(getTemplateLabel(service.templateFile || ""));
     setModalOpen(true);
   };
 
-  const handleNameSelect = (value: string) => {
-    if (value === OTHER_OPTION_VALUE) {
-      setIsCustomName(true);
-      if (hasOptionValue(serviceNameOptions, formName)) {
-        setFormName("");
-      }
-      return;
-    }
-
-    setIsCustomName(false);
-    setFormName(value);
+  const fetchServices = async () => {
+    const res = await api.get("/services");
+    const data = Array.isArray(res.data) ? (res.data as ServiceApi[]) : [];
+    const mapped = data.map((service) => ({
+      id: String(service.id ?? service.Id ?? ""),
+      name: service.name ?? service.Name ?? "",
+      description: service.description ?? service.Description ?? "",
+      requiredDocuments:
+        service.requiredDocuments ?? service.RequiredDocuments ?? "",
+      processingTime: service.processingTime ?? service.ProcessingTime ?? "",
+      fee: Number(service.fee ?? service.Fee ?? 0),
+      templateFile: service.templateFile ?? service.TemplateFile ?? undefined,
+      createdAt: new Date().toISOString(),
+    })) as Service[];
+    setServices(mapped);
   };
 
-  const handleRequiredDocumentsSelect = (value: string) => {
-    if (value === OTHER_OPTION_VALUE) {
-      setIsCustomRequiredDocuments(true);
-      if (hasOptionValue(requiredDocumentOptions, formRequiredDocuments)) {
-        setFormRequiredDocuments("");
-      }
-      return;
+  const totalPages = Math.max(1, Math.ceil(services.length / pageSize));
+
+  const pagedServices = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return services.slice(start, start + pageSize);
+  }, [services, page, pageSize]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
     }
+  }, [page, totalPages]);
 
-    setIsCustomRequiredDocuments(false);
-    setFormRequiredDocuments(value);
-  };
+  useEffect(() => {
+    let mounted = true;
 
-  const handleProcessingTimeSelect = (value: string) => {
-    if (value === OTHER_OPTION_VALUE) {
-      setIsCustomProcessingTime(true);
-      if (hasOptionValue(processingTimeOptions, formProcessingTime)) {
-        setFormProcessingTime("");
+    const load = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        await fetchServices();
+      } catch {
+        if (!mounted) return;
+        setErrorMessage("Không thể tải danh sách dịch vụ.");
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
       }
-      return;
-    }
+    };
 
-    setIsCustomProcessingTime(false);
-    setFormProcessingTime(value);
-  };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (
       !formName.trim() ||
       !formDescription.trim() ||
@@ -171,41 +182,31 @@ export default function ServicesPage() {
     const feeValue = Number(formFee);
     if (Number.isNaN(feeValue) || feeValue < 0) return;
 
-    const now = new Date().toISOString();
-
-    if (editingService) {
-      setServices((prev) =>
-        prev.map((s) =>
-          s.id === editingService.id
-            ? {
-                ...s,
-                name: formName.trim(),
-                description: formDescription.trim(),
-                requiredDocuments: formRequiredDocuments.trim(),
-                processingTime: formProcessingTime.trim(),
-                fee: feeValue,
-                templateFile: formTemplateFile.trim() || undefined,
-                updatedAt: now,
-              }
-            : s
-        )
-      );
-    } else {
-      const newService: Service = {
-        id: String(Date.now()),
+    setErrorMessage("");
+    setIsSaving(true);
+    try {
+      const payload = {
         name: formName.trim(),
         description: formDescription.trim(),
         requiredDocuments: formRequiredDocuments.trim(),
         processingTime: formProcessingTime.trim(),
         fee: feeValue,
-        templateFile: formTemplateFile.trim() || undefined,
-        createdAt: now,
-        updatedAt: now,
+        templateFile: formTemplateFile.trim() || null,
       };
-      setServices((prev) => [newService, ...prev]);
-    }
 
-    setModalOpen(false);
+      if (editingService) {
+        await api.put(`/services/${editingService.id}`, payload);
+      } else {
+        await api.post("/services", payload);
+      }
+
+      await fetchServices();
+      setModalOpen(false);
+    } catch {
+      setErrorMessage("Lưu dịch vụ thất bại.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const openDeleteModal = (service: Service) => {
@@ -213,10 +214,50 @@ export default function ServicesPage() {
     setDeleteModalOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleTemplateUpload = async (file: File) => {
+    setErrorMessage("");
+    setIsUploadingTemplate(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api.post("/media/upload", formData);
+      const url = res.data?.url as string | undefined;
+      if (!url) {
+        throw new Error("Upload failed");
+      }
+      setFormTemplateFile(url);
+      setFormTemplateName(file.name);
+    } catch {
+      setErrorMessage("Tải biểu mẫu thất bại.");
+    } finally {
+      setIsUploadingTemplate(false);
+    }
+  };
+
+  const handleTemplateChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    await handleTemplateUpload(files[0]);
+    event.target.value = "";
+  };
+
+  const handleDelete = async () => {
     if (!deletingService) return;
-    setServices((prev) => prev.filter((s) => s.id !== deletingService.id));
-    setDeletingService(null);
+
+    setErrorMessage("");
+    setIsSaving(true);
+    try {
+      await api.delete(`/services/${deletingService.id}`);
+      await fetchServices();
+      setDeletingService(null);
+      setDeleteModalOpen(false);
+    } catch {
+      setErrorMessage("Xóa dịch vụ thất bại.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // ---------- Table columns ----------
@@ -252,13 +293,17 @@ export default function ServicesPage() {
     {
       key: "processingTime",
       label: "Thời gian xử lý",
-      render: (item) => <span className="text-stone-600">{item.processingTime}</span>,
+      render: (item) => (
+        <span className="text-stone-600">{item.processingTime}</span>
+      ),
     },
     {
       key: "fee",
       label: "Lệ phí",
       render: (item) => (
-        <span className="text-stone-700 font-medium">{formatCurrency(item.fee)}</span>
+        <span className="text-stone-700 font-medium">
+          {formatCurrency(item.fee)}
+        </span>
       ),
     },
     {
@@ -271,7 +316,14 @@ export default function ServicesPage() {
             className="gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
           >
             <FileDown className="w-3 h-3" />
-            {item.templateFile}
+            <a
+              href={resolvePublicUrl(item.templateFile)}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline"
+            >
+              {getTemplateLabel(item.templateFile)}
+            </a>
           </Badge>
         ) : (
           <span className="text-stone-400">&mdash;</span>
@@ -284,7 +336,7 @@ export default function ServicesPage() {
         <span className="text-stone-600 text-sm">
           {format(
             new Date(item.createdAt || new Date().toISOString()),
-            "dd/MM/yyyy"
+            "dd/MM/yyyy",
           )}
         </span>
       ),
@@ -302,14 +354,16 @@ export default function ServicesPage() {
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-stone-500 hover:text-red-600 hover:bg-red-50"
-            onClick={() => openDeleteModal(item)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {isEditor ? null : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-stone-500 hover:text-red-600 hover:bg-red-50"
+              onClick={() => openDeleteModal(item)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       ),
     },
@@ -319,14 +373,63 @@ export default function ServicesPage() {
 
   return (
     <div className="space-y-6">
+      {errorMessage ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
       <PageHeader
         icon={Landmark}
         title="Dịch vụ công"
         description="Quản lý thủ tục hành chính"
-        action={{ label: "Thêm dịch vụ", onClick: openCreateModal }}
+        action={
+          isLoading
+            ? undefined
+            : { label: "Thêm dịch vụ", onClick: openCreateModal }
+        }
       />
 
-      <DataTable columns={columns} data={services} emptyMessage="Chưa có dịch vụ nào" />
+      <DataTable
+        columns={columns}
+        data={pagedServices}
+        emptyMessage={isLoading ? "Đang tải dịch vụ..." : "Chưa có dịch vụ nào"}
+      />
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="text-sm text-stone-500">
+          Trang {page} / {totalPages} • {services.length} kết quả
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            className="h-9 rounded-md border border-stone-200 bg-white px-2 text-sm"
+            value={pageSize}
+            onChange={(event) => {
+              setPageSize(Number(event.target.value));
+              setPage(1);
+            }}
+          >
+            {[5, 10, 20, 50].map((size) => (
+              <option key={size} value={size}>
+                {size} / trang
+              </option>
+            ))}
+          </select>
+          <Button
+            variant="outline"
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={page <= 1}
+          >
+            Trước
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={page >= totalPages}
+          >
+            Sau
+          </Button>
+        </div>
+      </div>
 
       {/* Create / Edit Modal */}
       <Modal
@@ -348,47 +451,41 @@ export default function ServicesPage() {
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSave}
               disabled={
+                isSaving ||
                 !formName.trim() ||
                 !formDescription.trim() ||
                 !formRequiredDocuments.trim() ||
                 !formProcessingTime.trim()
               }
             >
-              {editingService ? "Cập nhật" : "Tạo mới"}
+              {isSaving
+                ? "Đang lưu..."
+                : editingService
+                  ? "Cập nhật"
+                  : "Tạo mới"}
             </Button>
           </div>
         }
       >
         <div className="space-y-4 rounded-xl border border-[hsl(120,10%,88%)] bg-[linear-gradient(180deg,hsl(45,30%,99%),hsl(45,24%,97%))] p-4 sm:p-5">
           <div className="pb-1">
-            <p className="text-sm font-semibold text-stone-900">Thông tin dịch vụ</p>
-            <p className="text-xs text-stone-500 mt-0.5">Các trường có dấu * là bắt buộc.</p>
+            <p className="text-sm font-semibold text-stone-900">
+              Thông tin dịch vụ
+            </p>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Các trường có dấu * là bắt buộc.
+            </p>
           </div>
 
           <FormField
-            type="select"
+            type="text"
             label="Tên dịch vụ"
-            name="nameSelect"
+            name="name"
             required
-            value={getSelectValue(serviceNameOptions, formName, isCustomName)}
-            onChange={handleNameSelect}
-            placeholder="Chọn tên dịch vụ"
-            options={[
-              ...serviceNameOptions,
-              { label: "Khác", value: OTHER_OPTION_VALUE },
-            ]}
+            value={formName}
+            onChange={setFormName}
+            placeholder="Nhập tên dịch vụ hành chính"
           />
-          {isCustomName && (
-            <FormField
-              type="text"
-              label="Tên dịch vụ khác"
-              name="name"
-              required
-              value={formName}
-              onChange={setFormName}
-              placeholder="Nhập tên dịch vụ hành chính"
-            />
-          )}
           <FormField
             type="textarea"
             label="Mô tả"
@@ -400,65 +497,25 @@ export default function ServicesPage() {
             rows={4}
           />
           <FormField
-            type="select"
+            type="textarea"
             label="Giấy tờ yêu cầu"
-            name="requiredDocumentsSelect"
+            name="requiredDocuments"
             required
-            value={getSelectValue(
-              requiredDocumentOptions,
-              formRequiredDocuments,
-              isCustomRequiredDocuments
-            )}
-            onChange={handleRequiredDocumentsSelect}
-            placeholder="Chọn loại giấy tờ"
-            options={[
-              ...requiredDocumentOptions,
-              { label: "Khác", value: OTHER_OPTION_VALUE },
-            ]}
+            value={formRequiredDocuments}
+            onChange={setFormRequiredDocuments}
+            placeholder="Liệt kê giấy tờ cần nộp"
+            rows={3}
           />
-          {isCustomRequiredDocuments && (
-            <FormField
-              type="textarea"
-              label="Giấy tờ yêu cầu khác"
-              name="requiredDocuments"
-              required
-              value={formRequiredDocuments}
-              onChange={setFormRequiredDocuments}
-              placeholder="Liệt kê giấy tờ cần nộp"
-              rows={3}
-            />
-          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <FormField
-                type="select"
-                label="Thời gian xử lý"
-                name="processingTimeSelect"
-                required
-                value={getSelectValue(
-                  processingTimeOptions,
-                  formProcessingTime,
-                  isCustomProcessingTime
-                )}
-                onChange={handleProcessingTimeSelect}
-                placeholder="Chọn thời gian xử lý"
-                options={[
-                  ...processingTimeOptions,
-                  { label: "Khác", value: OTHER_OPTION_VALUE },
-                ]}
-              />
-              {isCustomProcessingTime && (
-                <FormField
-                  type="text"
-                  label="Thời gian xử lý khác"
-                  name="processingTime"
-                  required
-                  value={formProcessingTime}
-                  onChange={setFormProcessingTime}
-                  placeholder="VD: 03 ngày làm việc"
-                />
-              )}
-            </div>
+            <FormField
+              type="text"
+              label="Thời gian xử lý"
+              name="processingTime"
+              required
+              value={formProcessingTime}
+              onChange={setFormProcessingTime}
+              placeholder="VD: 03 ngày làm việc"
+            />
             <FormField
               type="number"
               label="Lệ phí (VND)"
@@ -471,12 +528,62 @@ export default function ServicesPage() {
           </div>
           <FormField
             type="text"
-            label="Tên file biểu mẫu"
+            label="Đường dẫn biểu mẫu"
             name="templateFile"
             value={formTemplateFile}
             onChange={setFormTemplateFile}
             placeholder="VD: khai-sinh-form.docx (không bắt buộc)"
           />
+          <div className="space-y-1.5">
+            <label
+              className="text-sm font-medium text-stone-700"
+              htmlFor="templateName"
+            >
+              Tên file biểu mẫu
+            </label>
+            <Input
+              id="templateName"
+              value={formTemplateName}
+              readOnly
+              placeholder="Tự động theo file upload"
+              className="border-stone-200 bg-stone-50 text-stone-600"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-stone-700">
+              Tải biểu mẫu
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                ref={templateInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                onChange={handleTemplateChange}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => templateInputRef.current?.click()}
+                disabled={isUploadingTemplate}
+              >
+                {isUploadingTemplate ? "Đang tải..." : "Chọn file biểu mẫu"}
+              </Button>
+              {formTemplateFile ? (
+                <a
+                  href={resolvePublicUrl(formTemplateFile)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-emerald-700 hover:underline"
+                >
+                  {getTemplateLabel(formTemplateFile)}
+                </a>
+              ) : null}
+            </div>
+            <p className="text-xs text-stone-500">
+              Hỗ trợ PDF, DOC, DOCX (tối đa 5MB).
+            </p>
+          </div>
         </div>
       </Modal>
 

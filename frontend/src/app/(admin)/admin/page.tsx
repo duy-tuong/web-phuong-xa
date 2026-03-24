@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -14,20 +14,7 @@ import {
 import StatCard from "@/components/admin/StatCard";
 import ChartCard from "@/components/admin/ChartCard";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  mockDashboardStats,
-  mockArticles,
-  mockApplications,
-  mockComments,
-  applicationStatusData,
-} from "@/lib/mock-data";
+import api from "@/services/api";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -41,28 +28,36 @@ import {
 import { Bar, Doughnut } from "react-chartjs-2";
 import { format } from "date-fns";
 
-type ArticleRange = "1" | "3" | "6" | "12";
+type DashboardSummary = {
+  totalUsers: number;
+  totalArticles: number;
+  totalServices: number;
+  totalApplications: number;
+  pendingComments: number;
+};
 
-const monthlyArticleSeries: Array<{ label: string; value: number }> = [
-  { label: "T1", value: 8 },
-  { label: "T2", value: 12 },
-  { label: "T3", value: 15 },
-  { label: "T4", value: 10 },
-  { label: "T5", value: 18 },
-  { label: "T6", value: 14 },
-  { label: "T7", value: 20 },
-  { label: "T8", value: 16 },
-  { label: "T9", value: 22 },
-  { label: "T10", value: 19 },
-  { label: "T11", value: 25 },
-  { label: "T12", value: 7 },
-];
+type RecentArticle = {
+  id: string;
+  title: string;
+  status: "published" | "draft";
+  createdAt: string;
+};
 
-const rangeTextMap: Record<ArticleRange, string> = {
-  "1": "1 tháng gần nhất",
-  "3": "3 tháng gần nhất",
-  "6": "6 tháng gần nhất",
-  "12": "12 tháng gần nhất",
+type RecentApplication = {
+  id: string;
+  applicantName: string;
+  serviceName: string;
+  serviceId?: string;
+  status: "pending" | "processing" | "done" | "rejected";
+  createdAt?: string;
+};
+
+type RecentComment = {
+  id: string;
+  userName: string;
+  content: string;
+  status: "pending" | "approved" | "rejected";
+  articleTitle?: string;
 };
 
 const applicationLegendColors = [
@@ -92,7 +87,22 @@ function formatDateSafe(value: unknown, pattern: string) {
 }
 
 export default function DashboardPage() {
-  const stats = mockDashboardStats;
+  const [stats, setStats] = useState<DashboardSummary>({
+    totalUsers: 0,
+    totalArticles: 0,
+    totalServices: 0,
+    totalApplications: 0,
+    pendingComments: 0,
+  });
+  const [recentArticles, setRecentArticles] = useState<RecentArticle[]>([]);
+  const [recentApplications, setRecentApplications] = useState<RecentApplication[]>([]);
+  const [recentComments, setRecentComments] = useState<RecentComment[]>([]);
+  const [applicationStatusData, setApplicationStatusData] = useState({
+    labels: ["Chờ xử lý", "Đang xử lý", "Hoàn thành", "Từ chối"],
+    data: [0, 0, 0, 0],
+  });
+  const [applicationTrend, setApplicationTrend] = useState<Array<{ label: string; value: number }>>([]);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [displayName] = useState(() => {
     if (typeof window === "undefined") {
@@ -106,36 +116,113 @@ export default function DashboardPage() {
 
     return storedName && storedName.trim() ? storedName.trim() : "Người dùng";
   });
-  const [articleRange, setArticleRange] = useState<ArticleRange>("6");
-
   const todayLabel = formatDateSafe(new Date(), "dd/MM/yyyy");
 
-  const visibleArticleSeries = useMemo(() => {
-    return monthlyArticleSeries.slice(-Number(articleRange));
-  }, [articleRange]);
+  useEffect(() => {
+    let mounted = true;
 
-  const barSizing = useMemo(() => {
-    if (articleRange === "1") {
-      return { maxBarThickness: 94, categoryPercentage: 0.72, barPercentage: 0.92 };
-    }
+    const load = async () => {
+      setErrorMessage("");
+      try {
+        const results = await Promise.allSettled([
+          api.get("/dashboard/summary"),
+          api.get("/dashboard/applications/monthly-chart"),
+          api.get("/dashboard/applications/recent"),
+          api.get("/articles/admin"),
+          api.get("/comments"),
+          api.get("/applications", { params: { status: "Pending", page: 1, pageSize: 1 } }),
+          api.get("/applications", { params: { status: "Processing", page: 1, pageSize: 1 } }),
+          api.get("/applications", { params: { status: "Approved", page: 1, pageSize: 1 } }),
+          api.get("/applications", { params: { status: "Rejected", page: 1, pageSize: 1 } }),
+        ]);
 
-    if (articleRange === "3") {
-      return { maxBarThickness: 62, categoryPercentage: 0.82, barPercentage: 0.92 };
-    }
+        if (!mounted) return;
 
-    if (articleRange === "6") {
-      return { maxBarThickness: 46, categoryPercentage: 0.86, barPercentage: 0.9 };
-    }
+        const [summaryRes, chartRes, recentAppsRes, articlesRes, commentsRes, pendingRes, processingRes, approvedRes, rejectedRes] = results.map(
+          (result) => (result.status === "fulfilled" ? result.value : null)
+        );
 
-    return { maxBarThickness: 32, categoryPercentage: 0.9, barPercentage: 0.88 };
-  }, [articleRange]);
+        if (!summaryRes) {
+          setErrorMessage("Không thể tải dữ liệu dashboard.");
+        }
+
+        const summary = summaryRes?.data ?? {};
+        setStats({
+          totalUsers: summary.totalUsers ?? summary.TotalUsers ?? 0,
+          totalArticles: summary.articles?.total ?? summary.Articles?.Total ?? 0,
+          totalServices: summary.totalServices ?? summary.TotalServices ?? 0,
+          totalApplications: summary.applications?.total ?? summary.Applications?.Total ?? 0,
+          pendingComments: summary.pendingComments ?? summary.PendingComments ?? 0,
+        });
+
+        const chartData = Array.isArray(chartRes?.data) ? chartRes?.data : [];
+        setApplicationTrend(
+          chartData.map((item: { Date?: string; date?: string; Count?: number; count?: number }) => ({
+            label: item.Date ?? item.date ?? "",
+            value: Number(item.Count ?? item.count ?? 0),
+          }))
+        );
+
+        const recentAppsData = Array.isArray(recentAppsRes?.data) ? recentAppsRes?.data : [];
+        setRecentApplications(
+          recentAppsData.map((app: { Id?: number | string; id?: number | string; ApplicantName?: string; applicantName?: string; ServiceName?: string; serviceName?: string; Status?: string; status?: string; CreatedAt?: string; createdAt?: string }) => ({
+            id: String(app.Id ?? app.id ?? ""),
+            applicantName: app.ApplicantName ?? app.applicantName ?? "",
+            serviceName: app.ServiceName ?? app.serviceName ?? "",
+            status: (app.Status ?? app.status ?? "Pending").toLowerCase() === "approved" ? "done" : (app.Status ?? app.status ?? "Pending").toLowerCase() === "processing" ? "processing" : (app.Status ?? app.status ?? "Pending").toLowerCase() === "rejected" ? "rejected" : "pending",
+            createdAt: app.CreatedAt ?? app.createdAt ?? "",
+          }))
+        );
+
+        const articlesData = Array.isArray(articlesRes?.data) ? articlesRes?.data : [];
+        setRecentArticles(
+          articlesData.slice(0, 5).map((article: { Id?: number | string; id?: number | string; Title?: string; title?: string; Status?: string; status?: string; CreatedAt?: string; createdAt?: string }) => ({
+            id: String(article.Id ?? article.id ?? ""),
+            title: article.Title ?? article.title ?? "",
+            status: (article.Status ?? article.status ?? "Draft").toLowerCase() === "published" ? "published" : "draft",
+            createdAt: article.CreatedAt ?? article.createdAt ?? new Date().toISOString(),
+          }))
+        );
+
+        const commentsData = Array.isArray(commentsRes?.data) ? commentsRes?.data : [];
+        setRecentComments(
+          commentsData.slice(0, 5).map((comment: { Id?: number | string; id?: number | string; UserName?: string; userName?: string; Content?: string; content?: string; Status?: string; status?: string; ArticleTitle?: string; articleTitle?: string }) => ({
+            id: String(comment.Id ?? comment.id ?? ""),
+            userName: comment.UserName ?? comment.userName ?? "",
+            content: comment.Content ?? comment.content ?? "",
+            status: (comment.Status ?? comment.status ?? "Pending").toLowerCase() === "approved" ? "approved" : (comment.Status ?? comment.status ?? "Pending").toLowerCase() === "rejected" ? "rejected" : "pending",
+            articleTitle: comment.ArticleTitle ?? comment.articleTitle ?? undefined,
+          }))
+        );
+
+        const pendingTotal = pendingRes?.data?.total ?? 0;
+        const processingTotal = processingRes?.data?.total ?? 0;
+        const approvedTotal = approvedRes?.data?.total ?? 0;
+        const rejectedTotal = rejectedRes?.data?.total ?? 0;
+        setApplicationStatusData({
+          labels: ["Chờ xử lý", "Đang xử lý", "Hoàn thành", "Từ chối"],
+          data: [pendingTotal, processingTotal, approvedTotal, rejectedTotal],
+        });
+      } catch {
+        if (!mounted) return;
+        setErrorMessage("Không thể tải dữ liệu dashboard.");
+      } finally {
+        if (!mounted) return;
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const barData = {
-    labels: visibleArticleSeries.map((item) => item.label),
+    labels: applicationTrend.map((item) => item.label),
     datasets: [
       {
-        label: "Bài viết",
-        data: visibleArticleSeries.map((item) => item.value),
+        label: "Hồ sơ",
+        data: applicationTrend.map((item) => item.value),
         backgroundColor: "rgba(79, 122, 104, 0.82)",
         hoverBackgroundColor: "rgba(79, 122, 104, 0.92)",
         borderColor: "rgba(64, 102, 85, 0.95)",
@@ -143,9 +230,9 @@ export default function DashboardPage() {
         borderRadius: 8,
         borderSkipped: false,
         barThickness: "flex" as const,
-        maxBarThickness: barSizing.maxBarThickness,
-        categoryPercentage: barSizing.categoryPercentage,
-        barPercentage: barSizing.barPercentage,
+        maxBarThickness: 46,
+        categoryPercentage: 0.86,
+        barPercentage: 0.9,
       },
     ],
   };
@@ -225,6 +312,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {errorMessage ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
       {/* Greeting */}
       <div className="relative overflow-hidden rounded-xl bg-[linear-gradient(102deg,hsl(158,56%,17%)_0%,hsl(155,46%,23%)_44%,hsl(152,35%,30%)_100%)] px-5 py-5 text-white shadow-[0_14px_30px_-18px_rgba(0,0,0,0.24)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_8%_16%,rgba(0,0,0,0.2),transparent_38%),radial-gradient(circle_at_86%_16%,rgba(255,255,255,0.08),transparent_34%)]" />
@@ -272,24 +364,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
           <ChartCard
-            title="Bài viết theo tháng"
-            description={`Số lượng bài viết được đăng trong ${rangeTextMap[articleRange]}`}
-            action={
-              <Select
-                value={articleRange}
-                onValueChange={(value) => setArticleRange(value as ArticleRange)}
-              >
-                <SelectTrigger className="h-8 w-[126px] border-stone-200 bg-white text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 tháng</SelectItem>
-                  <SelectItem value="3">3 tháng</SelectItem>
-                  <SelectItem value="6">6 tháng</SelectItem>
-                  <SelectItem value="12">12 tháng</SelectItem>
-                </SelectContent>
-              </Select>
-            }
+            title="Hồ sơ 7 ngày gần nhất"
+            description="Số lượng hồ sơ tiếp nhận trong 7 ngày gần nhất"
           >
             <div className="h-[280px]">
               <Bar data={barData} options={barOptions} />
@@ -337,7 +413,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
-            {mockArticles.slice(0, 5).map((article) => (
+            {recentArticles.slice(0, 5).map((article) => (
               <div key={article.id} className="py-2.5 px-1 first:pt-1 last:pb-1 rounded-lg hover:bg-[hsl(45,24%,95%)] transition-colors">
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-[13px] font-semibold text-[hsl(165,16%,12%)] truncate">{article.title}</p>
@@ -369,7 +445,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
-            {mockApplications.slice(0, 5).map((app) => (
+            {recentApplications.slice(0, 5).map((app) => (
               <div key={app.id} className="py-2.5 px-1 first:pt-1 last:pb-1 rounded-lg hover:bg-[hsl(45,24%,95%)] transition-colors">
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-[13px] font-semibold text-[hsl(165,16%,12%)] truncate">{app.applicantName}</p>
@@ -377,7 +453,7 @@ export default function DashboardPage() {
                     {statusLabelMap[app.status]}
                   </Badge>
                 </div>
-                <p className="text-[12px] text-[hsl(150,8%,44%)] truncate">{app.serviceName || app.serviceId}</p>
+                <p className="text-[12px] text-[hsl(150,8%,44%)] truncate">{app.serviceName || "--"}</p>
               </div>
             ))}
           </div>
@@ -398,7 +474,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
-            {mockComments.slice(0, 5).map((comment) => (
+            {recentComments.slice(0, 5).map((comment) => (
               <div key={comment.id} className="py-2.5 px-1 first:pt-1 last:pb-1 rounded-lg hover:bg-[hsl(45,24%,95%)] transition-colors">
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-[13px] font-semibold text-[hsl(165,16%,12%)]">{comment.userName}</span>

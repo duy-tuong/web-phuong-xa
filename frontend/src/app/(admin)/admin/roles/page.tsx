@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Shield, Pencil, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
@@ -8,24 +8,32 @@ import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
-import { mockRoles } from "@/lib/mock-data";
+import api from "@/services/api";
 import { Role } from "@/types";
 
 // ---------- Form state type ----------
 interface RoleFormData {
   name: string;
-  description: string;
 }
 
 const emptyForm: RoleFormData = {
   name: "",
-  description: "",
+};
+
+type RoleApi = {
+  id?: number | string;
+  Id?: number | string;
+  name?: string;
+  Name?: string;
 };
 
 // ---------- Component ----------
 export default function RolesPage() {
   // --- data state ---
-  const [roles, setRoles] = useState<Role[]>(mockRoles);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // --- modal state ---
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,6 +43,41 @@ export default function RolesPage() {
   // --- delete state ---
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingRole, setDeletingRole] = useState<Role | null>(null);
+
+  const fetchRoles = async () => {
+    const res = await api.get("/roles");
+    const data = Array.isArray(res.data) ? (res.data as RoleApi[]) : [];
+    const mapped = data
+      .map((role) => ({
+        id: String(role.id ?? role.Id ?? ""),
+        name: role.name ?? role.Name ?? "",
+      }))
+      .filter((role: Role) => role.id && role.name);
+    setRoles(mapped);
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        await fetchRoles();
+      } catch {
+        if (!mounted) return;
+        setErrorMessage("Không thể tải danh sách vai trò.");
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // ---------- Modal handlers ----------
   const openCreateModal = () => {
@@ -47,7 +90,6 @@ export default function RolesPage() {
     setEditingRole(role);
     setFormData({
       name: role.name,
-      description: role.description ?? "",
     });
     setModalOpen(true);
   };
@@ -58,31 +100,25 @@ export default function RolesPage() {
     setFormData(emptyForm);
   };
 
-  const handleSubmit = () => {
-    if (editingRole) {
-      // Update existing role
-      setRoles((prev) =>
-        prev.map((r) =>
-          r.id === editingRole.id
-            ? {
-                ...r,
-                name: formData.name,
-                description: formData.description || undefined,
-              }
-            : r
-        )
-      );
-    } else {
-      // Create new role
-      const newRole: Role = {
-        id: String(Date.now()),
-        name: formData.name,
-        description: formData.description || undefined,
-      };
-      setRoles((prev) => [...prev, newRole]);
-    }
+  const handleSubmit = async () => {
+    if (!isFormValid) return;
+    setIsSaving(true);
+    setErrorMessage("");
 
-    closeModal();
+    try {
+      if (editingRole) {
+        await api.put(`/roles/${editingRole.id}`, formData.name.trim());
+      } else {
+        await api.post("/roles", formData.name.trim());
+      }
+
+      await fetchRoles();
+      closeModal();
+    } catch {
+      setErrorMessage("Lưu vai trò thất bại.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // ---------- Delete handlers ----------
@@ -91,10 +127,21 @@ export default function RolesPage() {
     setDeleteModalOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deletingRole) return;
-    setRoles((prev) => prev.filter((r) => r.id !== deletingRole.id));
-    setDeletingRole(null);
+
+    setErrorMessage("");
+    setIsSaving(true);
+    try {
+      await api.delete(`/roles/${deletingRole.id}`);
+      await fetchRoles();
+      setDeletingRole(null);
+      setDeleteModalOpen(false);
+    } catch {
+      setErrorMessage("Xóa vai trò thất bại.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // ---------- Form field updater ----------
@@ -109,15 +156,6 @@ export default function RolesPage() {
       label: "Tên vai trò",
       render: (role) => (
         <span className="font-medium text-stone-900">{role.name}</span>
-      ),
-    },
-    {
-      key: "description",
-      label: "Mô tả",
-      render: (role) => (
-        <span className="text-stone-600">
-          {role.description ?? "Không có mô tả"}
-        </span>
       ),
     },
     {
@@ -158,10 +196,14 @@ export default function RolesPage() {
         icon={Shield}
         title="Quản lý vai trò"
         description="Quản lý các vai trò và phân quyền trong hệ thống"
-        action={{
-          label: "Thêm vai trò",
-          onClick: openCreateModal,
-        }}
+        action={
+          isLoading
+            ? undefined
+            : {
+                label: "Thêm vai trò",
+                onClick: openCreateModal,
+              }
+        }
       />
 
       {/* Data Table */}
@@ -189,17 +231,21 @@ export default function RolesPage() {
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSubmit}
-              disabled={!isFormValid}
+              disabled={!isFormValid || isSaving}
             >
-              {editingRole ? "Cập nhật" : "Tạo mới"}
+              {isSaving ? "Đang lưu..." : editingRole ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }
       >
         <div className="space-y-4 rounded-xl border border-[hsl(120,10%,88%)] bg-[linear-gradient(180deg,hsl(45,30%,99%),hsl(45,24%,97%))] p-4 sm:p-5">
           <div className="pb-1">
-            <p className="text-sm font-semibold text-stone-900">Thông tin vai trò</p>
-            <p className="text-xs text-stone-500 mt-0.5">Các trường có dấu * là bắt buộc.</p>
+            <p className="text-sm font-semibold text-stone-900">
+              Thông tin vai trò
+            </p>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Các trường có dấu * là bắt buộc.
+            </p>
           </div>
 
           <FormField
@@ -210,15 +256,6 @@ export default function RolesPage() {
             value={formData.name}
             onChange={updateField("name")}
             placeholder="Nhập tên vai trò"
-          />
-          <FormField
-            type="textarea"
-            label="Mô tả"
-            name="description"
-            value={formData.description}
-            onChange={updateField("description")}
-            placeholder="Nhập mô tả cho vai trò"
-            rows={3}
           />
         </div>
       </Modal>
@@ -233,6 +270,12 @@ export default function RolesPage() {
         onConfirm={handleDelete}
         itemName={deletingRole?.name}
       />
+
+      {errorMessage ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -4,6 +4,8 @@ using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
+using System.Text;
 
 namespace backend.Controllers
 {
@@ -60,7 +62,8 @@ namespace backend.Controllers
             var category = new Category
             {
                 Name = dto.Name,
-                Description = dto.Description
+                Description = dto.Description,
+                Slug = GenerateSlug(dto.Name)
             };
 
             _context.Categories.Add(category);
@@ -89,6 +92,7 @@ namespace backend.Controllers
 
             category.Name = dto.Name;
             category.Description = dto.Description;
+            category.Slug = GenerateSlug(dto.Name);
 
             await _context.SaveChangesAsync();
 
@@ -117,6 +121,33 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Category deleted");
+        }
+
+        private string GenerateSlug(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+
+            var normalizedString = text.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                var unicodeCategory = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != System.Globalization.UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            string result = stringBuilder.ToString().Normalize(NormalizationForm.FormC).ToLower();
+            result = result.Replace("đ", "d");
+            
+            // Xóa tất cả các ký tự không phải chữ cái và số, thay khoảng trắng thành gạch ngang
+            result = Regex.Replace(result, @"[^a-z0-9\s-]", "");
+            result = Regex.Replace(result, @"\s+", "-").Trim('-');
+
+            return result;
         }
 
     }

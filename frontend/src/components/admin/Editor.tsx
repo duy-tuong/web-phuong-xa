@@ -25,7 +25,7 @@ export default function Editor({
         [{ font: [] }, { size: ["small", false, "large", "huge"] }],
         ["bold", "italic", "underline", "strike"],
         [{ color: [] }, { background: [] }],
-        [{ list: "ordered" }, { list: "bullet" }],
+        [{ list: "ordered" }],
         [{ align: [] }, { indent: "-1" }, { indent: "+1" }],
         ["blockquote", "code-block"],
         ["link", "image"],
@@ -47,7 +47,6 @@ export default function Editor({
       "color",
       "background",
       "list",
-      "bullet",
       "indent",
       "align",
       "blockquote",
@@ -58,11 +57,13 @@ export default function Editor({
     []
   );
 
+  const safeValue = value ?? "";
+
   return (
     <div className="admin-rich-editor editor-wrapper rounded-lg border border-[hsl(36,16%,84%)] bg-white/95 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
       <ReactQuill
         theme="snow"
-        value={value}
+        value={safeValue}
         onChange={onChange}
         placeholder={placeholder}
         modules={modules}

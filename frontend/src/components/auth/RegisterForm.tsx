@@ -32,12 +32,16 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     const password = registerForm.password;
 
     if (!fullName || !username || !email || !password) {
-      setErrorMessage("Vui lòng nhập đầy đủ họ tên, tên đăng nhập, email và mật khẩu.");
+      setErrorMessage(
+        "Vui lòng nhập đầy đủ họ tên, tên đăng nhập, email và mật khẩu.",
+      );
       return;
     }
 
     if (registerForm.password !== registerForm.confirmPassword) {
-      setErrorMessage("Mật khẩu xác nhận không khớp. Bạn kiểm tra lại giúp mình nhé.");
+      setErrorMessage(
+        "Mật khẩu xác nhận không khớp. Bạn kiểm tra lại giúp mình nhé.",
+      );
       return;
     }
 
@@ -50,9 +54,12 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       const token: string | undefined = res.data?.token;
       const role: string | undefined = res.data?.role;
       const returnedUsername: string | undefined = res.data?.username;
+      const returnedFullName: string | undefined = res.data?.fullName;
 
       if (!token || !returnedUsername) {
-        setErrorMessage("Đăng ký thành công nhưng đăng nhập thất bại. Vui lòng đăng nhập lại.");
+        setErrorMessage(
+          "Đăng ký thành công nhưng đăng nhập thất bại. Vui lòng đăng nhập lại.",
+        );
         return;
       }
 
@@ -60,17 +67,33 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       localStorage.setItem("user_role", role ?? "");
       localStorage.setItem("user_username", returnedUsername);
 
+      const clearAdminSession = () => {
+        localStorage.removeItem("admin_role");
+        localStorage.removeItem("admin_token");
+        localStorage.removeItem("admin_display_name");
+        document.cookie = "admin_token=; Path=/; Max-Age=0; SameSite=Lax";
+        document.cookie = "admin_role=; Path=/; Max-Age=0; SameSite=Lax";
+      };
+
       if (role === "Admin" || role === "Editor") {
         localStorage.setItem("admin_token", token);
         localStorage.setItem("admin_display_name", returnedUsername);
         localStorage.setItem("admin_role", role);
-        document.cookie = `admin_token=${token}; Path=/; Max-Age=86400; SameSite=Lax`;
+        document.cookie = `admin_token=${encodeURIComponent(token)}; Path=/; Max-Age=86400; SameSite=Lax`;
+        document.cookie = `admin_role=${encodeURIComponent(role)}; Path=/; Max-Age=86400; SameSite=Lax`;
+      } else {
+        clearAdminSession();
       }
 
-      onSuccess({ fullName, identifier: returnedUsername });
+      onSuccess({
+        fullName: returnedFullName ?? fullName ?? returnedUsername,
+        identifier: returnedUsername,
+      });
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setErrorMessage("Đăng ký thất bại. Tên đăng nhập hoặc email có thể đã tồn tại.");
+        setErrorMessage(
+          "Đăng ký thất bại. Tên đăng nhập hoặc email có thể đã tồn tại.",
+        );
       } else {
         setErrorMessage("Đăng ký thất bại. Vui lòng thử lại.");
       }

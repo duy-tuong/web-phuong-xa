@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,11 +11,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { mockUsers } from "@/lib/mock-data";
+import api from "@/services/api";
 import {
   Camera,
   Mail,
@@ -27,15 +26,14 @@ import {
   EyeOff,
 } from "lucide-react";
 
-const currentUser = mockUsers[0];
-
 interface ProfileForm {
   fullName: string;
   username: string;
   email: string;
   phone: string;
-  bio: string;
+  avatarUrl: string;
   role: string;
+  roleId: number | null;
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
@@ -43,26 +41,83 @@ interface ProfileForm {
 
 export default function ProfilePage() {
   const [form, setForm] = useState<ProfileForm>({
-    fullName: currentUser.fullName || "Admin",
-    username: currentUser.username,
-    email: currentUser.email,
-    phone: "0900 000 000",
-    bio: "Quản trị viên hệ thống phường Cao Lãnh.",
-    role: currentUser.role?.name || "Quản trị viên",
+    fullName: "",
+    username: "",
+    email: "",
+    phone: "",
+    avatarUrl: "",
+    role: "",
+    roleId: null,
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
-  const [avatarSrc, setAvatarSrc] = useState(
-    () => (typeof window !== "undefined" ? localStorage.getItem("admin_avatar") || "" : "")
-  );
+  const [userId, setUserId] = useState<number | null>(null);
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [avatarSrc, setAvatarSrc] = useState("");
   const [avatarError, setAvatarError] = useState("");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
     currentPassword: false,
     newPassword: false,
     confirmPassword: false,
   });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      try {
+        const res = await api.get("/auth/me");
+        const data = res.data ?? {};
+
+        if (!isMounted) return;
+
+        setUserId(typeof data.id === "number" ? data.id : null);
+        setCreatedAt(data.createdAt ?? null);
+        setForm((prev) => ({
+          ...prev,
+          fullName: data.fullName ?? "",
+          username: data.username ?? "",
+          email: data.email ?? "",
+          phone: data.phone ?? "",
+          avatarUrl: data.avatarUrl ?? "",
+          role: data.role ?? "",
+          roleId: typeof data.roleId === "number" ? data.roleId : null,
+        }));
+
+        const nextAvatar = resolvePublicUrl(data.avatarUrl ?? "");
+        setAvatarSrc(nextAvatar);
+        if (typeof window !== "undefined") {
+          if (nextAvatar) {
+            localStorage.setItem("admin_avatar", nextAvatar);
+          } else {
+            if (typeof window !== "undefined") {
+      localStorage.removeItem("admin_avatar");
+    }
+          }
+          window.dispatchEvent(new Event("admin-avatar-updated"));
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        setErrorMessage("Không thể tải thông tin hồ sơ.");
+      } finally {
+        if (!isMounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const initials = useMemo(() => {
     if (form.fullName) {
@@ -77,12 +132,26 @@ export default function ProfilePage() {
   }, [form.fullName]);
 
   const joinedDate = useMemo(() => {
+    if (!createdAt) {
+      return "--";
+    }
+
     return new Intl.DateTimeFormat("vi-VN", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }).format(new Date(currentUser.createdAt));
-  }, []);
+    }).format(new Date(createdAt));
+  }, [createdAt]);
+
+  const resolvePublicUrl = (value: string) => {
+    if (!value) return "";
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+      return value;
+    }
+    const base = api.defaults.baseURL ?? "";
+    const origin = base.replace(/\/api\/?$/, "");
+    return origin ? `${origin}${value}` : value;
+  };
 
   const handleChange = <K extends keyof ProfileForm>(field: K) =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -95,47 +164,120 @@ export default function ProfilePage() {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  const handleAvatarSelect = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setAvatarError("");
+    setSuccessMessage("");
 
     if (!file.type.startsWith("image/")) {
       setAvatarError("Vui lòng chọn tệp ảnh hợp lệ (JPG, PNG, WEBP)");
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setAvatarError("Ảnh đại diện phải nhỏ hơn 2MB");
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("Ảnh đại diện phải nhỏ hơn 5MB");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const nextSrc = typeof reader.result === "string" ? reader.result : "";
-      if (!nextSrc) return;
+    setIsUploadingAvatar(true);
 
-      localStorage.setItem("admin_avatar", nextSrc);
-      window.dispatchEvent(new Event("admin-avatar-updated"));
-      setAvatarSrc(nextSrc);
-      setAvatarError("");
-    };
-    reader.readAsDataURL(file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await api.post("/media/upload", formData);
+      const relativeUrl: string | undefined = res.data?.url;
+      if (!relativeUrl) {
+        throw new Error("Upload failed");
+      }
+
+      const publicUrl = resolvePublicUrl(relativeUrl);
+      setAvatarSrc(publicUrl);
+      setForm((prev) => ({ ...prev, avatarUrl: relativeUrl }));
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("admin_avatar", publicUrl);
+        window.dispatchEvent(new Event("admin-avatar-updated"));
+      }
+    } catch (err) {
+      setAvatarError("Tải ảnh thất bại. Vui lòng thử lại.");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const handleRemoveAvatar = () => {
-    localStorage.removeItem("admin_avatar");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("admin_avatar");
+    }
     window.dispatchEvent(new Event("admin-avatar-updated"));
     setAvatarSrc("");
+    setForm((prev) => ({ ...prev, avatarUrl: "" }));
     setAvatarError("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Placeholder submit handler for UI-only mock
-    console.log("Profile saved", form);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (!userId || !form.roleId) {
+      setErrorMessage("Không thể xác định tài khoản hiện tại.");
+      return;
+    }
+
+    if (form.newPassword || form.confirmPassword || form.currentPassword) {
+      if (!form.currentPassword) {
+        setErrorMessage("Vui lòng nhập mật khẩu hiện tại.");
+        return;
+      }
+
+      if (form.newPassword.length < 6) {
+        setErrorMessage("Mật khẩu mới phải có ít nhất 6 ký tự.");
+        return;
+      }
+
+      if (form.newPassword !== form.confirmPassword) {
+        setErrorMessage("Mật khẩu xác nhận không khớp.");
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    try {
+      await api.put(`/users/${userId}`, {
+        email: form.email.trim(),
+        fullName: form.fullName.trim(),
+        phone: form.phone.trim(),
+        avatarUrl: form.avatarUrl.trim(),
+        roleId: form.roleId,
+      });
+
+      if (form.newPassword) {
+        await api.post("/auth/change-password", {
+          currentPassword: form.currentPassword,
+          newPassword: form.newPassword,
+        });
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      }));
+
+      setSuccessMessage("Cập nhật hồ sơ thành công.");
+    } catch (err) {
+      setErrorMessage("Cập nhật hồ sơ thất bại. Vui lòng thử lại.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -189,11 +331,12 @@ export default function ProfilePage() {
                 <Button
                   type="button"
                   size="sm"
+                  disabled={isUploadingAvatar}
                   className="bg-emerald-600 hover:bg-emerald-700"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Camera className="w-4 h-4 mr-1.5" />
-                  Đổi ảnh đại diện
+                  {isUploadingAvatar ? "Đang tải..." : "Đổi ảnh đại diện"}
                 </Button>
                 <Button
                   type="button"
@@ -227,7 +370,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2 text-stone-600">
                 <Phone className="w-4 h-4 text-emerald-600" />
-                <span>Di động: {form.phone}</span>
+                <span>Di động: {form.phone || "--"}</span>
               </div>
             </div>
 
@@ -255,6 +398,17 @@ export default function ProfilePage() {
                 Cập nhật tên hiển thị, liên hệ và phần mô tả cá nhân.
               </CardDescription>
             </CardHeader>
+
+            {errorMessage ? (
+              <div className="mx-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            ) : null}
+            {successMessage ? (
+              <div className="mx-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {successMessage}
+              </div>
+            ) : null}
 
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
@@ -298,17 +452,6 @@ export default function ProfilePage() {
                   onChange={handleChange("phone")}
                   placeholder="0900 000 000"
                   className="h-11 border-stone-300 focus-visible:ring-emerald-600"
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="bio" className="text-stone-700">Giới thiệu</Label>
-                <Textarea
-                  id="bio"
-                  value={form.bio}
-                  onChange={handleChange("bio")}
-                  placeholder="Mô tả ngắn về vai trò và trách nhiệm của bạn"
-                  className="min-h-[110px] border-stone-300 focus-visible:ring-emerald-600"
                 />
               </div>
             </CardContent>
@@ -415,9 +558,10 @@ export default function ProfilePage() {
                 </Button>
                 <Button
                   type="submit"
+                  disabled={isSaving || isLoading}
                   className="bg-emerald-600 hover:bg-emerald-700 w-1/2 sm:w-auto"
                 >
-                  Lưu thay đổi
+                  {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
                 </Button>
               </div>
             </CardFooter>

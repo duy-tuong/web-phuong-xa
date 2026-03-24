@@ -143,3 +143,4 @@ D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\backend.pdb
 D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\backend.genruntimeconfig.cache
 D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\ref\backend.dll
 D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\backend.staticwebassets.runtime.json

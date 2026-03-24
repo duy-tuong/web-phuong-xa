@@ -3,7 +3,7 @@
 import Link from "next/link";
 import NextImage from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Landmark, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { adminNavItems } from "@/components/admin/nav-items";
@@ -20,7 +20,20 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const [logoUnavailable, setLogoUnavailable] = useState(false);
+  const [adminRole, setAdminRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const role =
+      window.localStorage.getItem("admin_role") ||
+      window.localStorage.getItem("user_role");
+    setAdminRole(role);
+  }, []);
   const logoPath = "/logo-admin.png";
+  const hiddenForEditor = new Set(["/admin/users", "/admin/roles", "/admin/logs"]);
+  const filteredNavItems =
+    adminRole === "Editor"
+      ? adminNavItems.filter((item) => !hiddenForEditor.has(item.href))
+      : adminNavItems;
 
   return (
     <aside
@@ -85,7 +98,7 @@ export default function AdminSidebar({
 
       {/* Navigation */}
       <nav className={cn("flex-1 py-4 space-y-1 overflow-y-auto", isCollapsed ? "px-2" : "px-3")}>
-        {adminNavItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive =
             pathname === item.href ||
             (item.href !== "/admin" && pathname.startsWith(item.href));

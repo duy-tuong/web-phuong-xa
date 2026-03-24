@@ -79,6 +79,7 @@ namespace backend.Controllers
                 .Select(c => new
                 {
                     c.Id,
+                    c.ArticleId,
                     c.UserName,
                     c.Content,
                     c.Status,

@@ -9,7 +9,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")] // Toàn b? Controller ch? Admin m?i ???c truy c?p
+    [Authorize(Roles = "Admin")] // Ton b? Controller ch? Admin m?i ???c truy c?p
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -19,7 +19,7 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // ?? GET ALL USERS (CÓ TÌM KI?M VÀ PHÂN TRANG)
+        // ?? GET ALL USERS (C TM KI?M V PHN TRANG)
         [HttpGet]
         public async Task<IActionResult> GetUsers(string? keyword, int page = 1, int pageSize = 10)
         {
@@ -47,6 +47,8 @@ namespace backend.Controllers
                     u.Username,
                     u.Email,
                     u.FullName,
+                    u.Phone,
+                    u.AvatarUrl,
                     Role = u.Role.Name,
                     u.CreatedAt
                 })
@@ -68,6 +70,8 @@ namespace backend.Controllers
                     u.Username,
                     u.Email,
                     u.FullName,
+                    u.Phone,
+                    u.AvatarUrl,
                     u.RoleId,
                     Role = u.Role.Name,
                     u.CreatedAt
@@ -82,7 +86,7 @@ namespace backend.Controllers
             return Ok(user);
         }
 
-        // ?? CREATE USER (Admin t?o tài kho?n cho cán b?)
+        // ?? CREATE USER (Admin t?o ti kho?n cho cn b?)
         [HttpPost]
         public async Task<IActionResult> CreateUser(CreateUserDTO dto)
         {
@@ -133,9 +137,20 @@ namespace backend.Controllers
 
             user.Email = dto.Email;
             user.FullName = dto.FullName;
+
+            if (dto.Phone != null)
+            {
+                user.Phone = dto.Phone.Trim();
+            }
+
+            if (dto.AvatarUrl != null)
+            {
+                user.AvatarUrl = dto.AvatarUrl.Trim();
+            }
+
             user.RoleId = dto.RoleId;
 
-            // N?u admin có truy?n lên Password m?i thì m?i update pass
+            // N?u admin c truy?n ln Password m?i th m?i update pass
             if (!string.IsNullOrEmpty(dto.Password))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
@@ -153,14 +168,14 @@ namespace backend.Controllers
             var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound("User not found.");
 
-            // Tránh Admin t? xóa chính mình n?u l? tay
+            // Trnh Admin t? xa chnh mnh n?u l? tay
             var currentUserUsername = User.Identity?.Name;
             if (user.Username == currentUserUsername)
             {
                 return BadRequest("You cannot delete your own account.");
             }
 
-            // Ki?m tra xem User này có ?ang s? h?u Bài vi?t nào không (ràng bu?c khóa ngo?i)
+            // Ki?m tra xem User ny c ?ang s? h?u Bi vi?t no khng (rng bu?c kha ngo?i)
             var hasArticles = await _context.Articles.AnyAsync(a => a.AuthorId == id);
             if (hasArticles)
             {

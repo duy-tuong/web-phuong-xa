@@ -12,6 +12,10 @@ namespace backend.DTOs
         [MaxLength(100)]
         public string FullName { get; set; }
 
+        public string? Phone { get; set; }
+
+        public string? AvatarUrl { get; set; }
+
         public string? Password { get; set; } // Optional: only update if provided
 
         [Required]

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FolderTree, Pencil, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
@@ -8,7 +8,7 @@ import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
-import { mockCategories } from "@/lib/mock-data";
+import api from "@/services/api";
 import { Category } from "@/types";
 
 // ---------------------------------------------------------------------------
@@ -26,12 +26,36 @@ const emptyForm: CategoryFormData = {
   description: "",
 };
 
+type CategoryApi = {
+  id?: number | string;
+  Id?: number | string;
+  name?: string;
+  Name?: string;
+  description?: string;
+  Description?: string;
+  slug?: string;
+  Slug?: string;
+};
+
 // ---------------------------------------------------------------------------
 // Page component
 // ---------------------------------------------------------------------------
 export default function CategoriesPage() {
+  const [adminRole, setAdminRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAdminRole(localStorage.getItem("admin_role"));
+  }, []);
+
+  const isEditor = adminRole === "Editor";
+
   // ----- data state -----
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // ----- modal state -----
   const [modalOpen, setModalOpen] = useState(false);
@@ -40,6 +64,43 @@ export default function CategoriesPage() {
 
   // ----- delete state -----
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+
+  const fetchCategories = async () => {
+    const res = await api.get("/categories");
+    const data = Array.isArray(res.data) ? (res.data as CategoryApi[]) : [];
+    const mapped = data
+      .map((category) => ({
+        id: String(category.id ?? category.Id ?? ""),
+        name: category.name ?? category.Name ?? "",
+        description: category.description ?? category.Description ?? undefined,
+        slug: category.slug ?? category.Slug ?? "",
+      }))
+      .filter((category) => category.id && category.name);
+    setCategories(mapped);
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        await fetchCategories();
+      } catch {
+        if (!mounted) return;
+        setErrorMessage("Không thể tải danh mục.");
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // -----------------------------------------------------------------------
   // Modal helpers
@@ -69,42 +130,63 @@ export default function CategoriesPage() {
   // -----------------------------------------------------------------------
   // CRUD handlers
   // -----------------------------------------------------------------------
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim() || !formData.slug.trim()) return;
 
-    if (editingCategory) {
-      // Update existing
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === editingCategory.id
-            ? {
-                ...c,
-                name: formData.name,
-                slug: formData.slug,
-                description: formData.description || undefined,
-              }
-            : c
-        )
-      );
-    } else {
-      // Create new
-      const newCategory: Category = {
-        id: crypto.randomUUID(),
-        name: formData.name,
-        slug: formData.slug,
-        description: formData.description || undefined,
-      };
-      setCategories((prev) => [newCategory, ...prev]);
+    setErrorMessage("");
+    setIsSaving(true);
+    try {
+      if (editingCategory) {
+        await api.put(`/categories/${editingCategory.id}`, {
+          name: formData.name.trim(),
+          slug: formData.slug.trim(),
+          description: formData.description.trim() || null,
+        });
+      } else {
+        await api.post("/categories", {
+          name: formData.name.trim(),
+          slug: formData.slug.trim(),
+          description: formData.description.trim() || null,
+        });
+      }
+
+      await fetchCategories();
+      closeModal();
+    } catch {
+      setErrorMessage("Lưu danh mục thất bại.");
+    } finally {
+      setIsSaving(false);
     }
-
-    closeModal();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    setCategories((prev) => prev.filter((c) => c.id !== deleteTarget.id));
-    setDeleteTarget(null);
+
+    setErrorMessage("");
+    setIsSaving(true);
+    try {
+      await api.delete(`/categories/${deleteTarget.id}`);
+      await fetchCategories();
+      setDeleteTarget(null);
+    } catch {
+      setErrorMessage("Xóa danh mục thất bại.");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const totalPages = Math.max(1, Math.ceil(categories.length / pageSize));
+
+  const pagedCategories = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return categories.slice(start, start + pageSize);
+  }, [categories, page, pageSize]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   // -----------------------------------------------------------------------
   // Table columns
@@ -149,14 +231,16 @@ export default function CategoriesPage() {
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-stone-500 hover:text-red-600"
-            onClick={() => setDeleteTarget(category)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {!isEditor ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-stone-500 hover:text-red-600"
+              onClick={() => setDeleteTarget(category)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          ) : null}
         </div>
       ),
     },
@@ -168,19 +252,65 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      {errorMessage ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
+
       <PageHeader
         icon={FolderTree}
         title="Danh mục"
         description="Quản lý danh mục bài viết và nội dung"
-        action={{ label: "Thêm danh mục", onClick: openCreateModal }}
+        action={
+          isLoading
+            ? undefined
+            : { label: "Thêm danh mục", onClick: openCreateModal }
+        }
       />
 
       {/* Data table */}
       <DataTable
         columns={columns}
-        data={categories}
+        data={pagedCategories}
         emptyMessage="Chưa có danh mục nào"
       />
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="text-sm text-stone-500">
+          Trang {page} / {totalPages} • {categories.length} kết quả
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            className="h-9 rounded-md border border-stone-200 bg-white px-2 text-sm"
+            value={pageSize}
+            onChange={(event) => {
+              setPageSize(Number(event.target.value));
+              setPage(1);
+            }}
+          >
+            {[5, 10, 20, 50].map((size) => (
+              <option key={size} value={size}>
+                {size} / trang
+              </option>
+            ))}
+          </select>
+          <Button
+            variant="outline"
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={page <= 1}
+          >
+            Trước
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={page >= totalPages}
+          >
+            Sau
+          </Button>
+        </div>
+      </div>
 
       {/* Create / Edit modal */}
       <Modal
@@ -200,8 +330,9 @@ export default function CategoriesPage() {
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSave}
+              disabled={isSaving}
             >
-              {editingCategory ? "Cập nhật" : "Tạo mới"}
+              {isSaving ? "Đang lưu..." : editingCategory ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }

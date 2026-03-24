@@ -102,9 +102,16 @@ namespace backend.Controllers
                 {
                     a.Id,
                     a.Title,
+                    a.Slug,
+                    a.Excerpt,
+                    a.FeaturedImage,
+                    a.Content,
                     a.Status,
                     a.CreatedAt,
+                    a.PublishedAt,
+                    a.CategoryId,
                     Category = a.Category.Name,
+                    a.AuthorId,
                     Author = a.Author.Username
                 })
                 .ToListAsync();
@@ -133,6 +140,7 @@ namespace backend.Controllers
             var article = new Article
             {
                 Title = dto.Title,
+                Slug = string.IsNullOrWhiteSpace(dto.Slug) ? GenerateSlug(dto.Title) : dto.Slug,
                 Excerpt = dto.Excerpt,
                 FeaturedImage = dto.FeaturedImage,
                 Content = dto.Content,
@@ -140,7 +148,6 @@ namespace backend.Controllers
                 AuthorId = currentUserId,
                 CreatedAt = DateTime.Now,
                 Status = "Draft", //  mặc định draft
-                Slug = GenerateSlug(dto.Title)
             };
 
             _context.Articles.Add(article);
@@ -173,7 +180,9 @@ namespace backend.Controllers
             article.Excerpt = dto.Excerpt;
             article.FeaturedImage = dto.FeaturedImage;
             article.Content = dto.Content;
-            article.Slug = GenerateSlug(dto.Title);
+            article.Slug = string.IsNullOrWhiteSpace(dto.Slug)
+                ? GenerateSlug(dto.Title)
+                : dto.Slug;
 
             await _context.SaveChangesAsync();
 

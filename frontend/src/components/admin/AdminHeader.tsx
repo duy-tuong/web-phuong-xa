@@ -72,9 +72,11 @@ export default function AdminHeader() {
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_role");
     localStorage.removeItem("admin_display_name");
     localStorage.removeItem("admin_avatar");
     document.cookie = "admin_token=; Path=/; Max-Age=0; SameSite=Lax";
+    document.cookie = "admin_role=; Path=/; Max-Age=0; SameSite=Lax";
     router.replace("/login");
   };
 
