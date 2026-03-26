@@ -1,4 +1,5 @@
 export interface ProcedureDetail {
+  id?: number;
   slug: string;
   title: string;
   requiredDocuments: string[];

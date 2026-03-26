@@ -10,3 +10,5 @@ export default function ContactHero() {
     </section>
   );
 }
+//Phần đầu trang liên hệ, thường là banner, tiêu đề lớn, 
+// mô tả ngắn gọn về mục đích của trang liên hệ.

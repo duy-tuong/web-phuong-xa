@@ -17,3 +17,5 @@
     </main>
   );
 }
+// Công dụng: Hiển thị giao diện loading khi trang tin tức đang tải dữ liệu, 
+// giúp người dùng có trải nghiệm mượt mà hơn.

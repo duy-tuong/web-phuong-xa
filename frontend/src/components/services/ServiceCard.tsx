@@ -1,3 +1,4 @@
+//Hiển thị thông tin tóm tắt của một dịch vụ (tên, mô tả ngắn, icon...), dùng trong danh sách dịch vụ.
 import Link from "next/link";
 
 export type ServiceCardData = {

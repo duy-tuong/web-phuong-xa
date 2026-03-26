@@ -1,0 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace backend.DTOs
+{
+    public class UpdateApplicationStatusDTO
+    {
+        [Required]
+        public string Status { get; set; } // "Pending", "Processing", "Approved", "Rejected"
+    }
+}

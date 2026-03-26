@@ -1,28 +1,115 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+
+import { createPublicApplication } from "@/services/applicationService";
+import { readUserSession } from "@/lib/user-session";
+import type { ProcedureDetail } from "@/types/service";
 
 type ServiceDetailFormSectionProps = {
   id: string;
+  procedure?: ProcedureDetail;
 };
 
-export default function ServiceDetailFormSection({ id }: ServiceDetailFormSectionProps) {
+type FormState = {
+  applicantName: string;
+  phone: string;
+  email: string;
+};
+
+const INITIAL_FORM: FormState = {
+  applicantName: "",
+  phone: "",
+  email: "",
+};
+
+export default function ServiceDetailFormSection({ id, procedure }: ServiceDetailFormSectionProps) {
+  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [accepted, setAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [applicationId, setApplicationId] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = () => {
-    if (isSubmitting) {
+  useEffect(() => {
+    const session = readUserSession();
+    if (!session) {
+      return;
+    }
+
+    setForm((current) => ({
+      applicantName: current.applicantName || session.fullName || session.username || "",
+      phone: current.phone || session.phone || "",
+      email: current.email || session.email || "",
+    }));
+  }, []);
+
+  const handleChange = (field: keyof FormState, value: string) => {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const handleReset = () => {
+    setForm(INITIAL_FORM);
+    setAccepted(false);
+    setErrorMessage("");
+  };
+
+  const handleSubmit = async () => {
+    if (isSubmitting || !procedure?.id) {
+      return;
+    }
+
+    const payload = {
+      serviceId: procedure.id,
+      applicantName: form.applicantName.trim(),
+      phone: form.phone.trim(),
+      email: form.email.trim(),
+    };
+
+    if (!payload.applicantName || !payload.phone || !payload.email) {
+      setErrorMessage("Vui long nhap day du ho ten, so dien thoai va email.");
+      return;
+    }
+
+    if (!accepted) {
+      setErrorMessage("Ban can xac nhan thong tin truoc khi gui ho so.");
       return;
     }
 
     setIsSubmitting(true);
+    setErrorMessage("");
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const response = await createPublicApplication(payload);
+      setApplicationId(String(response.applicationId));
       setIsSuccess(true);
-    }, 2000);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Khong the gui ho so luc nay.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!procedure) {
+    return (
+      <div className="w-full rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm lg:w-2/3">
+        <h3 className="text-xl font-bold text-slate-900">Khong tim thay thu tuc</h3>
+        <p className="mt-3 text-sm text-slate-600">
+          Thu tuc ban chon hien khong ton tai hoac chua duoc dong bo tu backend.
+        </p>
+        <Link
+          href="/dich-vu/nop-ho-so"
+          className="mt-5 inline-flex rounded-xl bg-[#1f7a5a] px-5 py-2.5 font-semibold text-white hover:bg-[#155a42]"
+        >
+          Quay ve danh sach thu tuc
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full space-y-8 lg:w-2/3">
@@ -32,37 +119,49 @@ export default function ServiceDetailFormSection({ id }: ServiceDetailFormSectio
             <span className="material-symbols-outlined">description</span>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Chọn Loại Thủ Tục</h3>
-            <p className="mt-1 text-sm text-slate-600">Vui lòng chọn lĩnh vực và loại dịch vụ bạn muốn thực hiện.</p>
+            <h3 className="text-xl font-bold text-slate-900">Thong tin thu tuc</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Ban dang nop ho so cho thu tuc {procedure.title.toLowerCase()}.
+            </p>
           </div>
         </div>
 
-        <div className="space-y-5">
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-900">
-              Lĩnh vực hành chính <span className="text-[#db2777]">*</span>
-            </label>
-            <select className="h-14 w-full rounded-xl border-slate-300 bg-slate-50 px-4 text-slate-900 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]">
-              <option value="">-- Chọn lĩnh vực --</option>
-              <option value="ho-tich">Hộ tịch (Khai sinh, Khai tử, Kết hôn...)</option>
-              <option value="dat-dai">Đất đai, Nhà ở</option>
-              <option value="kinh-doanh">Đăng ký kinh doanh</option>
-              <option value="xay-dung">Cấp phép xây dựng</option>
-              <option value="khac">Khác</option>
-            </select>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Thoi gian xu ly</p>
+            <p className="mt-2 font-bold text-slate-900">{procedure.processingTime}</p>
           </div>
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Le phi</p>
+            <p className="mt-2 font-bold text-slate-900">{procedure.fee}</p>
+          </div>
+        </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-900">
-              Thủ tục cụ thể <span className="text-[#db2777]">*</span>
-            </label>
-            <select
-              disabled
-              className="h-14 w-full cursor-not-allowed rounded-xl border-slate-300 bg-slate-100 px-4 text-slate-500 opacity-70"
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-sm font-bold text-slate-900">Thanh phan ho so</p>
+          <ul className="mt-3 space-y-2 text-sm text-slate-600">
+            {procedure.requirements.length > 0 ? (
+              procedure.requirements.map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span className="mt-1 h-2 w-2 rounded-full bg-emerald-600" />
+                  <span>{item}</span>
+                </li>
+              ))
+            ) : (
+              <li>Thong tin thanh phan ho so dang duoc cap nhat.</li>
+            )}
+          </ul>
+
+          {procedure.wordTemplateHref && procedure.wordTemplateHref !== "#" ? (
+            <a
+              href={procedure.wordTemplateHref}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
             >
-              <option value="">-- Vui lòng chọn lĩnh vực trước --</option>
-            </select>
-          </div>
+              Tai bieu mau dinh kem
+            </a>
+          ) : null}
         </div>
       </section>
 
@@ -72,117 +171,81 @@ export default function ServiceDetailFormSection({ id }: ServiceDetailFormSectio
             <span className="material-symbols-outlined">person</span>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Thông Tin Người Nộp</h3>
-            <p className="mt-1 text-sm text-slate-600">Điền đầy đủ và chính xác thông tin để chúng tôi có thể liên hệ.</p>
+            <h3 className="text-xl font-bold text-slate-900">Thong tin nguoi nop</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Hien backend moi luu thong tin lien he co ban, nen minh uu tien ket noi dung phan nay de ban nop ho so that.
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <div className="md:col-span-2">
             <label className="mb-2 block text-sm font-semibold text-slate-900">
-              Họ và tên <span className="text-[#db2777]">*</span>
+              Ho va ten <span className="text-[#db2777]">*</span>
             </label>
             <input
               type="text"
-              placeholder="Vd: Nguyễn Văn A"
+              value={form.applicantName}
+              onChange={(event) => handleChange("applicantName", event.target.value)}
+              placeholder="Vi du: Nguyen Van A"
               className="h-12 w-full rounded-xl border-slate-300 bg-slate-50 px-4 text-slate-900 placeholder:text-slate-500 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]"
             />
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-900">
-              Số CCCD/ID <span className="text-[#db2777]">*</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Nhập 12 số CCCD"
-              className="h-12 w-full rounded-xl border-slate-300 bg-slate-50 px-4 text-slate-900 placeholder:text-slate-500 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-900">
-              Số điện thoại <span className="text-[#db2777]">*</span>
+              So dien thoai <span className="text-[#db2777]">*</span>
             </label>
             <input
               type="tel"
-              placeholder="Nhập số điện thoại liên hệ"
+              value={form.phone}
+              onChange={(event) => handleChange("phone", event.target.value)}
+              placeholder="Nhap so dien thoai lien he"
               className="h-12 w-full rounded-xl border-slate-300 bg-slate-50 px-4 text-slate-900 placeholder:text-slate-500 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]"
             />
           </div>
 
-          <div className="md:col-span-2">
-            <label className="mb-2 block text-sm font-semibold text-slate-900">Email</label>
-            <input
-              type="email"
-              placeholder="example@email.com (Nhận thông báo tiến độ)"
-              className="h-12 w-full rounded-xl border-slate-300 bg-slate-50 px-4 text-slate-900 placeholder:text-slate-500 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]"
-            />
-          </div>
-
-          <div className="md:col-span-2">
+          <div>
             <label className="mb-2 block text-sm font-semibold text-slate-900">
-              Địa chỉ hiện tại <span className="text-[#db2777]">*</span>
+              Email <span className="text-[#db2777]">*</span>
             </label>
             <input
-              type="text"
-              placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/TP"
+              type="email"
+              value={form.email}
+              onChange={(event) => handleChange("email", event.target.value)}
+              placeholder="example@email.com"
               className="h-12 w-full rounded-xl border-slate-300 bg-slate-50 px-4 text-slate-900 placeholder:text-slate-500 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]"
             />
           </div>
-
-          <div className="md:col-span-2">
-            <label className="mb-2 block text-sm font-semibold text-slate-900">Mô tả nội dung hồ sơ</label>
-            <textarea
-              rows={4}
-              placeholder="Ghi chú thêm về hồ sơ của bạn (nếu có)..."
-              className="w-full resize-y rounded-xl border-slate-300 bg-slate-50 p-4 text-slate-900 placeholder:text-slate-500 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]"
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-        <div className="mb-6 flex items-start gap-4">
-          <div className="rounded-lg bg-[#1f7a5a]/10 p-3 text-[#1f7a5a]">
-            <span className="material-symbols-outlined">upload_file</span>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-slate-900">Thành Phần Hồ Sơ</h3>
-            <p className="mt-1 text-sm text-slate-600">Đính kèm các giấy tờ bắt buộc theo yêu cầu thủ tục.</p>
-          </div>
         </div>
 
-        <div className="group cursor-pointer rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/80 p-8 text-center transition-all hover:border-[#1f7a5a]/50 hover:bg-slate-50">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-[#1f7a5a]/10 text-[#1f7a5a] transition-transform group-hover:scale-110">
-            <span className="material-symbols-outlined text-3xl">cloud_upload</span>
+        {errorMessage ? (
+          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
           </div>
-          <h4 className="mb-2 text-base font-semibold text-slate-900">
-            Kéo thả tệp vào đây hoặc <span className="text-[#1f7a5a] hover:underline">Chọn tệp</span>
-          </h4>
-          <p className="mx-auto mb-4 max-w-sm text-sm text-slate-600">Hỗ trợ định dạng: PDF, JPG, PNG. Dung lượng tối đa: 10MB/tệp.</p>
-          <input type="file" accept=".pdf,.jpg,.jpeg,.png" multiple className="hidden" />
-        </div>
-
-        <div className="mt-6">
-          <h5 className="mb-3 text-sm font-semibold text-slate-900">Tệp đã tải lên (0)</h5>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 py-4 text-center text-sm italic text-slate-500">
-            Chưa có tệp nào được đính kèm.
-          </div>
-        </div>
+        ) : null}
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
         <label className="mb-8 flex cursor-pointer items-start gap-3">
-          <input type="checkbox" className="mt-0.5 size-5 rounded border-slate-300 text-[#1f7a5a] focus:ring-[#1f7a5a]" />
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(event) => setAccepted(event.target.checked)}
+            className="mt-0.5 size-5 rounded border-slate-300 text-[#1f7a5a] focus:ring-[#1f7a5a]"
+          />
           <span className="text-sm leading-relaxed text-slate-900">
-            Tôi cam đoan những thông tin khai báo trên là hoàn toàn chính xác và chịu trách nhiệm trước pháp luật về những thông tin này.
+            Toi xac nhan thong tin lien he tren la chinh xac de he thong tiep nhan ho so va gui ket qua tra cuu.
           </span>
         </label>
 
         <div className="flex flex-col items-center justify-end gap-4 sm:flex-row">
-          <button className="w-full rounded-xl border border-slate-300 bg-slate-50 px-6 py-3 font-semibold text-slate-900 transition-colors hover:bg-slate-100 sm:w-auto">
-            Nhập lại
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-6 py-3 font-semibold text-slate-900 transition-colors hover:bg-slate-100 sm:w-auto"
+          >
+            Nhap lai
           </button>
           <button
             type="button"
@@ -193,12 +256,12 @@ export default function ServiceDetailFormSection({ id }: ServiceDetailFormSectio
             {isSubmitting ? (
               <>
                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Đang xử lý...
+                Dang gui...
               </>
             ) : (
               <>
                 <span className="material-symbols-outlined text-sm">send</span>
-                Gửi Hồ Sơ
+                Gui ho so
               </>
             )}
           </button>
@@ -208,61 +271,39 @@ export default function ServiceDetailFormSection({ id }: ServiceDetailFormSectio
       <section className="rounded-r-xl border-l-4 border-[#1f7a5a] bg-gradient-to-r from-[#1f7a5a]/5 to-transparent p-6">
         <h3 className="mb-2 flex items-center gap-2 text-lg font-bold text-slate-900">
           <span className="material-symbols-outlined text-[#1f7a5a]">analytics</span>
-          Theo Dõi Trạng Thái
+          Theo doi trang thai
         </h3>
         <p className="mb-4 text-sm text-slate-600">
-          Sau khi nộp, bạn có thể theo dõi tiến trình xử lý hồ sơ thông qua Mã hồ sơ được cấp.
+          Sau khi nop, ban co the tra cuu ho so theo so dien thoai va email. Ma thu tuc hien tai: {id}.
         </p>
-
-        <div className="mb-6 flex max-w-md items-center gap-2">
-          <input
-            type="text"
-            placeholder="Nhập mã hồ sơ..."
-            className="h-10 flex-1 rounded-lg border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-[#1f7a5a] focus:ring-[#1f7a5a]"
-          />
-          <button className="h-10 rounded-lg bg-slate-200 px-4 text-sm font-medium text-slate-900 transition-colors hover:bg-[#1f7a5a] hover:text-white">
-            Tra cứu
-          </button>
-        </div>
-
-        <div className="relative flex w-full max-w-lg items-center justify-between before:absolute before:top-1/2 before:h-1 before:w-full before:-translate-y-1/2 before:bg-slate-200 before:content-['']">
-          <div className="z-10 flex flex-col items-center gap-2 bg-[#f8fafc] px-2">
-            <div className="flex size-6 items-center justify-center rounded-full border-4 border-[#f8fafc] bg-[#1f7a5a] text-white">
-              <span className="material-symbols-outlined text-[12px]">check</span>
-            </div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#1f7a5a]">Tiếp nhận</span>
-          </div>
-          <div className="z-10 flex flex-col items-center gap-2 bg-[#f8fafc] px-2">
-            <div className="size-6 rounded-full border-4 border-[#f8fafc] bg-slate-300" />
-            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">Đang xử lý</span>
-          </div>
-          <div className="z-10 flex flex-col items-center gap-2 bg-[#f8fafc] px-2">
-            <div className="size-6 rounded-full border-4 border-[#f8fafc] bg-slate-300" />
-            <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">Hoàn tất</span>
-          </div>
-        </div>
-
-        <p className="mt-6 text-xs text-slate-500">Mã tham chiếu dịch vụ: {id}</p>
+        <Link
+          href={`/dich-vu/tra-cuu?phone=${encodeURIComponent(form.phone)}&email=${encodeURIComponent(form.email)}`}
+          className="inline-flex rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1f7a5a]"
+        >
+          Den trang tra cuu
+        </Link>
       </section>
 
       {isSuccess ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-2xl bg-white p-6 text-center shadow-2xl">
             <span className="material-symbols-outlined mb-3 text-6xl text-emerald-600">check_circle</span>
-            <h3 className="mb-2 text-2xl font-bold text-slate-900">Nộp hồ sơ thành công!</h3>
+            <h3 className="mb-2 text-2xl font-bold text-slate-900">Nop ho so thanh cong</h3>
             <p className="mb-6 text-slate-600">
-              Cảm ơn bạn. Hồ sơ của bạn đã được tiếp nhận. Mã hồ sơ của bạn là: <strong>HS-12345</strong> (Hãy lưu lại mã
-              này để tra cứu).
+              He thong da tiep nhan ho so cua ban. Ma ho so vua tao la <strong>HS-{applicationId.padStart(6, "0")}</strong>.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link href="/" className="rounded-lg bg-[#1f7a5a] px-5 py-2.5 font-semibold text-white hover:bg-[#155a42]">
-                Quay về trang chủ
+              <Link
+                href={`/dich-vu/tra-cuu?phone=${encodeURIComponent(form.phone)}&email=${encodeURIComponent(form.email)}`}
+                className="rounded-lg bg-[#1f7a5a] px-5 py-2.5 font-semibold text-white hover:bg-[#155a42]"
+              >
+                Tra cuu ho so
               </Link>
               <Link
-                href="/dich-vu"
+                href="/trang-ca-nhan"
                 className="rounded-lg border border-slate-300 px-5 py-2.5 font-semibold text-slate-700 hover:bg-slate-50"
               >
-                Tra cứu hồ sơ
+                Den trang ca nhan
               </Link>
             </div>
           </div>

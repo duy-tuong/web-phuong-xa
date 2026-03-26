@@ -1,3 +1,5 @@
+//Sidebar bên cạnh trang chi tiết dịch vụ, có thể chứa hướng dẫn, 
+// tài liệu, trạng thái xử lý, hoặc các dịch vụ liên quan.
 import Link from "next/link";
 
 const faqs = [

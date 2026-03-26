@@ -1,3 +1,5 @@
+// Hiển thị nội dung chi tiết của một bài viết/tin tức (tiêu đề, nội dung, hình ảnh, tác giả, ngày đăng...).
+//Ý nghĩa: Giúp người dùng đọc đầy đủ thông tin của một tin tức khi click vào xem chi tiết.
 import Image from "next/image";
 import Link from "next/link";
 

@@ -1,3 +1,4 @@
+// Hiển thị sidebar bên phải của trang chi tiết bài viết/tin tức, bao gồm các chuyên mục liên quan, tin mới nhất, và banner quảng cáo.
 import Image from "next/image";
 import Link from "next/link";
 

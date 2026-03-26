@@ -1,3 +1,5 @@
+// văn hóa và du lịch
+//Hiển thị thông tin về văn hóa, lễ hội, điểm du lịch nổi bật của địa phương.
 import Link from "next/link";
 import Image from "next/image";
 

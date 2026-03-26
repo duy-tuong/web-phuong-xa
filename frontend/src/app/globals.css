@@ -1,9 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-
+/* Đây là file CSS toàn cục cho toàn bộ frontend của dự án Next.js. */
+/* Import 2 bộ icon font từ Google Fonts: */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+/* Kích hoạt các layer của Tailwind CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Định nghĩa class cho icon */
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined", "Material Icons", sans-serif;
   font-style: normal;
@@ -25,24 +28,58 @@
     "GRAD" 0,
     "opsz" 24;
 }
-
+/* Biến màu toàn cục */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f6f1;
+  --foreground: #1f2521;
+  --card: 0 0% 100%;
+  --card-foreground: 160 24% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 160 24% 12%;
+  --primary: 156 38% 28%;
+  --primary-foreground: 48 33% 97%;
+  --secondary: 40 50% 90%;
+  --secondary-foreground: 160 24% 12%;
+  --muted: 40 18% 93%;
+  --muted-foreground: 30 8% 45%;
+  --accent: 34 72% 50%;
+  --accent-foreground: 0 0% 100%;
+  --border: 36 16% 84%;
+  --input: 36 16% 84%;
+  --ring: 156 38% 28%;
+  --radius: 0.75rem;
 }
-
+/* Định nghĩa biến theme cho Tailwind hoặc các component custom.*/
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-public-sans);
+  --font-sans: var(--font-plus-jakarta);
 }
-
+/* Đặt màu nền, màu chữ, font mặc định cho toàn bộ trang. */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-public-sans), "Public Sans", Arial, Helvetica, sans-serif;
+  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
+  letter-spacing: 0.01em;
+}
+/*Tối ưu trải nghiệm cuộn trang khi dùng thư viện Lenis (cuộn mượt). */
+html.lenis,
+html.lenis body {
+  height: auto;
 }
 
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+/* Thêm class tiện ích: ẩn thanh cuộn, hiệu ứng chạy chữ . */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -59,7 +96,7 @@ body {
     animation: marquee 20s linear infinite;
   }
 }
-
+/* Tạo hiệu ứng chữ chạy ngang liên tục. */
 @keyframes marquee {
   0% {
     transform: translateX(0%);
@@ -69,12 +106,58 @@ body {
     transform: translateX(-100%);
   }
 }
+/* Định nghĩa style cho rich text editor trong trang admin. */
+.admin-rich-editor .ql-container {
+  font-size: 15px !important;
+  font-family: inherit !important;
+  min-height: 280px;
+}
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
+.admin-rich-editor .ql-editor {
+  min-height: 280px;
+  line-height: 1.72;
+}
+
+.admin-rich-editor .ql-toolbar.ql-snow {
+  border-color: hsl(36, 16%, 84%) !important;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: linear-gradient(180deg, hsl(45, 30%, 99%), hsl(45, 24%, 97%));
+}
+
+.admin-rich-editor .ql-container.ql-snow {
+  border-color: hsl(36, 16%, 84%) !important;
+  border-radius: 0 0 0.5rem 0.5rem;
+  background: #fff;
+}
+
+.admin-rich-editor .ql-editor p {
+  margin-bottom: 0.7rem;
+}
+
+.page-transition-enter {
+  animation: page-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top center;
+  will-change: opacity, transform, filter;
+}
+
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.995);
+    filter: blur(6px);
   }
-  50% {
-    transform: translateY(-15px);
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-enter {
+    animation: none;
+    filter: none;
+    transform: none;
   }
 }

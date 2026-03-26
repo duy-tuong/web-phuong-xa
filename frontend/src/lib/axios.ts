@@ -1,7 +1,9 @@
 import axios from "axios";
 
+import { API_BASE_URL } from "@/lib/api-base-url";
+
 const axiosInstance = axios.create({
-  baseURL: "", // dán URL backend vào đây, ví dụ: "http://localhost:8080/api"
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },

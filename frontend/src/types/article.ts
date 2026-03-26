@@ -4,6 +4,7 @@ export interface ArticleSectionBullet {
 }
 
 export interface Article {
+  id?: number;
   slug: string;
   title: string;
   category: string;

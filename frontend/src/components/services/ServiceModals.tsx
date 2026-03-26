@@ -1,3 +1,4 @@
+//  xác nhận gửi hồ sơ, thông báo thành công/thất bại.
 type ServiceModalsProps = {
   showTracking: boolean;
   showForms: boolean;

@@ -1,3 +1,4 @@
+//Trình bày vị trí địa lý, ranh giới, diện tích, đặc điểm tự nhiên của phường/xã.
 "use client";
 
 import { useState } from "react";
@@ -32,6 +33,7 @@ export default function GeographySection() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
           {/* Cột Map - giống trang Liên Hệ */}
           <div className="order-2 lg:order-1 relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-emerald-900/5">
+           {/* thẻ <iframe> Bản đồ Google Maps link nhúng */}
             <iframe
               title="Bản đồ UBND Phường Cao Lãnh"
               src="https://www.google.com/maps?q=03+%C4%91%C6%B0%E1%BB%9Dng+30%2F4%2C+Ph%C6%B0%E1%BB%9Dng+Cao+L%C3%A3nh%2C+Th%C3%A0nh+ph%E1%BB%91+Cao+L%C3%A3nh%2C+%C4%90%E1%BB%93ng+Th%C3%A1p&output=embed"

@@ -1,3 +1,5 @@
+//Component phần đầu trang (hero section), thường hiển thị tiêu đề lớn, 
+// hình ảnh hoặc slogan nổi bật về phường/xã.
 "use client";
 
 import { useState, useEffect } from "react";

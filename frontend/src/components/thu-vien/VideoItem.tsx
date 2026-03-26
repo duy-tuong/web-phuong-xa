@@ -1,3 +1,4 @@
+//  Đại diện cho một video nhỏ trong danh sách video.
 import Image from "next/image";
 
 export type VideoItemData = {

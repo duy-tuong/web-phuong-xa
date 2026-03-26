@@ -1,3 +1,4 @@
+// Đại diện cho một ảnh hoặc album nhỏ trong thư viện ảnh
 import Image from "next/image";
 
 export type GalleryItemData = {

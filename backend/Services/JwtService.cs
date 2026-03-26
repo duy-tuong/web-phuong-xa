@@ -1,0 +1,46 @@
+﻿using backend.Models;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+namespace backend.Services
+{
+    public class JwtService
+    {
+        private readonly IConfiguration _config;
+
+        public JwtService(IConfiguration config)
+        {
+            _config = config;
+        }
+
+        public string GenerateToken(User user)
+        {
+            var claims = new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Role, user.Role.Name)
+    };
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("THIS_IS_SUPER_SECRET_KEY_FOR_WARD_PROMOTION_PROJECT_2026"));  // giữ hardcode tạm
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var now = DateTime.UtcNow;  // ← dùng UTC để tránh lệch múi giờ
+
+            var token = new JwtSecurityToken(
+                issuer: null,           // nếu không dùng issuer thì null hoặc bỏ
+                audience: null,         // tương tự
+                claims: claims,
+                //notBefore: now,                  // ← thêm cái này (bắt buộc cho lifetime)
+                expires: now.AddDays(1),         // ← dùng now + offset
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+    }
+}

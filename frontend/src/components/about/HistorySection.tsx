@@ -1,3 +1,4 @@
+// Tóm tắt lịch sử hình thành, các mốc phát triển quan trọng của địa phương.
 "use client";
 
 import { useEffect, useRef, useState } from "react";

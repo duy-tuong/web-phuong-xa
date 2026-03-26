@@ -1,3 +1,5 @@
+// Hiển thị thông tin về dân số, cơ cấu dân cư, các số liệu thống 
+// kê liên quan đến con người.
 "use client";
 
 import Image from "next/image";

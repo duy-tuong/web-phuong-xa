@@ -1,10 +1,31 @@
+/*Form đăng ký tài khoản mới, thu thập thông tin người dùng, 
+ * gửi lên backend để tạo tài khoản. Xử lý kiểm tra hợp lệ, 
+ * báo lỗi, chuyển hướng sau khi đăng ký thành công. */
 "use client";
 
-import { useState, FormEvent } from "react";
+import { FormEvent, useState } from "react";
+import axios from "axios";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
+import api from "@/services/api";
+
+type LoginSuccessPayload = {
+  token: string;
+  username: string;
+  role?: string;
+};
+
+type BackendErrorPayload =
+  | string
+  | {
+      message?: string;
+      error?: string;
+      title?: string;
+      detail?: string;
+    };
+
 type RegisterFormProps = {
-  onSuccess: (session: { fullName: string; identifier: string }) => void;
+  onSuccess: (payload: LoginSuccessPayload) => void;
 };
 
 export default function RegisterForm({ onSuccess }: RegisterFormProps) {
@@ -20,24 +41,58 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage("");
+
+    if (registerForm.password !== registerForm.confirmPassword) {
+      setErrorMessage("Mật khẩu xác nhận không khớp. Bạn kiểm tra lại giúp mình nhé.");
+      return;
+    }
+
     setIsLoading(true);
 
-    window.setTimeout(() => {
-      if (registerForm.password !== registerForm.confirmPassword) {
-        setErrorMessage("Mật khẩu xác nhận không khớp. Bạn kiểm tra lại giúp mình nhé.");
-        setIsLoading(false);
+    try {
+      await api.post("/auth/register", {
+        fullName: registerForm.fullName.trim(),
+        username: registerForm.username.trim(),
+        email: registerForm.email.trim(),
+        password: registerForm.password,
+      });
+
+      const loginResponse = await api.post("/auth/login", {
+        username: registerForm.username.trim(),
+        password: registerForm.password,
+      });
+
+      const token: string | undefined = loginResponse.data?.token;
+      const username: string | undefined = loginResponse.data?.username;
+      const role: string | undefined = loginResponse.data?.role;
+
+      if (!token || !username) {
+        setErrorMessage("Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng thử đăng nhập lại.");
         return;
       }
 
       onSuccess({
-        fullName: registerForm.fullName || "Nguyễn Văn A",
-        identifier: registerForm.email || registerForm.username,
+        token,
+        username,
+        role,
       });
+    } catch (error: unknown) {
+      if (axios.isAxiosError<BackendErrorPayload>(error)) {
+        const data = error.response?.data;
+        const serverMessage =
+          typeof data === "string"
+            ? data
+            : data?.message || data?.error || data?.title || data?.detail;
+        setErrorMessage(serverMessage || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.");
+      } else {
+        setErrorMessage("Đăng ký thất bại. Vui lòng thử lại.");
+      }
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const submitButtonClassName = isLoading
@@ -157,7 +212,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           <a href="#" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
             Điều khoản dịch vụ
           </a>
-          &{" "}
+          {" "}và{" "}
           <a href="#" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
             Chính sách bảo mật
           </a>

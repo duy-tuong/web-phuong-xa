@@ -1,3 +1,5 @@
+//Phần giới thiệu chung về phường/xã, có thể gồm lịch sử hình thành, 
+// sứ mệnh, tầm nhìn, giá trị cốt lõi.
 "use client";
 
 import { useState, useEffect } from "react";

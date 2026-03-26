@@ -1,113 +1,129 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type ServiceSidebarProps = {
-  onOpenTracking: () => void;
-  onOpenForms: () => void;
-};
+import { getProcedures } from "@/services/serviceService";
+import type { ProcedureDetail } from "@/types/service";
 
-export default function ServiceSidebar({ onOpenTracking, onOpenForms }: ServiceSidebarProps) {
+export default function ServiceSidebar() {
+  const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProcedures = async () => {
+      const data = await getProcedures();
+      if (isMounted) {
+        setProcedures(data.slice(0, 3));
+      }
+    };
+
+    void loadProcedures();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <aside className="space-y-6 lg:sticky lg:top-24">
-      
-      {/* Khối Tra cứu trạng thái hồ sơ */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
         <div className="flex items-center gap-2 border-b border-emerald-700/10 bg-emerald-50/50 px-5 py-3.5">
           <span className="material-symbols-outlined text-emerald-700">search</span>
-          <h3 className="font-bold tracking-tight text-slate-900">Tra cứu hồ sơ</h3>
+          <h3 className="font-bold tracking-tight text-slate-900">Tra cuu ho so</h3>
         </div>
         <div className="space-y-4 p-5">
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold text-slate-700" htmlFor="ma-ho-so-sidebar">
-              Mã hồ sơ <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="ma-ho-so-sidebar"
-              type="text"
-              placeholder="VD: H01.23.456"
-              className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium outline-none transition-all placeholder:text-slate-400 focus:border-[#1f7a5a] focus:ring-4 focus:ring-[#1f7a5a]/20"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={onOpenTracking}
+          <p className="text-sm leading-relaxed text-slate-600">
+            Kiem tra tinh trang xu ly ho so bang so dien thoai va email da dung khi nop.
+          </p>
+          <Link
+            href="/dich-vu/tra-cuu"
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-slate-900"
           >
             <span className="material-symbols-outlined text-[18px]">travel_explore</span>
-            Kiểm tra
-          </button>
-          
-          <div className="mt-4 rounded-xl border border-yellow-200 bg-yellow-50/80 p-3.5 shadow-sm">
-            <div className="mb-2 flex items-start justify-between">
-              <div className="text-xs font-black tracking-wider text-slate-900">H01.23.456</div>
-              <div className="text-[11px] font-bold text-slate-500">23/10/2026</div>
-            </div>
-            <div className="mb-2.5 line-clamp-1 text-sm font-bold text-slate-800">Đăng ký kết hôn</div>
-            <div className="flex w-fit items-center gap-2 rounded-lg bg-yellow-100/80 px-2 py-1">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-yellow-500" />
-              <span className="text-xs font-extrabold uppercase tracking-wide text-yellow-700">Đang xử lý</span>
-            </div>
-          </div>
+            Den trang tra cuu
+          </Link>
+          <Link
+            href="/dich-vu/nop-ho-so"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-700 transition-all hover:bg-emerald-100"
+          >
+            <span className="material-symbols-outlined text-[18px]">upload_file</span>
+            Nop ho so moi
+          </Link>
         </div>
       </div>
 
-      {/* Khối Tải biểu mẫu */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
         <div className="flex items-center gap-2 border-b border-blue-700/10 bg-blue-50/50 px-5 py-3.5">
-          <span className="material-symbols-outlined text-blue-700">file_download</span>
-          <h3 className="font-bold tracking-tight text-slate-900">Biểu mẫu tải nhiều</h3>
+          <span className="material-symbols-outlined text-blue-700">description</span>
+          <h3 className="font-bold tracking-tight text-slate-900">Thu tuc duoc quan tam</h3>
         </div>
         <div className="space-y-1 p-3">
-          {[
-            { tag: 'pdf', title: 'Đơn đăng ký khai sinh', color: 'red' },
-            { tag: 'doc', title: 'Đơn xác nhận cư trú', color: 'blue' },
-            { tag: 'pdf', title: 'Khởi kiện hành chính', color: 'red' },
-          ].map((item, idx) => (
-            <button key={idx} type="button" onClick={onOpenForms} className="group flex w-full items-start gap-3 rounded-xl p-2.5 text-left transition-colors hover:bg-slate-50">
-               <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-${item.color}-50 text-${item.color}-600 transition-colors group-hover:bg-${item.color}-100`}>
-                 <span className="material-symbols-outlined text-[20px]">{item.tag === 'pdf' ? 'picture_as_pdf' : 'description'}</span>
-               </div>
-               <div className="flex-1">
-                 <div className="text-sm font-bold text-slate-800 transition-colors group-hover:text-[#1f7a5a]">
-                   {item.title}
-                 </div>
-               </div>
-            </button>
-          ))}
+          {procedures.length === 0 ? (
+            <div className="rounded-xl bg-slate-50 px-4 py-5 text-sm text-slate-500">
+              Dang tai danh sach thu tuc...
+            </div>
+          ) : (
+            procedures.map((procedure) => (
+              <Link
+                key={procedure.slug}
+                href={`/dich-vu/chi-tiet-ho-so/${procedure.slug}`}
+                className="group flex items-start gap-3 rounded-xl p-2.5 text-left transition-colors hover:bg-slate-50"
+              >
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-100">
+                  <span className="material-symbols-outlined text-[20px]">article</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-slate-800 transition-colors group-hover:text-[#1f7a5a]">
+                    {procedure.title}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500">{procedure.processingTime}</div>
+                </div>
+              </Link>
+            ))
+          )}
 
-          <button
-            type="button"
-            onClick={onOpenForms}
+          <Link
+            href="/dich-vu/nop-ho-so"
             className="mt-2 block w-full rounded-xl bg-slate-50 py-2.5 text-center text-xs font-black uppercase tracking-wider text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#1f7a5a]"
           >
-            Xem tất cả
-          </button>
+            Xem tat ca thu tuc
+          </Link>
         </div>
       </div>
 
-      {/* Khối Hỗ trợ trực tuyến */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1f7a5a] to-[#14523b] p-6 text-white shadow-md">
         <div className="absolute -right-6 -top-6 text-white/10">
-           <span className="material-symbols-outlined select-none text-9xl">support_agent</span>
+          <span className="material-symbols-outlined select-none text-9xl">support_agent</span>
         </div>
         <div className="relative z-10">
-          <h3 className="mb-2 text-lg font-bold tracking-wide">Cần hỗ trợ?</h3>
+          <h3 className="mb-2 text-lg font-bold tracking-wide">Can ho tro?</h3>
           <p className="mb-5 text-sm leading-relaxed text-emerald-50/90">
-            Liên hệ tổng đài trực tuyến nếu bạn gặp khó khăn khi làm thủ tục.
+            Lien he tong dai hoac quay ve muc dich vu de chon dung thu tuc truoc khi nop ho so.
           </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur-sm">
+          <div className="space-y-3">
+            <a
+              href="tel:19001234"
+              className="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur-sm transition hover:bg-white/15"
+            >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 text-white">
                 <span className="material-symbols-outlined text-[20px]">call</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Hotline 24/7</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Hotline</span>
                 <span className="text-xl font-black tracking-wide text-white">1900 1234</span>
               </div>
-            </div>
+            </a>
+            <Link
+              href="/lien-he"
+              className="flex items-center justify-center rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10"
+            >
+              Xem thong tin lien he
+            </Link>
           </div>
         </div>
       </div>
-      
     </aside>
   );
 }

@@ -23,23 +23,22 @@ const initialFormData: FormData = {
 export default function ContactForm() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = "Vui lòng nhập họ và tên.";
+      newErrors.fullName = "Vui long nhap ho va ten.";
     }
     if (!formData.phone.trim()) {
-      newErrors.phone = "Vui lòng nhập số điện thoại.";
+      newErrors.phone = "Vui long nhap so dien thoai.";
     }
     if (!formData.category.trim()) {
-      newErrors.category = "Vui lòng chọn chuyên mục.";
+      newErrors.category = "Vui long chon chuyen muc.";
     }
     if (!formData.message.trim()) {
-      newErrors.message = "Vui lòng nhập nội dung phản hồi.";
+      newErrors.message = "Vui long nhap noi dung phan hoi.";
     }
 
     setErrors(newErrors);
@@ -50,18 +49,24 @@ export default function ContactForm() {
     event.preventDefault();
     setSubmitSuccess(false);
 
-    if (!validateForm() || isSubmitting) {
+    if (!validateForm()) {
       return;
     }
 
-    setIsSubmitting(true);
+    const subject = `[${formData.category}] Phan anh tu ${formData.fullName.trim()}`;
+    const body = [
+      `Ho va ten: ${formData.fullName.trim()}`,
+      `So dien thoai: ${formData.phone.trim()}`,
+      `Email: ${formData.email.trim() || "Khong cung cap"}`,
+      "",
+      "Noi dung:",
+      formData.message.trim(),
+    ].join("\n");
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitSuccess(true);
-      setFormData(initialFormData);
-      setErrors({});
-    }, 1500);
+    window.location.href = `mailto:contact@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setSubmitSuccess(true);
+    setFormData(initialFormData);
+    setErrors({});
   };
 
   const inputClass = (field: keyof FormData) =>
@@ -71,30 +76,30 @@ export default function ContactForm() {
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-      <h2 className="mb-2 text-2xl font-bold text-slate-900">Góp ý &amp; Liên hệ</h2>
-      <p className="mb-6 text-sm text-slate-600">Vui lòng điền thông tin để gửi phản ánh, kiến nghị hoặc góp ý.</p>
+      <h2 className="mb-2 text-2xl font-bold text-slate-900">Gop y &amp; Lien he</h2>
+      <p className="mb-6 text-sm text-slate-600">Vui long dien thong tin de gui phan anh, kien nghi hoac gop y.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Họ và tên <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Ho va ten <span className="text-red-500">*</span></label>
           <input
             type="text"
             value={formData.fullName}
             onChange={(e) => setFormData((prev) => ({ ...prev, fullName: e.target.value }))}
             className={inputClass("fullName")}
-            placeholder="Nhập họ và tên"
+            placeholder="Nhap ho va ten"
           />
           {errors.fullName ? <p className="mt-1 text-xs text-red-500">{errors.fullName}</p> : null}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Số điện thoại <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">So dien thoai <span className="text-red-500">*</span></label>
           <input
             type="tel"
             value={formData.phone}
             onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
             className={inputClass("phone")}
-            placeholder="Nhập số điện thoại"
+            placeholder="Nhap so dien thoai"
           />
           {errors.phone ? <p className="mt-1 text-xs text-red-500">{errors.phone}</p> : null}
         </div>
@@ -111,51 +116,43 @@ export default function ContactForm() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Chuyên mục <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Chuyen muc <span className="text-red-500">*</span></label>
           <select
             value={formData.category}
             onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
             className={inputClass("category")}
           >
-            <option value="">Chọn chuyên mục</option>
-            <option value="hanh-chinh">Thủ tục hành chính</option>
-            <option value="ha-tang">Hạ tầng - đô thị</option>
-            <option value="an-sinh">An sinh xã hội</option>
-            <option value="khac">Khác</option>
+            <option value="">Chon chuyen muc</option>
+            <option value="hanh-chinh">Thu tuc hanh chinh</option>
+            <option value="ha-tang">Ha tang - do thi</option>
+            <option value="an-sinh">An sinh xa hoi</option>
+            <option value="khac">Khac</option>
           </select>
           {errors.category ? <p className="mt-1 text-xs text-red-500">{errors.category}</p> : null}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Nội dung <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Noi dung <span className="text-red-500">*</span></label>
           <textarea
             rows={5}
             value={formData.message}
             onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
             className={inputClass("message")}
-            placeholder="Nhập nội dung phản hồi"
+            placeholder="Nhap noi dung phan hoi"
           />
           {errors.message ? <p className="mt-1 text-xs text-red-500">{errors.message}</p> : null}
         </div>
 
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1f7a5a] px-5 py-3 font-bold text-white transition-colors hover:bg-[#155a42] disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1f7a5a] px-5 py-3 font-bold text-white transition-colors hover:bg-[#155a42]"
         >
-          {isSubmitting ? (
-            <>
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Đang gửi...
-            </>
-          ) : (
-            "Gửi phản hồi"
-          )}
+          Gui phan hoi
         </button>
 
         {submitSuccess ? (
           <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-            Gửi phản hồi thành công. Cảm ơn bạn đã đóng góp ý kiến.
+            Da mo ung dung email de gui phan hoi. Neu may khong co ung dung mail, ban co the lien he truc tiep qua thong tin tren trang lien he.
           </p>
         ) : null}
       </form>

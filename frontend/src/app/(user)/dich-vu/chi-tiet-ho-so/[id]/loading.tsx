@@ -1,3 +1,4 @@
+// Công dụng: Hiển thị hiệu ứng chờ trong lúc lấy dữ liệu hồ sơ từ server.
 export default function DichVuLoading() {
   return (
     <main className="flex-1">

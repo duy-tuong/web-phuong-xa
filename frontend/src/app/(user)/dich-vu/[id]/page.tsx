@@ -1,15 +1,59 @@
+// trang  chi tiết 1 dịch vụ công cụ thể
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+
 import { getProcedures } from "@/services/serviceService";
+import type { ProcedureDetail } from "@/types/service";
 
-type DichVuCongDetailPageProps = {
-  params: Promise<{ id: string }>;
-};
+export default function DichVuCongDetailPage() {
+  const params = useParams<{ id: string }>();
+  const routeId = typeof params?.id === "string" ? decodeURIComponent(params.id) : "";
+  const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-export default async function DichVuCongDetailPage({ params }: DichVuCongDetailPageProps) {
-  const { id } = await params;
-  const normalizedId = decodeURIComponent(id);
-  const procedures = await getProcedures();
-  const detail = procedures.find((item) => item.slug === normalizedId);
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProcedures = async () => {
+      try {
+        const nextProcedures = await getProcedures();
+        if (!isMounted) {
+          return;
+        }
+
+        setProcedures(nextProcedures);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadProcedures();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const detail = useMemo(
+    () => procedures.find((item) => item.slug === routeId),
+    [procedures, routeId],
+  );
+
+  if (isLoading) {
+    return (
+      <main className="mx-auto w-full max-w-[1000px] px-4 py-10 sm:px-6 lg:px-8">
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-700" />
+          <p className="mt-4 text-sm font-medium text-slate-600">Đang tải chi tiết thủ tục...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!detail) {
     return (
@@ -110,7 +154,7 @@ export default async function DichVuCongDetailPage({ params }: DichVuCongDetailP
           <div className="pt-2">
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href={`/dich-vu/chi-tiet-ho-so/${normalizedId}`}
+                href={`/dich-vu/chi-tiet-ho-so/${routeId}`}
                 className="inline-flex items-center justify-center rounded-lg bg-[#1f7a5a] px-6 py-3 text-base font-bold text-white shadow-md transition-all hover:bg-[#155a42] hover:shadow-lg"
               >
                 Nộp hồ sơ trực tuyến
@@ -123,7 +167,7 @@ export default async function DichVuCongDetailPage({ params }: DichVuCongDetailP
           <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p className="mb-3 text-sm font-semibold text-slate-700">Thao tác nhanh</p>
             <Link
-              href={`/dich-vu/chi-tiet-ho-so/${normalizedId}`}
+              href={`/dich-vu/chi-tiet-ho-so/${routeId}`}
               className="flex w-full items-center justify-center rounded-lg bg-[#1f7a5a] px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#155a42] hover:shadow-lg"
             >
               Nộp hồ sơ trực tuyến

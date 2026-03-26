@@ -1,3 +1,4 @@
+// Phần banner lớn đầu trang chủ, thường có hình ảnh đẹp, slogan, tiêu đề nổi bật.
 "use client";
 
 import { useState, useEffect } from "react";

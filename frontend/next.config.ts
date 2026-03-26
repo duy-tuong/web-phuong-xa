@@ -9,17 +9,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/dich-vu-hc/:path*",
-        destination: "/dich-vu/:path*",
-        permanent: true,
-      },
-      {
         source: "/dich-vu-cong",
-        destination: "/dich-vu",
-        permanent: true,
-      },
-      {
-        source: "/dich-vu-hc",
         destination: "/dich-vu",
         permanent: true,
       },

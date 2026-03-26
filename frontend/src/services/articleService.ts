@@ -1,214 +1,358 @@
-import type { Article } from "@/types/article";
+import { resolveApiAssetUrl } from "@/lib/api-base-url";
+import api from "@/services/api";
+import type { Article, ArticleSectionBullet } from "@/types/article";
 
-const sharedBody = {
-  bodyLead:
-    "Nội dung được cập nhật từ hệ thống thông tin điện tử phường Cao Lãnh, phản ánh các hoạt động điều hành, văn hóa - xã hội và các chương trình phục vụ người dân trên địa bàn.",
-  bodyParagraphs: [
-    "Bài viết ghi nhận các kết quả triển khai tại cơ sở, đồng thời tổng hợp ý kiến từ các đơn vị liên quan để hoàn thiện kế hoạch hành động trong thời gian tới.",
-    "Lãnh đạo địa phương nhấn mạnh yêu cầu phối hợp chặt chẽ giữa các bộ phận chuyên môn, tăng cường truyền thông và bảo đảm tiến độ thực hiện các chỉ tiêu đã đề ra.",
-  ],
-  sectionTitle: "Mục tiêu triển khai",
-  sectionIntro: "Trọng tâm thực hiện trong giai đoạn tiếp theo gồm các nhóm nhiệm vụ sau:",
-  sectionBullets: [
-    {
-      label: "Nâng cao chất lượng phục vụ",
-      text: "Chuẩn hóa quy trình, rút ngắn thời gian xử lý và tăng khả năng tiếp cận dịch vụ cho người dân.",
-    },
-    {
-      label: "Đẩy mạnh truyền thông",
-      text: "Phổ biến thông tin rộng rãi qua các kênh trực tuyến và hoạt động cộng đồng tại khóm, tổ dân phố.",
-    },
-    {
-      label: "Theo dõi tiến độ",
-      text: "Tăng cường kiểm tra định kỳ, kịp thời tháo gỡ vướng mắc để bảo đảm hiệu quả thực thi.",
-    },
-  ],
-  subImage:
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuAFm0JRe2fQd4evCnKLLptucmVYziq66tEFwbAAfo4Ap6KpVOjeMhtQFrp_vnjasNqkCbX0JHZ8Qog_gr5sWh0Q04Ss6a5riMUH5UyLXuB-CeT16aPb9H63Qv4FUrKhbFJGZ0V_3Embzg6wYkum1vlyWY66p-NUBnVyfdVE7qCoYHwN6jbiY3H9SIGQ3IPxS24nRLjo6TqBvxJyMIVPf3DhnbK6ypjyCVgGkwe_DI6Ky2EsmxMeV3KspqvwliG4SS3DT4Y2ogIGZj_M",
-  subCaption: "Các tổ công tác địa phương hướng dẫn người dân tiếp cận dịch vụ số và tiện ích công trực tuyến.",
+type ApiArticlesResponse = {
+  total?: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+  data?: ApiArticleListItem[];
 };
 
-function createArticle(
-  meta: Omit<Article, keyof typeof sharedBody | "categoryId" | "authorId" | "status" | "publishedAt">,
-): Article {
-  const categoryId = meta.category
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const authorId = meta.author
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+type ApiArticleListItem = {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  featuredImage?: string | null;
+  createdAt?: string | null;
+  category?: string | null;
+  author?: string | null;
+};
 
-  return {
-    ...meta,
-    categoryId,
-    authorId,
-    status: "published",
-    publishedAt: meta.date,
-    ...sharedBody,
-  };
-}
+type ApiArticleDetail = ApiArticleListItem & {
+  content?: string | null;
+};
 
-const articles: Article[] = [
-  createArticle({
+type ApiCategory = {
+  id: number;
+  name: string;
+  description?: string | null;
+  slug?: string | null;
+};
+
+const isDevelopment = process.env.NODE_ENV !== "production";
+
+const DEFAULT_HERO_IMAGE =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuA8qzrU7hnhsoDY94oufu7hJNCAl4vQEHEAdyibHV-GaB1BzqhGsucfbpVqjXB04TDYe1N7leVbGGm4IBXTVHh5Mp_KyqB1v4c3VSofSf563Peof9QqvE5CW2VcXCz2NUCpcD5w7r-k1nM4UsBIQp3B5AfhUhLPAxE_-VynmBPYJcVvLgwVJNCxqPhoQNE6Uq307xHjr73-vkeUHu1Bc3ov6ygiC9c00RUdsGPW_aGqtEqCUR8IGPw_TK7-88nKBTk2Qnt3qAoU43w7";
+const DEFAULT_SUB_IMAGE =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuAFm0JRe2fQd4evCnKLLptucmVYziq66tEFwbAAfo4Ap6KpVOjeMhtQFrp_vnjasNqkCbX0JHZ8Qog_gr5sWh0Q04Ss6a5riMUH5UyLXuB-CeT16aPb9H63Qv4FUrKhbFJGZ0V_3Embzg6wYkum1vlyWY66p-NUBnVyfdVE7qCoYHwN6jbiY3H9SIGQ3IPxS24nRLjo6TqBvxJyMIVPf3DhnbK6ypjyCVgGkwe_DI6Ky2EsmxMeV3KspqvwliG4SS3DT4Y2ogIGZj_M";
+
+const defaultSectionBullets: ArticleSectionBullet[] = [
+  {
+    label: "Nang cao chat luong phuc vu",
+    text: "Tiep tuc cai tien quy trinh xu ly va tang kha nang tiep can thong tin cho nguoi dan.",
+  },
+  {
+    label: "Tang cuong phoi hop",
+    text: "Dong bo giua cac bo phan chuyen mon de bao dam tien do va chat luong trien khai.",
+  },
+  {
+    label: "Theo doi ket qua",
+    text: "Duy tri kiem tra dinh ky va cap nhat phan hoi de hoan thien cach van hanh.",
+  },
+];
+
+const fallbackArticles: Article[] = [
+  createFallbackArticle({
+    id: 1,
     slug: "ubnd-phuong-cao-lanh-to-chuc-hoi-nghi",
-    title: "Đại hội đại biểu Mặt trận Tổ quốc Việt Nam Phường Cao Lãnh nhiệm kỳ 2024-2029 thành công tốt đẹp",
-    category: "Tin tức xã hội",
-    date: "15 tháng 10 năm 2024",
-    author: "Ban Biên Tập",
-    views: "1,245 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuA8qzrU7hnhsoDY94oufu7hJNCAl4vQEHEAdyibHV-GaB1BzqhGsucfbpVqjXB04TDYe1N7leVbGGm4IBXTVHh5Mp_KyqB1v4c3VSofSf563Peof9QqvE5CW2VcXCz2NUCpcD5w7r-k1nM4UsBIQp3B5AfhUhLPAxE_-VynmBPYJcVvLgwVJNCxqPhoQNE6Uq307xHjr73-vkeUHu1Bc3ov6ygiC9c00RUdsGPW_aGqtEqCUR8IGPw_TK7-88nKBTk2Qnt3qAoU43w7",
-    heroCaption:
-      "Toàn cảnh hội nghị triển khai công tác trọng tâm tại Hội trường UBND Phường Cao Lãnh.",
-    tags: ["Mặt trận Tổ quốc", "UBND Phường", "Tin tức xã hội"],
+    title: "Dai hoi dai bieu Mat tran To quoc Viet Nam Phuong Cao Lanh nhiem ky 2024-2029 thanh cong tot dep",
+    category: "Tin tuc xa hoi",
+    date: "15/10/2024",
+    author: "Ban Bien Tap",
+    views: "1,245 luot xem",
+    heroCaption: "Toan canh hoi nghi trien khai cong tac trong tam tai Hoi truong UBND Phuong Cao Lanh.",
+    tags: ["Mat tran To quoc", "UBND Phuong", "Tin tuc xa hoi"],
   }),
-  createArticle({
-    slug: "khai-mac-giai-bong-da-thanh-nien-truyen-thong-phuong-cao-lanh-2023",
-    title: "Khai mạc giải bóng đá thanh niên truyền thống Phường Cao Lãnh năm 2023",
-    category: "Thể thao",
-    date: "05 tháng 10 năm 2023",
-    author: "Ban Văn hóa",
-    views: "1,820 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCA1o1DoqGMylMMf0Ngwe-jcAFIkTLboQv1VxF1gCJpJUEF7PMdNsg7UfzSS_ZG1GsR0hkxivL0uS-gQiOo3FacTAizHkGmA30fLlUC3BZcNIiu_983nFz5NRGRPAHpnmVPMEFBQ9SsdPZAn-vkq0IcQxDCmsyXh-P2GtMD9rfHz4Pe-EpnbMHePsBCxJ_kagNA6H-yHJ7XR2oBWBDbK640LYA1YweVDIGvYp2O762NwEr7wg83d1lMSn9V67GhTKyCMhJWgH-mmReB",
-    heroCaption: "Giải đấu thu hút đông đảo đoàn viên, thanh niên và người dân tham gia cổ vũ.",
-    tags: ["Thể thao", "Thanh niên", "Phong trào địa phương"],
-  }),
-  createArticle({
-    slug: "thong-bao-tam-ngung-cung-cap-dien-mot-so-khu-vuc-de-bao-tri-tram-bien-ap",
-    title: "Thông báo tạm ngừng cung cấp điện một số khu vực để bảo trì trạm biến áp",
-    category: "Thông báo",
-    date: "04 tháng 10 năm 2023",
-    author: "Văn phòng UBND",
-    views: "3,105 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAlmRiEKiavvJdLovK2a3sEHtRGVDZSMET9zrNOglbL4jzJSnQcuk5Omj-u7vThe7FGa_B2rxvPTXr8IdH8-AojKiSwjFMdUnHy00mRTWbJ1_eDbo5k1RbWDCX8829h1mLV4h_GlXBCZY_ChbhMF-0S8knpudO8mVhWPi_Uyva_CPRppnEEJWHWLdSnUm934eJayUwaR16uZE1Gnqfr1iLhHGktLuR5rMlQdmyF2YPjdzewboqe9mpOgJvUjUcGhSwKoxCHOZWbHuwe",
-    heroCaption: "Thông tin lịch bảo trì và thời gian dự kiến khôi phục điện được công khai đến người dân.",
-    tags: ["Thông báo", "Hạ tầng điện", "Dân sinh"],
-  }),
-  createArticle({
+  createFallbackArticle({
+    id: 2,
     slug: "phat-dong-phong-trao-ngay-chu-nhat-xanh-lam-sach-duong-pho",
-    title: "Phát động phong trào 'Ngày Chủ nhật xanh' làm sạch đường phố",
-    category: "Môi trường",
-    date: "12 tháng 10 năm 2023",
-    author: "Đoàn Thanh niên",
-    views: "1,460 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDZIbRDx40vlTqVCTAPgQr11ikTD7JspJtc8CqjwkB0HxleLoitn6224b8--bg9W-pUwsKpOifDJxqhJbdIEmlEaytklGFirIbbE05QrggWMQ0hTSxao1wDEzv8J93fPiwwDEc0Pp_corC8jV4iKoac2491BGeHKeR25piRa8JCz9fCxuieP4PaBrPVzoihecQYMR7TL_7-3afnQXeXkhAQL062GNBI2vOE6WyRMMZ3Pb2JqWLFN1BpXuMPdHCoYut8VYoM3VXt2JIM",
-    heroCaption: "Lực lượng đoàn viên ra quân làm sạch các tuyến đường kiểu mẫu trên địa bàn phường.",
-    tags: ["Môi trường", "Ngày Chủ nhật xanh", "Đoàn thanh niên"],
+    title: "Phat dong phong trao Ngay Chu nhat xanh lam sach duong pho",
+    category: "Moi truong",
+    date: "12/10/2023",
+    author: "Doan Thanh Nien",
+    views: "1,460 luot xem",
+    heroCaption: "Luc luong doan vien ra quan lam sach cac tuyen duong kieu mau tren dia ban phuong.",
+    tags: ["Moi truong", "Ngay Chu nhat xanh", "Doan thanh nien"],
   }),
-  createArticle({
+  createFallbackArticle({
+    id: 3,
     slug: "trao-tang-100-suat-qua-cho-cac-ho-gia-dinh-co-hoan-canh-kho-khan",
-    title: "Trao tặng 100 suất quà cho các hộ gia đình có hoàn cảnh khó khăn",
-    category: "An sinh xã hội",
-    date: "10 tháng 10 năm 2023",
-    author: "Ủy ban MTTQ",
-    views: "2,012 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBC5vEnXdVTgK7V6fG3D_8wot7mvmJRIEPYe3huprgnHAMvhqeGKw6JaW0V6mZzMnk1ztUKXVgPBcL_dpJjVwLI1J8uUjcEWk2lE_I6Vy9rna24a78QHp-ouerrX7Z2M9T0HvqrW0mmkzT1Fg3Ci8nuCpF14HeHPOoRtFEPAPkMVDjPO0-QNOIpQpzB4hcGFku4BAbQKWjSu-tnZKMjgfVToDSgyg6fCVHLpNTu8dOrtMp2KnQrQPdSLQR9RzNjHcoPy3luNEUAxeDf",
-    heroCaption: "Chương trình trao quà được tổ chức nhằm hỗ trợ kịp thời các hộ gia đình khó khăn.",
-    tags: ["An sinh", "Hỗ trợ hộ nghèo", "Cộng đồng"],
+    title: "Trao tang 100 suat qua cho cac ho gia dinh co hoan canh kho khan",
+    category: "An sinh xa hoi",
+    date: "10/10/2023",
+    author: "Uy ban MTTQ",
+    views: "2,012 luot xem",
+    heroCaption: "Chuong trinh trao qua duoc to chuc nham ho tro kip thoi cac ho gia dinh kho khan.",
+    tags: ["An sinh", "Ho tro ho ngheo", "Cong dong"],
   }),
-  createArticle({
+  createFallbackArticle({
+    id: 4,
     slug: "cong-bo-ke-hoach-phat-trien-ha-tang-giao-thong-khu-vuc-trung-tam",
-    title: "Công bố kế hoạch phát triển hạ tầng giao thông khu vực trung tâm",
-    category: "Kinh tế",
-    date: "09 tháng 10 năm 2023",
-    author: "Ban Kinh tế",
-    views: "1,678 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBoZ-nHOhvIG7mEAvqb4v-itWDDqJ9z-Q3hdlNZMTYfGP5jY6gIW8lL-Gbpvkz2BknnOWClT3JxrCTN_UazkdEH-zPXtoZWQI3b1Sw7MNhnBRbLpjAjfBbZGEnilefIumiYRk7htgiXvWarsd_fJGCsJql98ToZ2TMhiqCoIFfi9OvDO8xErzearwZe_XuTUBuaTxmDPtCAWacAJqQIItRdwrPFzLej33lHCYDv8Mg5bE3LXuFIyetAl1hFqR5dwskncnQng7yp9eUC",
-    heroCaption: "Kế hoạch nâng cấp hạ tầng giao thông được công bố để lấy ý kiến cộng đồng dân cư.",
-    tags: ["Kinh tế", "Hạ tầng", "Giao thông"],
+    title: "Cong bo ke hoach phat trien ha tang giao thong khu vuc trung tam",
+    category: "Kinh te",
+    date: "09/10/2023",
+    author: "Ban Kinh te",
+    views: "1,678 luot xem",
+    heroCaption: "Ke hoach nang cap ha tang giao thong duoc cong bo de lay y kien cong dong dan cu.",
+    tags: ["Kinh te", "Ha tang", "Giao thong"],
   }),
-  createArticle({
+  createFallbackArticle({
+    id: 5,
     slug: "huong-dan-thu-tuc-cap-doi-can-cuoc-cong-dan-gan-chip-dien-tu",
-    title: "Hướng dẫn thủ tục cấp đổi Căn cước công dân gắn chip điện tử tại phường",
-    category: "Cải cách hành chính",
-    date: "08 tháng 10 năm 2023",
-    author: "Bộ phận Một cửa",
-    views: "2,654 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDqKaKp60rtRluFTNDr5UZnW3eY3x9-CaYolNhLZCrjNN8v4vKXl7O8T2VlTqMNRGwePzaJgrJJ59y2joleZ5LljIKFG9ULFzzBs99R1b0yTG5vdJ_Jh3O4KSr24jGqthbJsNnUqV2e9l_IphS7vo9GvMnHEi8_9FpVqDfPaXaF6t0wmu5ZD40CP1LkKG_wSNSp6uB9ye79ToDCr1dB6_uy0VBHYN6_IewLbFwOHMFDVPpiExCBTRPQU2lPY2vj2673xhzjOtqkU5XR",
-    heroCaption: "Người dân được hỗ trợ trực tiếp về quy trình, hồ sơ và lịch tiếp nhận thủ tục.",
-    tags: ["Thủ tục hành chính", "CCCD", "Một cửa"],
+    title: "Huong dan thu tuc cap doi Can cuoc cong dan gan chip dien tu tai phuong",
+    category: "Cai cach hanh chinh",
+    date: "08/10/2023",
+    author: "Bo phan Mot cua",
+    views: "2,654 luot xem",
+    heroCaption: "Nguoi dan duoc ho tro truc tiep ve quy trinh, ho so va lich tiep nhan thu tuc.",
+    tags: ["Thu tuc hanh chinh", "CCCD", "Mot cua"],
   }),
-  createArticle({
-    slug: "lich-tiep-cong-dan-cua-chu-tich-ubnd-phuong-thang-10-2023",
-    title: "Lịch tiếp công dân của Chủ tịch UBND Phường tháng 10/2023",
-    category: "Thông báo",
-    date: "07 tháng 10 năm 2023",
-    author: "Văn phòng UBND",
-    views: "1,130 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD50a17i01b0npsVJYg3lPx7WZaWQHp_-r9rBnCYLzt5KO9PEF9s7cWbnk9jTyNI8j2eYNtxzbFtXx28JwxjE0sWDvNMQjiSkcXK0B2LEXuCFaIP2UFNe1HN7B3nIdxm1rn1WJw00c8LnmVfWtMJUlTHsasVP1rLMTaKA1pftczDcZKzCd448vHQH0JEnk-On7MKG-3vB1612ckfNEdDtJV6NoWmjdCRc_1SBPpWy4DuW3MdJfQJU-QtCupIYWjIz3H5LHT28PcMZgF",
-    heroCaption: "Thông báo lịch tiếp công dân định kỳ để người dân chủ động sắp xếp thời gian liên hệ.",
-    tags: ["Tiếp công dân", "Lịch làm việc", "Thông báo"],
-  }),
-  createArticle({
+  createFallbackArticle({
+    id: 6,
     slug: "thong-bao-lich-thu-gom-rac-thai-sinh-hoat-tren-dia-ban-cac-khom",
-    title: "Thông báo lịch thu gom rác thải sinh hoạt trên địa bàn các khóm",
-    category: "Thông báo",
-    date: "06 tháng 10 năm 2023",
-    author: "Ban Đô thị",
-    views: "1,904 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBpEhKO0x2MpN1gpITIILwhAH_AjhZrG9O-4Zj9J9SwqE4gMj57JJB5mh9m20VvLuEfhUGFTS5kcgYphqG374xdzsB8bsAZXi5kVMwwn2fTYOqMxZaE2yryTR_H-lqxGSErOI42RowuRCJ-Am8w5KdXhnSI9xcGbz7N5lCE3AdCOSl6VJNopefMR-CfRVE26EPlaZvpZjc8hPW2Pq0gHcJyPlSHtwqnd09bN_dm9vXSm23Scz7LPP6lVNGmq9tCAkXb2WWxF5XRrO_G",
-    heroCaption: "Lịch thu gom rác được cập nhật theo tuyến để người dân thuận tiện theo dõi và phối hợp.",
-    tags: ["Môi trường", "Thu gom rác", "Thông báo"],
-  }),
-  createArticle({
-    slug: "soi-noi-giai-bong-da-thanh-nien-truyen-thong-nam-2023",
-    title: "Sôi nổi giải bóng đá thanh niên truyền thống năm 2023",
-    category: "Thể thao",
-    date: "05 tháng 10 năm 2023",
-    author: "Ban Văn hóa",
-    views: "1,511 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCA1o1DoqGMylMMf0Ngwe-jcAFIkTLboQv1VxF1gCJpJUEF7PMdNsg7UfzSS_ZG1GsR0hkxivL0uS-gQiOo3FacTAizHkGmA30fLlUC3BZcNIiu_983nFz5NRGRPAHpnmVPMEFBQ9SsdPZAn-vkq0IcQxDCmsyXh-P2GtMD9rfHz4Pe-EpnbMHePsBCxJ_kagNA6H-yHJ7XR2oBWBDbK640LYA1YweVDIGvYp2O762NwEr7wg83d1lMSn9V67GhTKyCMhJWgH-mmReB",
-    heroCaption: "Không khí thi đấu sôi động góp phần thúc đẩy phong trào thể dục thể thao địa phương.",
-    tags: ["Thể thao", "Giải bóng đá", "Thanh niên"],
-  }),
-  createArticle({
-    slug: "hoi-thi-nau-an-chao-mung-ngay-phu-nu-viet-nam-20-10",
-    title: "Hội thi nấu ăn chào mừng Ngày Phụ nữ Việt Nam 20/10",
-    category: "Văn hóa",
-    date: "02 tháng 10 năm 2023",
-    author: "Hội Liên hiệp Phụ nữ",
-    views: "1,298 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCuUEF_j9MBfzvUWlEDsmRO7gZ4rQ1oZJgYKIjkHakv9jEkJGv8JA079xZwNEL3dPB9eZnWYuUhw2HE--6v9uBR78pQ1N9qInd47zN85QWENCVRGFzoiG2FLEIhDh4pY2uHECDhl-aoKF7D3Js5Y6dvE-kdUh1COyKgnzZcc2M2ZiaMHNbKd-ZI3_d7HJ0lMvLeBq-vfiz_OHFIhuZGhEAPKuUZrIiIMDnNq9YqGCZ4ZuquNw9oStnYyKRRww5-vpHQNXQfM7m-Bd-a",
-    heroCaption: "Hội thi tạo sân chơi gắn kết, tôn vinh giá trị gia đình và văn hóa ẩm thực địa phương.",
-    tags: ["Văn hóa", "Phụ nữ", "Hoạt động cộng đồng"],
-  }),
-  createArticle({
-    slug: "soi-noi-hoi-thi-nau-an-chao-mung-ngay-phu-nu-viet-nam-20-10",
-    title: "Sôi nổi Hội thi nấu ăn chào mừng Ngày Phụ nữ Việt Nam 20/10",
-    category: "Văn hóa",
-    date: "02 tháng 10 năm 2023",
-    author: "Hội Liên hiệp Phụ nữ",
-    views: "1,356 lượt xem",
-    heroImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCuUEF_j9MBfzvUWlEDsmRO7gZ4rQ1oZJgYKIjkHakv9jEkJGv8JA079xZwNEL3dPB9eZnWYuUhw2HE--6v9uBR78pQ1N9qInd47zN85QWENCVRGFzoiG2FLEIhDh4pY2uHECDhl-aoKF7D3Js5Y6dvE-kdUh1COyKgnzZcc2M2ZiaMHNbKd-ZI3_d7HJ0lMvLeBq-vfiz_OHFIhuZGhEAPKuUZrIiIMDnNq9YqGCZ4ZuquNw9oStnYyKRRww5-vpHQNXQfM7m-Bd-a",
-    heroCaption: "Không khí hội thi sôi nổi với nhiều phần trình bày ẩm thực sáng tạo của các đội tham gia.",
-    tags: ["Văn hóa", "Hội thi nấu ăn", "Phụ nữ Việt Nam"],
+    title: "Thong bao lich thu gom rac thai sinh hoat tren dia ban cac khom",
+    category: "Thong bao",
+    date: "06/10/2023",
+    author: "Ban Do thi",
+    views: "1,904 luot xem",
+    heroCaption: "Lich thu gom rac duoc cap nhat theo tuyen de nguoi dan thuan tien theo doi va phoi hop.",
+    tags: ["Moi truong", "Thu gom rac", "Thong bao"],
   }),
 ];
 
-const categories: string[] = ["Tất cả", "Tin tức xã hội", "Văn hóa", "Thông báo", "Môi trường", "Thể thao"];
+const fallbackCategories = Array.from(
+  new Set(["Tat ca", ...fallbackArticles.map((article) => article.category)]),
+);
+
+function createFallbackArticle(input: {
+  id: number;
+  slug: string;
+  title: string;
+  category: string;
+  date: string;
+  author: string;
+  views: string;
+  heroCaption: string;
+  tags: string[];
+}): Article {
+  return {
+    id: input.id,
+    slug: input.slug,
+    title: input.title,
+    category: input.category,
+    categoryId: slugify(input.category),
+    date: input.date,
+    author: input.author,
+    authorId: slugify(input.author),
+    status: "published",
+    publishedAt: input.date,
+    views: input.views,
+    heroImage: DEFAULT_HERO_IMAGE,
+    heroCaption: input.heroCaption,
+    bodyLead:
+      "Noi dung duoc cap nhat tu he thong thong tin dien tu phuong, phan anh cac hoat dong dieu hanh va chuong trinh phuc vu nguoi dan.",
+    bodyParagraphs: [
+      "Bai viet ghi nhan cac ket qua trien khai tai co so, dong thoi tong hop y kien tu cac don vi lien quan de hoan thien ke hoach hanh dong trong thoi gian toi.",
+      "Lanh dao dia phuong nhan manh yeu cau phoi hop chat che giua cac bo phan chuyen mon, tang cuong truyen thong va bao dam tien do thuc hien cac chi tieu da de ra.",
+    ],
+    sectionTitle: "Muc tieu trien khai",
+    sectionIntro: "Trong tam thuc hien giai doan tiep theo gom cac nhom nhiem vu sau:",
+    sectionBullets: defaultSectionBullets,
+    subImage: DEFAULT_SUB_IMAGE,
+    subCaption: "Cac to cong tac dia phuong huong dan nguoi dan tiep can dich vu so va tien ich cong truc tuyen.",
+    tags: input.tags,
+  };
+}
+
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function stripHtml(value?: string | null) {
+  return (value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function formatDate(dateValue?: string | null) {
+  if (!dateValue) {
+    return "Dang cap nhat";
+  }
+
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) {
+    return dateValue;
+  }
+
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(parsed);
+}
+
+function buildParagraphs(content?: string | null, excerpt?: string | null) {
+  const text = stripHtml(content) || stripHtml(excerpt);
+  if (!text) {
+    return fallbackArticles[0].bodyParagraphs;
+  }
+
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  if (sentences.length <= 1) {
+    return [text];
+  }
+
+  const paragraphs: string[] = [];
+  for (let index = 0; index < sentences.length; index += 2) {
+    paragraphs.push(sentences.slice(index, index + 2).join(" "));
+  }
+
+  return paragraphs.slice(0, 4);
+}
+
+function buildLead(content?: string | null, excerpt?: string | null) {
+  const lead = stripHtml(excerpt) || buildParagraphs(content, excerpt)[0];
+  return lead || fallbackArticles[0].bodyLead;
+}
+
+function buildTags(category?: string | null, title?: string | null) {
+  const normalizedTitle = stripHtml(title);
+  const tags = [category, normalizedTitle.split(" ").slice(0, 3).join(" ")]
+    .map((item) => item?.trim())
+    .filter((item): item is string => Boolean(item));
+
+  return Array.from(new Set(tags)).slice(0, 3);
+}
+
+function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Article {
+  const paragraphs = buildParagraphs("content" in source ? source.content : undefined, source.excerpt);
+  const lead = buildLead("content" in source ? source.content : undefined, source.excerpt);
+  const category = source.category?.trim() || "Chua phan loai";
+  const author = source.author?.trim() || "Ban bien tap";
+  const featuredImage = resolveApiAssetUrl(source.featuredImage);
+
+  return {
+    id: source.id,
+    slug: source.slug,
+    title: source.title,
+    category,
+    categoryId: slugify(category),
+    date: formatDate(source.createdAt),
+    author,
+    authorId: slugify(author),
+    status: "published",
+    publishedAt: formatDate(source.createdAt),
+    views: "Dang cap nhat",
+    heroImage: featuredImage || DEFAULT_HERO_IMAGE,
+    heroCaption: source.excerpt?.trim() || "Noi dung hinh anh dang duoc cap nhat tu he thong.",
+    bodyLead: lead,
+    bodyParagraphs: paragraphs,
+    sectionTitle: "Muc tieu trien khai",
+    sectionIntro: "Cac noi dung trong tam dang duoc dia phuong tiep tuc trien khai va hoan thien:",
+    sectionBullets: defaultSectionBullets,
+    subImage: featuredImage || DEFAULT_SUB_IMAGE,
+    subCaption: "Thong tin, hinh anh va tien do thuc hien dang duoc cap nhat tu he thong du lieu cong.",
+    tags: buildTags(category, source.title),
+  };
+}
+
+async function requestArticlesFromApi() {
+  const response = await api.get<ApiArticlesResponse>("/articles", {
+    params: {
+      page: 1,
+      pageSize: 50,
+    },
+  });
+
+  const rows = Array.isArray(response.data?.data) ? response.data.data : [];
+  return rows.map(adaptArticle);
+}
+
+function getFallbackArticles() {
+  return fallbackArticles.map((article) => ({ ...article }));
+}
 
 export async function getArticles(): Promise<Article[]> {
-  return articles;
+  try {
+    const articles = await requestArticlesFromApi();
+    if (articles.length > 0) {
+      return articles;
+    }
+
+    return isDevelopment ? getFallbackArticles() : [];
+  } catch (error) {
+    console.error("Khong the tai danh sach bai viet:", error);
+    return isDevelopment ? getFallbackArticles() : [];
+  }
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  const article = articles.find((item) => item.slug === slug);
-  return article ?? null;
+  try {
+    const articles = await requestArticlesFromApi();
+    const article = articles.find((item) => item.slug === slug);
+
+    if (!article) {
+      return isDevelopment ? getFallbackArticles().find((item) => item.slug === slug) ?? null : null;
+    }
+
+    if (!article.id) {
+      return article;
+    }
+
+    try {
+      const detailResponse = await api.get<ApiArticleDetail>(`/articles/${article.id}`);
+      return adaptArticle(detailResponse.data);
+    } catch (detailError) {
+      console.error(`Khong the tai chi tiet bai viet slug=${slug}:`, detailError);
+      return article;
+    }
+  } catch (error) {
+    console.error(`Khong the tai bai viet slug=${slug}:`, error);
+    return isDevelopment ? getFallbackArticles().find((item) => item.slug === slug) ?? null : null;
+  }
 }
 
 export async function getCategories(): Promise<string[]> {
-  return categories;
+  try {
+    const response = await api.get<ApiCategory[]>("/categories");
+    const categories = Array.isArray(response.data)
+      ? response.data
+          .map((category) => category.name?.trim())
+          .filter((name): name is string => Boolean(name))
+      : [];
+
+    if (categories.length > 0) {
+      return ["Tat ca", ...categories];
+    }
+
+    const articles = await getArticles();
+    const derived = Array.from(new Set(articles.map((article) => article.category)));
+    return derived.length > 0 ? ["Tat ca", ...derived] : isDevelopment ? fallbackCategories : ["Tat ca"];
+  } catch (error) {
+    console.error("Khong the tai danh muc bai viet:", error);
+
+    if (isDevelopment) {
+      return fallbackCategories;
+    }
+
+    const articles = await getArticles();
+    const derived = Array.from(new Set(articles.map((article) => article.category)));
+    return derived.length > 0 ? ["Tat ca", ...derived] : ["Tat ca"];
+  }
 }
