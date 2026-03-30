@@ -1,4 +1,4 @@
-using backend.Data;
+ï»¿using backend.Data;
 using backend.DTOs;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -18,13 +18,14 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // ?? NG??I DÂN: N?P H? S? (CREATE)
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> CreateApplication(CreateApplicationDTO dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             var serviceExists = await _context.Services.AnyAsync(s => s.Id == dto.ServiceId);
             if (!serviceExists)
@@ -38,7 +39,7 @@ namespace backend.Controllers
                 ApplicantName = dto.ApplicantName,
                 Phone = dto.Phone,
                 Email = dto.Email,
-                Status = "Pending", // M?c ??nh là ch? x? lý
+                Status = "Pending",
                 CreatedAt = DateTime.Now
             };
 
@@ -53,7 +54,6 @@ namespace backend.Controllers
             });
         }
 
-        // ?? NG??I DÂN: TRA C?U H? S? THEO S? ?I?N THO?I HO?C EMAIL
         [AllowAnonymous]
         [HttpGet("search")]
         public async Task<IActionResult> SearchApplication([FromQuery] string? phone, [FromQuery] string? email)
@@ -82,6 +82,7 @@ namespace backend.Controllers
                 .Select(a => new
                 {
                     a.Id,
+                    a.ServiceId,
                     ServiceName = a.Service.Name,
                     a.ApplicantName,
                     a.Phone,
@@ -94,7 +95,6 @@ namespace backend.Controllers
             return Ok(applications);
         }
 
-        // ?? CÁN B?: XEM TOÀN B? H? S?
         [Authorize(Roles = "Admin,Editor")]
         [HttpGet]
         public async Task<IActionResult> GetAllApplications(string? status, int page = 1, int pageSize = 10)
@@ -118,6 +118,7 @@ namespace backend.Controllers
                 .Select(a => new
                 {
                     a.Id,
+                    a.ServiceId,
                     ServiceName = a.Service.Name,
                     a.ApplicantName,
                     a.Phone,
@@ -130,7 +131,6 @@ namespace backend.Controllers
             return Ok(new { total, page, pageSize, totalPages, data = applications });
         }
 
-        // ?? CÁN B?: XEM CHI TI?T 1 H? S?
         [Authorize(Roles = "Admin,Editor")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetApplication(int id)
@@ -143,7 +143,7 @@ namespace backend.Controllers
                     a.Id,
                     ServiceId = a.ServiceId,
                     ServiceName = a.Service.Name,
-                    RequiredDocuments = a.Service.RequiredDocuments, /* ?? cán b? bi?t c?n check gi?y t? gì */
+                    RequiredDocuments = a.Service.RequiredDocuments,
                     a.ApplicantName,
                     a.Phone,
                     a.Email,
@@ -160,7 +160,6 @@ namespace backend.Controllers
             return Ok(application);
         }
 
-        // ?? CÁN B?: C?P NH?T TR?NG THÁI H? S?
         [Authorize(Roles = "Admin,Editor")]
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateApplicationStatus(int id, UpdateApplicationStatusDTO dto)
@@ -172,14 +171,12 @@ namespace backend.Controllers
             }
 
             var application = await _context.Applications.FindAsync(id);
-
             if (application == null)
             {
                 return NotFound("Application not found.");
             }
 
             application.Status = dto.Status;
-            
             await _context.SaveChangesAsync();
 
             return Ok(new
@@ -190,13 +187,11 @@ namespace backend.Controllers
             });
         }
 
-        // ?? CÁN B? (ADMIN): XÓA H? S? RÁC/L?I
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteApplication(int id)
         {
             var application = await _context.Applications.FindAsync(id);
-
             if (application == null)
             {
                 return NotFound("Application not found.");

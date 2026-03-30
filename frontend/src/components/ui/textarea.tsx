@@ -1,3 +1,4 @@
+// Component textarea chuẩn cho nhập nội dung dài.
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

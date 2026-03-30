@@ -1,3 +1,4 @@
+// Sidebar trượt ra (off-canvas), thường dùng cho menu mobile hoặc panel phụ.
 "use client"
 
 import * as React from "react"

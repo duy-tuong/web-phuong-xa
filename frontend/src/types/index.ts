@@ -13,6 +13,8 @@ export interface User {
   email: string;
   passwordHash?: string;
   fullName?: string;
+  phone?: string;
+  avatarUrl?: string;
   roleId: string;
   createdAt: string;
 

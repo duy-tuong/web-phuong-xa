@@ -1,3 +1,5 @@
+// Hiển thị thông tin liên hệ của phường/xã như địa chỉ, 
+// số điện thoại, email, bản đồ, giờ làm việc...
 export default function ContactInfo() {
   return (
     <div className="space-y-8">

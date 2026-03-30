@@ -1,3 +1,4 @@
+//Component tab chuyển đổi giữa các nội dung khác nhau trên cùng một trang.
 "use client"
 
 import * as React from "react"

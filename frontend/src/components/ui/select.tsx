@@ -1,3 +1,4 @@
+//component select chuẩn (dropdown chọn 1 giá trị).
 "use client"
 
 import * as React from "react"

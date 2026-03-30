@@ -1,24 +1,40 @@
-"use client";
+﻿"use client";
 
-import { useState, FormEvent } from "react";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { FormEvent, useState } from "react";
+import Link from "next/link";
 import axios from "axios";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+
 import api from "@/services/api";
-const DEMO_ACCOUNT = {
-  identifier: "demo@caolanh.gov.vn",
-  password: "123456",
-  fullName: "Nguyễn Văn A",
+
+type LoginSuccessPayload = {
+  token: string;
+  username: string;
+  fullName?: string;
+  role?: string;
 };
+
+type BackendErrorPayload =
+  | string
+  | {
+      message?: string;
+      error?: string;
+      title?: string;
+      detail?: string;
+    };
 
 type LoginFormProps = {
-  onSuccess: (session: { fullName: string; identifier: string }) => void;
+  onSuccess: (payload: LoginSuccessPayload) => void;
+  adminRedirectPath?: string | null;
 };
 
-export default function LoginForm({ onSuccess }: LoginFormProps) {
+export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormProps) {
   const [loginForm, setLoginForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const isAdminFlow = Boolean(adminRedirectPath?.startsWith("/admin"));
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -40,42 +56,34 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       const returnedUsername: string | undefined = res.data?.username;
       const returnedFullName: string | undefined = res.data?.fullName;
 
-      if (!token || !returnedUsername) {
-        setErrorMessage("Đăng nhập thất bại (thiếu token).");
+    try {
+      const response = await api.post("/auth/login", {
+        username: loginForm.identifier.trim(),
+        password: loginForm.password,
+      });
+
+      const token: string | undefined = response.data?.token;
+      const username: string | undefined = response.data?.username;
+      const role: string | undefined = response.data?.role;
+      const fullName: string | undefined = response.data?.fullName;
+
+      if (!token || !username) {
+        setErrorMessage("Đăng nhập thất bại. Không nhận được dữ liệu người dùng từ máy chủ.");
         return;
       }
 
-      const displayName = returnedFullName ?? returnedUsername;
-
-      // Lưu cho user-side (Header/trang cá nhân vẫn dùng mock session)
-      localStorage.setItem("user_token", token);
-      localStorage.setItem("user_role", role ?? "");
-      localStorage.setItem("user_username", returnedUsername);
-
-      const clearAdminSession = () => {
-        localStorage.removeItem("admin_role");
-        localStorage.removeItem("admin_token");
-        localStorage.removeItem("admin_display_name");
-        document.cookie = "admin_token=; Path=/; Max-Age=0; SameSite=Lax";
-        document.cookie = "admin_role=; Path=/; Max-Age=0; SameSite=Lax";
-      };
-
-      // Quan trọng: bật quyền admin cho middleware
-      if (role === "Admin" || role === "Editor") {
-        localStorage.setItem("admin_role", role);
-        localStorage.setItem("admin_token", token);
-        localStorage.setItem("admin_display_name", displayName);
-        document.cookie = `admin_token=${encodeURIComponent(token)}; Path=/; Max-Age=86400; SameSite=Lax`;
-        document.cookie = `admin_role=${encodeURIComponent(role)}; Path=/; Max-Age=86400; SameSite=Lax`;
-      } else {
-        // Tránh trường hợp trước đó từng login admin, cookie vẫn còn.
-        clearAdminSession();
+      const isAdminRole = role ? ["Admin", "Editor"].includes(role) : false;
+      if (isAdminFlow && !isAdminRole) {
+        setErrorMessage("Tài khoản không có quyền truy cập khu vực quản trị.");
+        return;
       }
 
-      onSuccess({ fullName: displayName, identifier: returnedUsername });
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        setErrorMessage("Sai tài khoản hoặc mật khẩu.");
+      onSuccess({ token, username, fullName, role });
+    } catch (error: unknown) {
+      if (axios.isAxiosError<BackendErrorPayload>(error)) {
+        const data = error.response?.data;
+        const serverMessage = typeof data === "string" ? data : data?.message || data?.error || data?.title || data?.detail;
+        setErrorMessage(serverMessage || "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.");
       } else {
         setErrorMessage("Đăng nhập thất bại. Vui lòng thử lại.");
       }
@@ -90,6 +98,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <>
+      {isAdminFlow ? (
+        <div className="mb-4 rounded-2xl border border-amber-100 bg-amber-50/80 p-4 text-sm text-amber-900">
+          <p className="font-semibold">Đăng nhập để truy cập khu vực quản trị</p>
+          <p className="mt-1">Chỉ tài khoản có quyền Admin hoặc Editor mới được vào trang quản trị.</p>
+        </div>
+      ) : null}
+
       {errorMessage ? (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
@@ -97,10 +112,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <label
-          className="block text-sm font-medium text-slate-700"
-          htmlFor="identifier"
-        >
+        <label className="block text-sm font-medium text-slate-700" htmlFor="identifier">
           Tên đăng nhập
         </label>
         <input
@@ -115,7 +127,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             }))
           }
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
-          placeholder="Nhập email hoặc tên đăng nhập"
+          placeholder="Nhập tên đăng nhập"
           required
         />
 
@@ -156,12 +168,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         </div>
 
         <div className="pt-1 text-right">
-          <button
-            type="button"
-            className="text-sm font-medium text-[#8b1d1d] hover:underline"
-          >
-            Quên mật khẩu?
-          </button>
+          <Link href="/lien-he" className="text-sm font-medium text-[#8b1d1d] hover:underline">
+            Cần hỗ trợ đăng nhập?
+          </Link>
         </div>
 
         <button
@@ -181,19 +190,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
         <p className="mt-4 px-4 text-center text-xs leading-relaxed text-gray-500">
           Bằng việc đăng nhập, bạn đồng ý với{" "}
-          <a
-            href="#"
-            className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline"
-          >
+          <Link href="/gioi-thieu" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
             Điều khoản dịch vụ
-          </a>
-          &{" "}
-          <a
-            href="#"
-            className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline"
-          >
+          </Link>
+          {" "}và{" "}
+          <Link href="/lien-he" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
             Chính sách bảo mật
-          </a>
+          </Link>
           .
         </p>
       </form>

@@ -1,3 +1,4 @@
+// Component bảng dữ liệu chuẩn, hỗ trợ hiển thị danh sách, thống kê.
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

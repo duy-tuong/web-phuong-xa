@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
@@ -6,6 +6,7 @@ import { ScrollText, Search } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,46 +29,6 @@ const moduleBadgeClass: Record<string, string> = {
   Users: "bg-violet-100 text-violet-800 hover:bg-violet-100",
   Applications: "bg-cyan-100 text-cyan-800 hover:bg-cyan-100",
 };
-
-const moduleLabelMap: Record<string, string> = {
-  Auth: "Xác thực",
-  Articles: "Bài viết",
-  Services: "Dịch vụ",
-  Media: "Phương tiện",
-  Comments: "Bình luận",
-  Users: "Người dùng",
-  Applications: "Hồ sơ",
-};
-
-const actionLabelMap: Record<string, string> = {
-  Login: "Đăng nhập",
-  "Create Article": "Tạo bài viết",
-  "Update Service": "Cập nhật dịch vụ",
-  "Upload Media": "Tải lên phương tiện",
-  "Delete Comment": "Xóa bình luận",
-  "Approve Comment": "Duyệt bình luận",
-  "Update Article": "Cập nhật bài viết",
-  "Create User": "Tạo người dùng",
-  "Update Application": "Cập nhật hồ sơ",
-};
-
-const detailLabelMap: Record<string, string> = {
-  "Spam comment removed": "Đã xóa bình luận spam",
-  "Created user phamthid": "Đã tạo người dùng phamthid",
-};
-
-function getModuleLabel(moduleName: string) {
-  return moduleLabelMap[moduleName] || moduleName;
-}
-
-function getActionLabel(action: string) {
-  return actionLabelMap[action] || action;
-}
-
-function getDetailLabel(detail?: string) {
-  if (!detail) return "Không có";
-  return detailLabelMap[detail] || detail;
-}
 
 export default function LogsPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -160,31 +121,21 @@ export default function LogsPage() {
     {
       key: "createdAt",
       label: "Thời gian",
-      render: (log) => (
-        <span className="text-sm text-stone-600">
-          {format(new Date(log.timestamp || log.createdAt), "dd/MM/yyyy HH:mm")}
-        </span>
-      ),
+      render: (log) => <span className="text-sm text-stone-600">{format(new Date(log.createdAt), "dd/MM/yyyy HH:mm")}</span>,
     },
     {
       key: "user",
       label: "Người thực hiện",
-      render: (log) => (
-        <span className="font-medium text-stone-800">{log.user || log.userId}</span>
-      ),
+      render: (log) => <span className="font-medium text-stone-800">{log.user || log.userId}</span>,
     },
     {
       key: "module",
       label: "Phân hệ",
       render: (log) => {
         const moduleName = log.module || log.entity;
-        const moduleLabel = getModuleLabel(moduleName);
         return (
-          <Badge
-            variant="secondary"
-            className={moduleBadgeClass[moduleName] || "bg-stone-100 text-stone-700 hover:bg-stone-100"}
-          >
-            {moduleLabel}
+          <Badge variant="secondary" className={moduleBadgeClass[moduleName] || "bg-stone-100 text-stone-700 hover:bg-stone-100"}>
+            {moduleName}
           </Badge>
         );
       },
@@ -192,17 +143,13 @@ export default function LogsPage() {
     {
       key: "action",
       label: "Hành động",
-      render: (log) => <span className="text-stone-700">{getActionLabel(log.action)}</span>,
+      render: (log) => <span className="text-stone-700">{log.action}</span>,
     },
     {
       key: "detail",
       label: "Chi tiết",
       className: "max-w-[340px]",
-      render: (log) => (
-        <span className="text-stone-600 block truncate max-w-[340px]">
-          {getDetailLabel(log.detail)}
-        </span>
-      ),
+      render: (log) => <span className="block max-w-[340px] truncate text-stone-600">{log.detail || "--"}</span>,
     },
   ];
 
@@ -216,14 +163,20 @@ export default function LogsPage() {
       <PageHeader
         icon={ScrollText}
         title="Nhật ký hệ thống"
-        description="Theo dõi các thao tác đã diễn ra trong khu vực quản trị"
+        description={loading ? "Đang tải audit log..." : `${logs.length} bản ghi log đã đồng bộ`}
       />
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
           <Input
-            placeholder="Tìm theo người dùng, hành động hoặc chi tiết..."
+            placeholder="Tìm theo người dùng, hành động, chi tiết..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -246,7 +199,7 @@ export default function LogsPage() {
             <SelectItem value="all">Tất cả phân hệ</SelectItem>
             {moduleOptions.map((moduleName) => (
               <SelectItem key={moduleName} value={moduleName}>
-                {getModuleLabel(moduleName)}
+                {moduleName}
               </SelectItem>
             ))}
           </SelectContent>

@@ -1,3 +1,4 @@
+// Thẻ chứa nội dung, dùng cho hiển thị thông tin dạng block (ví dụ: ServiceCard, NewsCard...).
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

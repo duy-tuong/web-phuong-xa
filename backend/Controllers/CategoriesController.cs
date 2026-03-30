@@ -1,4 +1,7 @@
-﻿using backend.Data;
+﻿using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+using backend.Data;
 using backend.DTOs;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +23,6 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // GET ALL
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetCategories()
@@ -32,8 +34,6 @@ namespace backend.Controllers
             return Ok(categories);
         }
 
-
-        // GET BY ID
         [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCategory(int id)
@@ -42,18 +42,24 @@ namespace backend.Controllers
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
+            {
                 return NotFound("Category not found");
+            }
 
             return Ok(category);
         }
 
-
-        // CREATE
         [Authorize(Roles = "Admin,Editor")]
         [HttpPost]
         public async Task<IActionResult> CreateCategory(CreateCategoryDTO dto)
         {
-            var exists = await _context.Categories.AnyAsync(c => c.Name == dto.Name);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var normalizedName = dto.Name.Trim();
+            var exists = await _context.Categories.AnyAsync(c => c.Name == normalizedName);
             if (exists)
             {
                 return BadRequest("Category with the same name already exists.");
@@ -67,24 +73,28 @@ namespace backend.Controllers
             };
 
             _context.Categories.Add(category);
-
             await _context.SaveChangesAsync();
 
             return Ok(category);
         }
 
-
-        // UPDATE
         [Authorize(Roles = "Admin,Editor")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDTO dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var category = await _context.Categories.FindAsync(id);
-
             if (category == null)
+            {
                 return NotFound("Category not found");
+            }
 
-            var exists = await _context.Categories.AnyAsync(c => c.Name == dto.Name && c.Id != id);
+            var normalizedName = dto.Name.Trim();
+            var exists = await _context.Categories.AnyAsync(c => c.Name == normalizedName && c.Id != id);
             if (exists)
             {
                 return BadRequest("Category with the same name already exists.");
@@ -99,16 +109,15 @@ namespace backend.Controllers
             return Ok(category);
         }
 
-
-        // DELETE
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-
             if (category == null)
+            {
                 return NotFound("Category not found");
+            }
 
             var hasArticles = await _context.Articles.AnyAsync(a => a.CategoryId == id);
             if (hasArticles)
@@ -117,7 +126,6 @@ namespace backend.Controllers
             }
 
             _context.Categories.Remove(category);
-
             await _context.SaveChangesAsync();
 
             return Ok("Category deleted");

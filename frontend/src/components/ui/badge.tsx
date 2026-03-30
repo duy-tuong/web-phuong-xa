@@ -1,3 +1,4 @@
+//Hiển thị nhãn nhỏ (badge) cho trạng thái, phân loại, thông báo số lượng.
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 

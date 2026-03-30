@@ -1,29 +1,35 @@
-"use client";
+﻿"use client";
 
 import { CheckCircle2, Clock3, FileText } from "lucide-react";
 
-const statistics = [
-  {
-    title: "Tổng hồ sơ đã nộp",
-    value: "12",
-    icon: FileText,
-    iconClassName: "bg-blue-50 text-blue-600 p-3 rounded-full",
-  },
-  {
-    title: "Hồ sơ đang xử lý",
-    value: "3",
-    icon: Clock3,
-    iconClassName: "bg-orange-50 text-orange-600 p-3 rounded-full",
-  },
-  {
-    title: "Hồ sơ đã hoàn thành",
-    value: "9",
-    icon: CheckCircle2,
-    iconClassName: "bg-green-50 text-green-600 p-3 rounded-full",
-  },
-];
+type ProfileStatsProps = {
+  total: number;
+  pending: number;
+  completed: number;
+};
 
-export default function ProfileStats() {
+export default function ProfileStats({ total, pending, completed }: ProfileStatsProps) {
+  const statistics = [
+    {
+      title: "Tổng hồ sơ đã nộp",
+      value: total,
+      icon: FileText,
+      iconClassName: "bg-blue-50 text-blue-600 p-3 rounded-full",
+    },
+    {
+      title: "Hồ sơ đang xử lý",
+      value: pending,
+      icon: Clock3,
+      iconClassName: "bg-orange-50 text-orange-600 p-3 rounded-full",
+    },
+    {
+      title: "Hồ sơ đã hoàn thành",
+      value: completed,
+      icon: CheckCircle2,
+      iconClassName: "bg-green-50 text-green-600 p-3 rounded-full",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       {statistics.map((item) => {

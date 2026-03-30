@@ -18,7 +18,6 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // 🔹 GET COMMENTS BY ARTICLE
         [AllowAnonymous]
         [HttpGet("article/{articleId}")]
         public async Task<IActionResult> GetCommentsByArticle(int articleId)
@@ -38,17 +37,20 @@ namespace backend.Controllers
             return Ok(comments);
         }
 
-        // 🔹 CREATE COMMENT
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> CreateComment(CreateCommentDTO dto)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             var articleExists = await _context.Articles.AnyAsync(a => a.Id == dto.ArticleId);
             if (!articleExists)
+            {
                 return BadRequest("Article not found");
+            }
 
             var comment = new Comment
             {
@@ -56,7 +58,7 @@ namespace backend.Controllers
                 UserName = dto.UserName,
                 Content = dto.Content,
                 CreatedAt = DateTime.Now,
-                Status = "Pending" // chờ duyệt
+                Status = "Pending"
             };
 
             _context.Comments.Add(comment);
@@ -68,7 +70,6 @@ namespace backend.Controllers
             });
         }
 
-        // 🔹 ADMIN: GET ALL COMMENTS
         [Authorize(Roles = "Admin,Editor")]
         [HttpGet]
         public async Task<IActionResult> GetAllComments()
@@ -91,7 +92,6 @@ namespace backend.Controllers
             return Ok(comments);
         }
 
-        // 🔹 ADMIN: APPROVE / REJECT
         [Authorize(Roles = "Admin,Editor")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateComment(int id, UpdateCommentDTO dto)
@@ -103,12 +103,12 @@ namespace backend.Controllers
             }
 
             var comment = await _context.Comments.FindAsync(id);
-
             if (comment == null)
+            {
                 return NotFound();
+            }
 
             comment.Status = dto.Status;
-
             await _context.SaveChangesAsync();
 
             return Ok(new
@@ -118,15 +118,15 @@ namespace backend.Controllers
             });
         }
 
-        // 🔹 DELETE COMMENT
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComment(int id)
         {
             var comment = await _context.Comments.FindAsync(id);
-
             if (comment == null)
+            {
                 return NotFound();
+            }
 
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();

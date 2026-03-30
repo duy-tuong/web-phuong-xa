@@ -12,6 +12,7 @@ namespace backend.DTOs
         [MaxLength(100)]
         public string FullName { get; set; }
 
+        [Phone]
         public string? Phone { get; set; }
 
         public string? AvatarUrl { get; set; }

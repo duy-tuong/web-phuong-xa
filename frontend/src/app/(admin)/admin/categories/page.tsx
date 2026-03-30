@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { FolderTree, Pencil, Trash2 } from "lucide-react";
@@ -10,10 +10,14 @@ import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
 import api from "@/services/api";
 import { Category } from "@/types";
+import {
+  createCategory,
+  deleteCategory,
+  fetchCategoriesAdmin,
+  updateCategory,
+} from "@/services/admin/categories";
+import { getErrorMessage } from "@/services/admin/errors";
 
-// ---------------------------------------------------------------------------
-// Form data shape
-// ---------------------------------------------------------------------------
 interface CategoryFormData {
   name: string;
   slug: string;
@@ -61,9 +65,24 @@ export default function CategoriesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>(emptyForm);
-
-  // ----- delete state -----
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadCategories = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setCategories(await fetchCategoriesAdmin());
+    } catch (loadError) {
+      setError(getErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadCategories();
+  }, [loadCategories]);
 
   const fetchCategories = async () => {
     const res = await api.get("/categories");
@@ -116,7 +135,7 @@ export default function CategoriesPage() {
     setFormData({
       name: category.name,
       slug: category.slug || "",
-      description: category.description ?? "",
+      description: category.description || "",
     });
     setModalOpen(true);
   };
@@ -195,27 +214,21 @@ export default function CategoriesPage() {
     {
       key: "name",
       label: "Tên danh mục",
-      render: (category) => (
-        <span className="font-semibold text-stone-900">{category.name}</span>
-      ),
+      render: (category) => <span className="font-semibold text-stone-900">{category.name}</span>,
     },
     {
       key: "slug",
       label: "Slug",
       render: (category) => (
-        <code className="text-sm font-mono bg-stone-100 text-stone-600 px-2 py-0.5 rounded">
-          {category.slug}
+        <code className="rounded bg-stone-100 px-2 py-0.5 text-sm text-stone-600">
+          {category.slug || "--"}
         </code>
       ),
     },
     {
       key: "description",
       label: "Mô tả",
-      render: (category) => (
-        <span className="text-stone-500">
-          {category.description || "---"}
-        </span>
-      ),
+      render: (category) => <span className="text-stone-500">{category.description || "--"}</span>,
     },
     {
       key: "actions",
@@ -246,9 +259,6 @@ export default function CategoriesPage() {
     },
   ];
 
-  // -----------------------------------------------------------------------
-  // Render
-  // -----------------------------------------------------------------------
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -269,7 +279,12 @@ export default function CategoriesPage() {
         }
       />
 
-      {/* Data table */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       <DataTable
         columns={columns}
         data={pagedCategories}
@@ -316,12 +331,8 @@ export default function CategoriesPage() {
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
-        description={
-          editingCategory
-            ? "Cập nhật thông tin danh mục"
-            : "Điền thông tin để tạo danh mục mới"
-        }
+        title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
+        description="Thông tin sẽ đồng bộ trực tiếp với API categories."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -337,50 +348,36 @@ export default function CategoriesPage() {
           </div>
         }
       >
-        <div className="space-y-4 rounded-xl border border-[hsl(120,10%,88%)] bg-[linear-gradient(180deg,hsl(45,30%,99%),hsl(45,24%,97%))] p-4 sm:p-5">
-          <div className="pb-1">
-            <p className="text-sm font-semibold text-stone-900">Thông tin danh mục</p>
-            <p className="text-xs text-stone-500 mt-0.5">Các trường có dấu * là bắt buộc.</p>
-          </div>
-
-          {/* Name */}
+        <div className="space-y-4">
           <FormField
             type="text"
             label="Tên danh mục"
             name="name"
             required
             value={formData.name}
-            onChange={(v) => setFormData((prev) => ({ ...prev, name: v }))}
+            onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
             placeholder="Nhập tên danh mục"
           />
-
-          {/* Slug */}
           <FormField
             type="text"
             label="Slug"
             name="slug"
-            required
             value={formData.slug}
-            onChange={(v) => setFormData((prev) => ({ ...prev, slug: v }))}
-            placeholder="ten-danh-muc"
+            onChange={(value) => setFormData((prev) => ({ ...prev, slug: value }))}
+            placeholder="Để trống để backend tự sinh"
           />
-
-          {/* Description */}
           <FormField
             type="textarea"
             label="Mô tả"
             name="description"
             value={formData.description}
-            onChange={(v) =>
-              setFormData((prev) => ({ ...prev, description: v }))
-            }
+            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
             placeholder="Mô tả ngắn về danh mục"
             rows={3}
           />
         </div>
       </Modal>
 
-      {/* Delete confirmation */}
       <ConfirmDeleteModal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

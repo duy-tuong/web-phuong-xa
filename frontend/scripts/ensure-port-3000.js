@@ -11,17 +11,22 @@ function unique(values) {
 }
 
 function getPidsOnPortWindows(port) {
-  const output = execSync("netstat -ano -p tcp", { encoding: "utf8" });
-  return unique(
-    output
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.includes(`:${port}`) && line.includes("LISTENING"))
-      .map((line) => line.split(/\s+/).pop())
-      .filter(Boolean)
-      .map((pid) => Number(pid))
-      .filter((pid) => Number.isInteger(pid) && pid > 0),
-  );
+  try {
+    const output = execSync("netstat -ano -p tcp", { encoding: "utf8" });
+    return unique(
+      output
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.includes(`:${port}`) && line.includes("LISTENING"))
+        .map((line) => line.split(/\s+/).pop())
+        .filter(Boolean)
+        .map((pid) => Number(pid))
+        .filter((pid) => Number.isInteger(pid) && pid > 0),
+    );
+  } catch (error) {
+    console.warn(`[port-guard] Skipping netstat check: ${error.message}`);
+    return [];
+  }
 }
 
 function getPidsOnPortUnix(port) {

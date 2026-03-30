@@ -1,41 +1,118 @@
-﻿import Image from "next/image";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+
+import { copyLink, openShareUrl } from "@/lib/share";
 import ArticleCard from "@/components/ArticleCard";
 import CommentBox from "@/components/CommentBox";
 import { getArticleBySlug, getArticles, getCategories } from "@/services/articleService";
 import { getCommentsByArticleId } from "@/services/commentService";
+import type { Article } from "@/types/article";
+import type { Comment } from "@/types/comment";
 
-type TinTucSlugPageProps = {
-  params: Promise<{ slug: string }>;
-};
+const DEFAULT_CATEGORY_LABEL = "Tất cả";
+const RECENT_LABELS = ["2 giờ trước", "1 ngày trước", "2 ngày trước"];
 
-export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
-  const { slug } = await params;
-  const [article, allArticles, categoryLabels, comments] = await Promise.all([
-    getArticleBySlug(slug),
-    getArticles(),
-    getCategories(),
-    getCommentsByArticleId(slug),
-  ]);
+export default function TinTucSlugPage() {
+  const params = useParams<{ slug: string }>();
+  const slug = typeof params?.slug === "string" ? params.slug : "";
 
-  const categories = categoryLabels
-    .filter((label) => label !== "Tất cả")
-    .map((label) => ({
-      label,
-      count: allArticles.filter((item) => item.category === label).length,
-      active: article ? label === article.category : false,
-    }));
+  const [article, setArticle] = useState<Article | null>(null);
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [categoryLabels, setCategoryLabels] = useState<string[]>([DEFAULT_CATEGORY_LABEL]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const latestNews = allArticles
-    .filter((item) => item.slug !== slug)
-    .slice(0, 3)
-    .map((item, index) => ({
-      slug: item.slug,
-      title: item.title,
-      date: index === 0 ? "2 giờ trước" : index === 1 ? "1 ngày trước" : "2 ngày trước",
-      summary: item.bodyLead,
-      image: item.heroImage,
-    }));
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadArticlePage = async () => {
+      try {
+        const [nextArticle, nextArticles, nextCategories, nextComments] = await Promise.all([
+          getArticleBySlug(slug),
+          getArticles(),
+          getCategories(),
+          getCommentsByArticleId(slug),
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setArticle(nextArticle);
+        setAllArticles(nextArticles);
+        setCategoryLabels(nextCategories.length > 0 ? nextCategories : [DEFAULT_CATEGORY_LABEL]);
+        setComments(nextComments);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    if (slug) {
+      void loadArticlePage();
+    } else {
+      setIsLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  const categories = useMemo(
+    () =>
+      categoryLabels
+        .filter((label) => label !== DEFAULT_CATEGORY_LABEL)
+        .map((label) => ({
+          label,
+          count: allArticles.filter((item) => item.category === label).length,
+          active: article ? label === article.category : false,
+        })),
+    [allArticles, article, categoryLabels],
+  );
+
+  const latestNews = useMemo(
+    () =>
+      allArticles
+        .filter((item) => item.slug !== slug)
+        .slice(0, 3)
+        .map((item, index) => ({
+          slug: item.slug,
+          title: item.title,
+          date: RECENT_LABELS[index] ?? item.date,
+          summary: item.bodyLead,
+          image: item.heroImage,
+        })),
+    [allArticles, slug],
+  );
+
+  const relatedArticles = useMemo(() => {
+    if (!article) {
+      return [] as Article[];
+    }
+
+    return allArticles.filter((item) => item.slug !== article.slug && item.category === article.category);
+  }, [allArticles, article]);
+
+  const currentIndex = useMemo(() => allArticles.findIndex((item) => item.slug === slug), [allArticles, slug]);
+  const previousArticle = currentIndex > 0 ? allArticles[currentIndex - 1] : null;
+  const nextArticle = currentIndex >= 0 && currentIndex < allArticles.length - 1 ? allArticles[currentIndex + 1] : null;
+
+  if (isLoading) {
+    return (
+      <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-700" />
+          <p className="mt-4 text-sm font-medium text-slate-600">Đang tải nội dung bài viết...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!article) {
     return (
@@ -72,6 +149,9 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
     );
   }
 
+  const articleUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/tin-tuc/${article.slug}` : `/tin-tuc/${article.slug}`;
+
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
@@ -83,7 +163,7 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
           Tin tức
         </Link>
         <span className="material-symbols-outlined text-base">chevron_right</span>
-        <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">
+        <Link href={`/tin-tuc?category=${encodeURIComponent(article.category)}`} className="transition-colors hover:text-[#1f7a5a]">
           {article.category}
         </Link>
         <span className="material-symbols-outlined text-base">chevron_right</span>
@@ -94,12 +174,17 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
         <article className="col-span-12 flex flex-col gap-6 lg:col-span-8">
           <div className="flex flex-col gap-4">
             <div>
-              <span className="rounded bg-[#1f7a5a]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#1f7a5a]">
+              <Link
+                href={`/tin-tuc?category=${encodeURIComponent(article.category)}`}
+                className="rounded bg-[#1f7a5a]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#1f7a5a]"
+              >
                 {article.category}
-              </span>
+              </Link>
             </div>
 
-            <h1 className="text-3xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl">{article.title}</h1>
+            <h1 className="text-3xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
+              {article.title}
+            </h1>
 
             <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 pb-4 text-sm text-slate-600">
               <div className="flex items-center gap-1.5">
@@ -117,23 +202,46 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
             </div>
           </div>
 
-          <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="relative aspect-[16/9] w-full">
-              <Image src={article.heroImage} alt={article.title} fill className="object-cover" unoptimized sizes="(min-width: 1024px) 65vw, 100vw" />
-            </div>
-            <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.heroCaption}</figcaption>
-          </figure>
+          {article.heroImage ? (
+            <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="relative aspect-[16/9] w-full">
+                <Image
+                  src={article.heroImage}
+                  alt={article.title}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                  sizes="(min-width: 1024px) 65vw, 100vw"
+                />
+              </div>
+              <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">
+                {article.heroCaption}
+              </figcaption>
+            </figure>
+          ) : null}
 
           <div className="flex flex-wrap gap-3 py-1">
-            <button className="flex items-center gap-2 rounded-lg bg-[#1877F2] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1877F2]/90">
+            <button
+              type="button"
+              onClick={() => openShareUrl(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`)}
+              className="flex items-center gap-2 rounded-lg bg-[#1877F2] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1877F2]/90"
+            >
               <span className="material-symbols-outlined text-[20px]">share</span>
               Chia sẻ Facebook
             </button>
-            <button className="flex items-center gap-2 rounded-lg bg-[#0068FF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0068FF]/90">
+            <button
+              type="button"
+              onClick={() => openShareUrl(`https://zalo.me/share?url=${encodeURIComponent(articleUrl)}`)}
+              className="flex items-center gap-2 rounded-lg bg-[#0068FF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0068FF]/90"
+            >
               <span className="material-symbols-outlined text-[20px]">chat</span>
               Chia sẻ Zalo
             </button>
-            <button className="ml-auto flex items-center gap-2 rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-300">
+            <button
+              type="button"
+              onClick={() => void copyLink(articleUrl)}
+              className="ml-auto flex items-center gap-2 rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-300"
+            >
               <span className="material-symbols-outlined text-[20px]">link</span>
               Sao chép liên kết
             </button>
@@ -157,19 +265,23 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
               ))}
             </ul>
 
-            <figure className="my-8 overflow-hidden rounded-xl border border-slate-200">
-              <div className="relative aspect-[16/9] w-full">
-                <Image
-                  src={article.subImage}
-                  alt={article.subCaption}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                  sizes="(min-width: 1024px) 65vw, 100vw"
-                />
-              </div>
-              <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.subCaption}</figcaption>
-            </figure>
+            {article.subImage ? (
+              <figure className="my-8 overflow-hidden rounded-xl border border-slate-200">
+                <div className="relative aspect-[16/9] w-full">
+                  <Image
+                    src={article.subImage}
+                    alt={article.subCaption}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                    sizes="(min-width: 1024px) 65vw, 100vw"
+                  />
+                </div>
+                <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">
+                  {article.subCaption}
+                </figcaption>
+              </figure>
+            ) : null}
           </div>
 
           <div className="mt-2 flex items-center gap-2 border-t border-slate-200 pt-6">
@@ -177,7 +289,11 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
             <span className="text-sm font-medium text-slate-700">Từ khóa:</span>
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag) => (
-                <Link key={tag} href="/tin-tuc" className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700 transition-colors hover:bg-slate-200">
+                <Link
+                  key={tag}
+                  href={`/tin-tuc?q=${encodeURIComponent(tag)}`}
+                  className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700 transition-colors hover:bg-slate-200"
+                >
                   {tag}
                 </Link>
               ))}
@@ -185,35 +301,41 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
           </div>
 
           <div className="mt-4 flex flex-col items-stretch justify-between gap-4 border-t border-slate-200 py-8 sm:flex-row sm:items-center">
-            <Link href="/tin-tuc" className="group flex items-center gap-3 sm:max-w-[45%]">
-              <div className="flex size-10 items-center justify-center rounded-full border border-slate-300 transition-all group-hover:border-[#1f7a5a] group-hover:bg-[#1f7a5a] group-hover:text-white">
-                <span className="material-symbols-outlined">arrow_back</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bài trước</span>
-                <span className="line-clamp-2 text-sm font-medium text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
-                  Thông báo lịch tiếp công dân tháng 11/2024
-                </span>
-              </div>
-            </Link>
+            {previousArticle ? (
+              <Link href={`/tin-tuc/${previousArticle.slug}`} className="group flex items-center gap-3 sm:max-w-[45%]">
+                <div className="flex size-10 items-center justify-center rounded-full border border-slate-300 transition-all group-hover:border-[#1f7a5a] group-hover:bg-[#1f7a5a] group-hover:text-white">
+                  <span className="material-symbols-outlined">arrow_back</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bài trước</span>
+                  <span className="line-clamp-2 text-sm font-medium text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
+                    {previousArticle.title}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
 
-            <Link href="/tin-tuc" className="group flex items-center justify-end gap-3 text-right sm:max-w-[45%]">
-              <div className="flex flex-col">
-                <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bài tiếp theo</span>
-                <span className="line-clamp-2 text-sm font-medium text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
-                  Ra quân dọn dẹp vệ sinh môi trường tuyến đường kiểu mẫu
-                </span>
-              </div>
-              <div className="flex size-10 items-center justify-center rounded-full border border-slate-300 transition-all group-hover:border-[#1f7a5a] group-hover:bg-[#1f7a5a] group-hover:text-white">
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </div>
-            </Link>
+            {nextArticle ? (
+              <Link href={`/tin-tuc/${nextArticle.slug}`} className="group flex items-center justify-end gap-3 text-right sm:max-w-[45%]">
+                <div className="flex flex-col">
+                  <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bài tiếp theo</span>
+                  <span className="line-clamp-2 text-sm font-medium text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
+                    {nextArticle.title}
+                  </span>
+                </div>
+                <div className="flex size-10 items-center justify-center rounded-full border border-slate-300 transition-all group-hover:border-[#1f7a5a] group-hover:bg-[#1f7a5a] group-hover:text-white">
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </div>
+              </Link>
+            ) : null}
           </div>
 
-          <CommentBox comments={comments} />
+          <CommentBox articleSlug={article.slug} comments={comments} />
         </article>
 
-        <aside className="col-span-12 lg:col-span-4 lg:sticky lg:top-24">
+        <aside className="col-span-12 lg:sticky lg:top-24 lg:col-span-4">
           <div className="flex flex-col gap-8">
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h3 className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 text-lg font-bold text-slate-900">
@@ -224,9 +346,11 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
                 {categories.map((item) => (
                   <li key={item.label}>
                     <Link
-                      href="/tin-tuc"
+                      href={`/tin-tuc?category=${encodeURIComponent(item.label)}`}
                       className={`group flex items-center justify-between py-2 text-sm ${
-                        item.active ? "font-medium text-[#1f7a5a]" : "text-slate-700 transition-colors hover:text-[#1f7a5a]"
+                        item.active
+                          ? "font-medium text-[#1f7a5a]"
+                          : "text-slate-700 transition-colors hover:text-[#1f7a5a]"
                       }`}
                     >
                       <span className="flex items-center gap-2">
@@ -239,7 +363,11 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
                         </span>
                         {item.label}
                       </span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${item.active ? "bg-[#1f7a5a]/10 text-[#1f7a5a]" : "bg-slate-100 text-slate-600"}`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs ${
+                          item.active ? "bg-[#1f7a5a]/10 text-[#1f7a5a]" : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
                         {item.count}
                       </span>
                     </Link>
@@ -272,14 +400,42 @@ export default async function TinTucSlugPage({ params }: TinTucSlugPageProps) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
                 <div className="absolute bottom-0 z-10 p-5 text-white">
-                  <span className="mb-2 inline-block rounded bg-[#db2777] px-2 py-0.5 text-[10px] font-bold uppercase">Thông báo quan trọng</span>
+                  <span className="mb-2 inline-block rounded bg-[#db2777] px-2 py-0.5 text-[10px] font-bold uppercase">
+                    Thông báo quan trọng
+                  </span>
                   <h4 className="mb-2 text-lg font-bold leading-tight">Tải ứng dụng Công dân Đồng Tháp</h4>
-                  <button className="rounded-lg border border-white/30 bg-white/20 px-4 py-1.5 text-sm backdrop-blur-sm transition-colors hover:bg-white/30">
-                    Xem chi tiết
-                  </button>
+                  <Link
+                    href="/dich-vu"
+                    className="rounded-lg border border-white/30 bg-white/20 px-4 py-1.5 text-sm backdrop-blur-sm transition-colors hover:bg-white/30"
+                  >
+                    Xem dịch vụ công
+                  </Link>
                 </div>
               </div>
             </section>
+
+            {relatedArticles.length > 0 ? (
+              <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h3 className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 text-lg font-bold text-slate-900">
+                  <span className="material-symbols-outlined text-[#1f7a5a]">interests</span>
+                  Bài viết liên quan
+                </h3>
+                <div className="flex flex-col gap-4">
+                  {relatedArticles.slice(0, 3).map((item) => (
+                    <ArticleCard
+                      key={item.slug}
+                      slug={item.slug}
+                      title={item.title}
+                      image={item.heroImage}
+                      date={item.date}
+                      summary={item.bodyLead}
+                      category={item.category}
+                      layout="horizontal"
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </div>
         </aside>
       </div>

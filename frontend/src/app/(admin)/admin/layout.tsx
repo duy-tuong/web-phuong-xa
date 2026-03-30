@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -11,20 +11,13 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isMounted, setIsMounted] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
 
-  useEffect(() => {
-    // This one-time gate prevents SSR/CSR mismatch from interactive Radix controls.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsMounted(true);
-    const storedValue = localStorage.getItem("admin_sidebar_collapsed");
-    setIsSidebarCollapsed(storedValue === "1");
-  }, []);
-
-  if (!isMounted) {
-    return <div className="min-h-screen bg-[hsl(48,33%,97%)]" />;
-  }
+    return localStorage.getItem("admin_sidebar_collapsed") === "1";
+  });
 
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed((prev) => {
@@ -36,16 +29,8 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-[hsl(48,33%,97%)]">
-      <AdminSidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={handleToggleSidebar}
-      />
-      <div
-        className={cn(
-          "transition-all duration-300",
-          isSidebarCollapsed ? "lg:pl-[84px]" : "lg:pl-[250px]"
-        )}
-      >
+      <AdminSidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={handleToggleSidebar} />
+      <div className={cn("transition-all duration-300", isSidebarCollapsed ? "lg:pl-[84px]" : "lg:pl-[250px]")}>
         <AdminHeader />
         <main className="p-3 sm:p-4 lg:p-6">{children}</main>
       </div>

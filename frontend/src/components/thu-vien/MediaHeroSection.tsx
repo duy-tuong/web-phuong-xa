@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Image from "next/image";
 
 const HERO_IMAGE =
@@ -5,7 +6,7 @@ const HERO_IMAGE =
 
 export default function MediaHeroSection() {
   return (
-    <section className="relative flex min-h-[450px] h-[50vh] w-full items-center justify-center overflow-hidden">
+    <section className="relative flex h-[50vh] min-h-[450px] w-full items-center justify-center overflow-hidden">
       <Image
         src={HERO_IMAGE}
         alt="Thư viện media Phường Cao Lãnh"
@@ -19,15 +20,18 @@ export default function MediaHeroSection() {
 
       <div className="z-10 flex max-w-4xl flex-col items-center gap-6 px-4 text-center">
         <h1 className="text-4xl font-black leading-tight tracking-tight text-white drop-shadow-lg md:text-6xl">
-          Thư Viện Hình Ảnh &amp; Video
+          Thư viện hình ảnh và video
         </h1>
         <p className="max-w-2xl text-lg font-medium text-slate-100 drop-shadow-md md:text-xl">
           Khám phá nét đẹp văn hóa, lịch sử và con người Phường Cao Lãnh qua những khung hình chân thực và sống động nhất.
         </p>
-        <button className="mt-4 flex items-center gap-2 rounded-full bg-[#1f7a5a] px-8 py-3 font-bold text-white shadow-lg transition-all duration-300 hover:bg-[#1f7a5a]/90">
-          <span>Khám Phá Ngay</span>
-          <span className="material-symbols-outlined text-sm">arrow_downward</span>
-        </button>
+        <Link
+          href="/thu-vien/hinh-anh"
+          className="mt-4 flex items-center gap-2 rounded-full bg-[#1f7a5a] px-8 py-3 font-bold text-white shadow-lg transition-all duration-300 hover:bg-[#1f7a5a]/90"
+        >
+          <span>Khám phá ngay</span>
+          <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </Link>
       </div>
     </section>
   );

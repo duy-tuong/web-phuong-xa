@@ -1,12 +1,20 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+
+import { createPublicApplication } from "@/services/applicationService";
+import { getProcedures } from "@/services/serviceService";
+
+type ServiceOption = {
+  id: number;
+  title: string;
+};
 
 type FormData = {
   fullName: string;
   phone: string;
   email: string;
-  category: string;
+  serviceId: string;
   message: string;
 };
 
@@ -16,15 +24,54 @@ const initialFormData: FormData = {
   fullName: "",
   phone: "",
   email: "",
-  category: "",
+  serviceId: "",
   message: "",
 };
 
 export default function ContactForm() {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [serviceOptions, setServiceOptions] = useState<ServiceOption[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadServices = async () => {
+      setIsLoadingServices(true);
+
+      try {
+        const procedures = await getProcedures();
+        const options = procedures
+          .map((procedure) => ({
+            id: Number(procedure.id),
+            title: procedure.title,
+          }))
+          .filter((procedure) => Number.isFinite(procedure.id));
+
+        if (isMounted) {
+          setServiceOptions(options);
+        }
+      } catch {
+        if (isMounted) {
+          setServiceOptions([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingServices(false);
+        }
+      }
+    };
+
+    void loadServices();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
@@ -35,8 +82,8 @@ export default function ContactForm() {
     if (!formData.phone.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại.";
     }
-    if (!formData.category.trim()) {
-      newErrors.category = "Vui lòng chọn chuyên mục.";
+    if (!formData.serviceId.trim()) {
+      newErrors.serviceId = "Vui lòng chọn dịch vụ.";
     }
     if (!formData.message.trim()) {
       newErrors.message = "Vui lòng nhập nội dung phản hồi.";
@@ -46,22 +93,33 @@ export default function ContactForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitSuccess(false);
+    setSubmitError("");
 
-    if (!validateForm() || isSubmitting) {
+    if (!validateForm()) {
       return;
     }
 
-    setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+      await createPublicApplication({
+        serviceId: Number(formData.serviceId),
+        applicantName: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+      });
+
       setSubmitSuccess(true);
       setFormData(initialFormData);
       setErrors({});
-    }, 1500);
+    } catch {
+      setSubmitError("Không thể gửi yêu cầu lúc này. Vui lòng thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputClass = (field: keyof FormData) =>
@@ -72,7 +130,7 @@ export default function ContactForm() {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
       <h2 className="mb-2 text-2xl font-bold text-slate-900">Góp ý &amp; Liên hệ</h2>
-      <p className="mb-6 text-sm text-slate-600">Vui lòng điền thông tin để gửi phản ánh, kiến nghị hoặc góp ý.</p>
+      <p className="mb-6 text-sm text-slate-600">Vui lòng điền thông tin để gửi yêu cầu trực tiếp đến hệ thống tiếp nhận hồ sơ.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -111,19 +169,26 @@ export default function ContactForm() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Chuyên mục <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Dịch vụ cần liên hệ <span className="text-red-500">*</span></label>
           <select
-            value={formData.category}
-            onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-            className={inputClass("category")}
+            value={formData.serviceId}
+            onChange={(e) => setFormData((prev) => ({ ...prev, serviceId: e.target.value }))}
+            className={inputClass("serviceId")}
+            disabled={isLoadingServices || serviceOptions.length === 0}
           >
-            <option value="">Chọn chuyên mục</option>
-            <option value="hanh-chinh">Thủ tục hành chính</option>
-            <option value="ha-tang">Hạ tầng - đô thị</option>
-            <option value="an-sinh">An sinh xã hội</option>
-            <option value="khac">Khác</option>
+            <option value="">
+              {isLoadingServices ? "Đang tải danh sách dịch vụ..." : "Chọn dịch vụ"}
+            </option>
+            {serviceOptions.map((service) => (
+              <option key={service.id} value={String(service.id)}>
+                {service.title}
+              </option>
+            ))}
           </select>
-          {errors.category ? <p className="mt-1 text-xs text-red-500">{errors.category}</p> : null}
+          {errors.serviceId ? <p className="mt-1 text-xs text-red-500">{errors.serviceId}</p> : null}
+          {!isLoadingServices && serviceOptions.length === 0 ? (
+            <p className="mt-1 text-xs text-amber-600">Không tải được danh sách dịch vụ. Vui lòng thử tải lại trang.</p>
+          ) : null}
         </div>
 
         <div>
@@ -140,22 +205,21 @@ export default function ContactForm() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1f7a5a] px-5 py-3 font-bold text-white transition-colors hover:bg-[#155a42] disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={isSubmitting || isLoadingServices || serviceOptions.length === 0}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1f7a5a] px-5 py-3 font-bold text-white transition-colors hover:bg-[#155a42]"
         >
-          {isSubmitting ? (
-            <>
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Đang gửi...
-            </>
-          ) : (
-            "Gửi phản hồi"
-          )}
+          {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu"}
         </button>
+
+        {submitError ? (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            {submitError}
+          </p>
+        ) : null}
 
         {submitSuccess ? (
           <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
-            Gửi phản hồi thành công. Cảm ơn bạn đã đóng góp ý kiến.
+            Đã gửi yêu cầu thành công. Chúng tôi sẽ tiếp nhận và phản hồi sớm nhất.
           </p>
         ) : null}
       </form>

@@ -43,7 +43,6 @@ export default function AdminSidebar({
         "bg-[hsl(156,38%,22%)] border-[hsl(156,24%,18%)]"
       )}
     >
-      {/* Logo / Brand */}
       <div
         className={cn(
           "flex items-center h-16 border-b border-[hsl(156,24%,18%)]",
@@ -96,7 +95,6 @@ export default function AdminSidebar({
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className={cn("flex-1 py-4 space-y-1 overflow-y-auto", isCollapsed ? "px-2" : "px-3")}>
         {filteredNavItems.map((item) => {
           const isActive =
@@ -146,7 +144,7 @@ export default function AdminSidebar({
         >
           {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           <span className={cn(isCollapsed && "hidden")}>
-            {isCollapsed ? "Mở rộng" : "Thu gọn "}
+            {isCollapsed ? "Mở rộng" : "Thu gọn"}
           </span>
         </Button>
       </div>

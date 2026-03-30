@@ -1,3 +1,4 @@
+//Hiển thị chú thích nhỏ khi hover vào icon, nút, text.
 "use client"
 
 import * as React from "react"

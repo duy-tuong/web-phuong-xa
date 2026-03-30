@@ -1,4 +1,7 @@
-﻿using backend.Data;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using backend.Data;
 using backend.DTOs;
 using backend.Models;
 using backend.Services;
@@ -25,8 +28,6 @@ namespace backend.Controllers
             _jwtService = jwtService;
         }
 
-
-        // REGISTER
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTO model)
         {
@@ -82,8 +83,6 @@ namespace backend.Controllers
             });
         }
 
-
-        // LOGIN
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDTO model)
         {
@@ -96,9 +95,7 @@ namespace backend.Controllers
                 return Unauthorized("Invalid username");
             }
 
-            bool verifyPassword = BCrypt.Net.BCrypt
-                .Verify(model.Password, user.PasswordHash);
-
+            var verifyPassword = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
             if (!verifyPassword)
             {
                 return Unauthorized("Invalid password");
@@ -115,8 +112,6 @@ namespace backend.Controllers
             });
         }
 
-
-        // GET CURRENT USER
         [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> Me()
@@ -191,7 +186,9 @@ namespace backend.Controllers
         public IActionResult DebugToken([FromHeader(Name = "Authorization")] string authHeader)
         {
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+            {
                 return BadRequest("No token");
+            }
 
             var token = authHeader.Substring("Bearer ".Length).Trim();
 
@@ -231,11 +228,17 @@ namespace backend.Controllers
                 return BadRequest("Validation failed: " + ex.Message);
             }
         }
+
         [HttpGet("test-auth")]
         [Authorize]
         public IActionResult TestAuth()
         {
             return Ok("Authentication OK! User: " + User.Identity?.Name);
+        }
+
+        private static string? NormalizeOptional(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
     }
 }

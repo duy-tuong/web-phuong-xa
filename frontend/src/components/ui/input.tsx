@@ -1,3 +1,4 @@
+// Component input chuẩn cho nhập liệu (text, email, password...).
 import * as React from "react"
 
 import { cn } from "@/lib/utils"

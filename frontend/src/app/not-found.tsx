@@ -1,3 +1,7 @@
+/*Khi Next.js không tìm thấy route phù hợp, component này sẽ tự động được render.
+Giao diện gồm:
+Icon cảnh báo lớn ở giữa.
+Dòng chữ “Lỗi 404” và tiêu đề “Không tìm thấy trang”.*/
 import Link from "next/link";
 
 export default function NotFound() {

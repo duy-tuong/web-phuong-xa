@@ -1,4 +1,8 @@
-"use client";
+﻿"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
+import { CheckCircle, MessageSquare, Search, Trash2 } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/admin/PageHeader";
@@ -19,10 +23,7 @@ import api from "@/services/api";
 import { MessageSquare, Search, CheckCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
-const statusConfig: Record<
-  Comment["status"],
-  { label: string; className: string }
-> = {
+const statusConfig: Record<Comment["status"], { label: string; className: string }> = {
   pending: {
     label: "Chờ duyệt",
     className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
@@ -99,8 +100,13 @@ export default function CommentsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    void loadComments();
+  }, [loadComments]);
+
   const filteredComments = useMemo(() => {
     return comments.filter((comment) => {
+      const keyword = searchQuery.toLowerCase();
       const matchesSearch =
         searchQuery === "" ||
         comment.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -112,6 +118,7 @@ export default function CommentsPage() {
       const matchesStatus =
         statusFilter === "all" || comment.status === statusFilter;
 
+      const matchesStatus = statusFilter === "all" || comment.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [comments, searchQuery, statusFilter]);
@@ -143,9 +150,7 @@ export default function CommentsPage() {
     {
       key: "userName",
       label: "Người dùng",
-      render: (comment) => (
-        <span className="font-medium text-stone-800">{comment.userName}</span>
-      ),
+      render: (comment) => <span className="font-medium text-stone-800">{comment.userName}</span>,
     },
     {
       key: "articleTitle",
@@ -159,11 +164,7 @@ export default function CommentsPage() {
     {
       key: "content",
       label: "Nội dung",
-      render: (comment) => (
-        <p className="line-clamp-2 max-w-xs text-stone-700">
-          {comment.content}
-        </p>
-      ),
+      render: (comment) => <p className="line-clamp-2 max-w-xs text-stone-700">{comment.content}</p>,
     },
     {
       key: "status",
@@ -175,12 +176,8 @@ export default function CommentsPage() {
     },
     {
       key: "createdAt",
-      label: "Ngày",
-      render: (comment) => (
-        <span className="text-sm text-stone-500">
-          {format(new Date(comment.createdAt), "dd/MM/yyyy HH:mm")}
-        </span>
-      ),
+      label: "Ngày tạo",
+      render: (comment) => <span className="text-sm text-stone-500">{format(new Date(comment.createdAt), "dd/MM/yyyy HH:mm")}</span>,
     },
     {
       key: "actions",
@@ -191,7 +188,7 @@ export default function CommentsPage() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleApprove(comment.id)}
+              onClick={() => handleStatusChange(comment.id, "approved")}
               className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 w-8 h-8"
               title="Duyệt bình luận"
             >
@@ -224,17 +221,22 @@ export default function CommentsPage() {
       <PageHeader
         icon={MessageSquare}
         title="Quản lý bình luận"
-        description="Kiểm duyệt bình luận từ người dùng"
+        description={loading ? "Đang tải bình luận..." : `${comments.length} bình luận đang có trong hệ thống`}
       />
 
-      {/* Filter Row */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
           <Input
-            placeholder="Tìm kiếm theo người dùng hoặc nội dung..."
+            placeholder="Tìm theo người dùng, bài viết, nội dung..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => setSearchQuery(event.target.value)}
             className="pl-9 bg-white border-stone-200"
           />
         </div>
@@ -251,14 +253,12 @@ export default function CommentsPage() {
         </Select>
       </div>
 
-      {/* Data Table */}
       <DataTable
         columns={columns}
         data={filteredComments}
         emptyMessage={isLoading ? "Đang tải bình luận..." : "Không có bình luận nào"}
       />
 
-      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

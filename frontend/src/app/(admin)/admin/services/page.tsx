@@ -1,4 +1,8 @@
-"use client";
+﻿"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FileDown, Landmark, Pencil, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import PageHeader from "@/components/admin/PageHeader";
@@ -13,7 +17,25 @@ import { Landmark, Pencil, Trash2, FileDown } from "lucide-react";
 import { format } from "date-fns";
 import api from "@/services/api";
 
-const formatCurrency = (value: number) => {
+interface ServiceFormState {
+  name: string;
+  description: string;
+  requiredDocuments: string;
+  processingTime: string;
+  fee: string;
+  templateFile: string;
+}
+
+const emptyForm: ServiceFormState = {
+  name: "",
+  description: "",
+  requiredDocuments: "",
+  processingTime: "",
+  fee: "0",
+  templateFile: "",
+};
+
+function formatCurrency(value: number) {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
@@ -75,6 +97,9 @@ export default function ServicesPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [formData, setFormData] = useState<ServiceFormState>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -86,9 +111,9 @@ export default function ServicesPage() {
   const [formTemplateName, setFormTemplateName] = useState("");
   const templateInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Delete state
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deletingService, setDeletingService] = useState<Service | null>(null);
+  useEffect(() => {
+    void loadServices();
+  }, [loadServices]);
 
   // ---------- Handlers ----------
 
@@ -171,16 +196,19 @@ export default function ServicesPage() {
 
   const handleSave = async () => {
     if (
-      !formName.trim() ||
-      !formDescription.trim() ||
-      !formRequiredDocuments.trim() ||
-      !formProcessingTime.trim()
+      !formData.name.trim() ||
+      !formData.description.trim() ||
+      !formData.requiredDocuments.trim() ||
+      !formData.processingTime.trim() ||
+      Number.isNaN(fee) ||
+      fee < 0
     ) {
       return;
     }
 
-    const feeValue = Number(formFee);
-    if (Number.isNaN(feeValue) || feeValue < 0) return;
+    try {
+      setSubmitting(true);
+      setError("");
 
     setErrorMessage("");
     setIsSaving(true);
@@ -266,28 +294,20 @@ export default function ServicesPage() {
     {
       key: "name",
       label: "Tên dịch vụ",
-      render: (item) => (
-        <span className="font-medium text-stone-900">{item.name}</span>
-      ),
+      render: (item) => <span className="font-medium text-stone-900">{item.name}</span>,
     },
     {
       key: "description",
       label: "Mô tả",
       className: "max-w-sm",
-      render: (item) => (
-        <span className="text-stone-600 truncate block max-w-sm">
-          {item.description}
-        </span>
-      ),
+      render: (item) => <span className="block max-w-sm truncate text-stone-600">{item.description}</span>,
     },
     {
       key: "requiredDocuments",
-      label: "Giấy tờ yêu cầu",
+      label: "Hồ sơ yêu cầu",
       className: "max-w-sm",
       render: (item) => (
-        <span className="text-stone-600 truncate block max-w-sm">
-          {item.requiredDocuments}
-        </span>
+        <span className="block max-w-sm truncate text-stone-600">{item.requiredDocuments}</span>
       ),
     },
     {
@@ -326,12 +346,12 @@ export default function ServicesPage() {
             </a>
           </Badge>
         ) : (
-          <span className="text-stone-400">&mdash;</span>
+          <span className="text-stone-400">--</span>
         ),
     },
     {
       key: "createdAt",
-      label: "Ngày tạo",
+      label: "Cập nhật",
       render: (item) => (
         <span className="text-stone-600 text-sm">
           {format(
@@ -368,8 +388,6 @@ export default function ServicesPage() {
       ),
     },
   ];
-
-  // ---------- Render ----------
 
   return (
     <div className="space-y-6">
@@ -431,20 +449,15 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* Create / Edit Modal */}
       <Modal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editingService ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ mới"}
-        description={
-          editingService
-            ? "Cập nhật thông tin dịch vụ hành chính"
-            : "Điền thông tin để tạo dịch vụ hành chính mới"
-        }
+        onClose={closeModal}
+        title={editingService ? "Cập nhật dịch vụ" : "Thêm dịch vụ mới"}
+        description="Dữ liệu được lưu trực tiếp vào API services."
         size="lg"
         footer={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={closeModal}>
               Hủy
             </Button>
             <Button
@@ -491,9 +504,9 @@ export default function ServicesPage() {
             label="Mô tả"
             name="description"
             required
-            value={formDescription}
-            onChange={setFormDescription}
-            placeholder="Mô tả chi tiết về dịch vụ"
+            value={formData.description}
+            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
+            placeholder="Mô tả chi tiết dịch vụ"
             rows={4}
           />
           <FormField
@@ -518,11 +531,11 @@ export default function ServicesPage() {
             />
             <FormField
               type="number"
-              label="Lệ phí (VND)"
+              label="Lệ phí"
               name="fee"
               required
-              value={formFee}
-              onChange={setFormFee}
+              value={formData.fee}
+              onChange={(value) => setFormData((prev) => ({ ...prev, fee: value }))}
               placeholder="0"
             />
           </div>
@@ -530,9 +543,9 @@ export default function ServicesPage() {
             type="text"
             label="Đường dẫn biểu mẫu"
             name="templateFile"
-            value={formTemplateFile}
-            onChange={setFormTemplateFile}
-            placeholder="VD: khai-sinh-form.docx (không bắt buộc)"
+            value={formData.templateFile}
+            onChange={(value) => setFormData((prev) => ({ ...prev, templateFile: value }))}
+            placeholder="/uploads/file.docx hoặc URL đầy đủ"
           />
           <div className="space-y-1.5">
             <label
@@ -587,12 +600,11 @@ export default function ServicesPage() {
         </div>
       </Modal>
 
-      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
-        open={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        itemName={deletingService?.name}
+        itemName={deleteTarget?.name}
       />
     </div>
   );

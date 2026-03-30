@@ -1,3 +1,5 @@
+//Component phần đầu trang (hero section), thường hiển thị tiêu đề lớn, 
+// hình ảnh hoặc slogan nổi bật về phường/xã.
 "use client";
 
 import { useState, useEffect } from "react";
@@ -47,7 +49,7 @@ export default function AboutHero() {
   }, []);
 
   return (
-    <section className="relative h-[600px] w-full overflow-hidden bg-slate-900 shadow-sm md:h-[650px]">
+    <section className="relative h-[52vh] min-h-[420px] max-h-[760px] w-full overflow-hidden bg-slate-900 shadow-sm md:h-[58vh] lg:h-[70vh] xl:h-[78vh]">
       {SLIDES.map((slide, index) => (
         <div
           key={slide.id}
@@ -58,7 +60,7 @@ export default function AboutHero() {
             src={slide.image}
             alt={slide.title}
             fill
-            className={`h-full w-full object-cover object-center transition-transform duration-[12000ms] ease-out ${index === currentSlide ? "scale-105" : "scale-100"
+            className={`h-full w-full object-cover object-center transition-transform duration-[12000ms] ease-out lg:object-[center_42%] ${index === currentSlide ? "scale-[1.02]" : "scale-100"
               }`}
             priority={index === 0}
             unoptimized={typeof slide.image === "string"}
@@ -70,9 +72,9 @@ export default function AboutHero() {
       ))}
 
       {/* Nội dung Slide */}
-      <div className="absolute inset-0 z-20 mx-auto flex h-full w-full max-w-[1200px] items-center px-4 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 z-20 mx-auto flex h-full w-full max-w-[1360px] items-center px-4 sm:px-8 lg:px-12 xl:px-16">
         <div
-          className="max-w-3xl transform transition-all duration-1000 ease-out translate-y-0 opacity-100"
+          className="max-w-3xl transform translate-y-0 opacity-100 transition-all duration-1000 ease-out lg:max-w-4xl"
           key={currentSlide} // Bắt buộc React render lại để chạy anims CSS nội bộ nếu cần
         >
           <div className="inline-flex animate-fade-in-up items-center gap-3 overflow-hidden rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold tracking-widest text-white backdrop-blur-md mb-6">
@@ -81,14 +83,14 @@ export default function AboutHero() {
           </div>
 
           <h1
-            className={`animate-fade-in-up py-2 text-5xl font-black uppercase leading-tight md:text-6xl lg:text-7xl ${SLIDES[currentSlide].titleClass}`}
+            className={`animate-fade-in-up py-2 text-4xl font-black uppercase leading-tight sm:text-5xl md:text-6xl xl:text-7xl ${SLIDES[currentSlide].titleClass}`}
             style={{ animationDelay: "150ms", animationFillMode: "both" }}
           >
             {SLIDES[currentSlide].title}
           </h1>
 
           <p
-            className={`mt-6 animate-fade-in-up text-lg font-light leading-relaxed md:text-2xl drop-shadow-md lg:mt-8 lg:max-w-2xl ${SLIDES[currentSlide].descClass}`}
+            className={`mt-6 animate-fade-in-up text-lg font-light leading-relaxed drop-shadow-md md:text-2xl lg:mt-8 lg:max-w-3xl ${SLIDES[currentSlide].descClass}`}
             style={{ animationDelay: "300ms", animationFillMode: "both" }}
           >
             {SLIDES[currentSlide].subtitle}
@@ -97,7 +99,7 @@ export default function AboutHero() {
       </div>
 
       {/* Slide Indicators - Chấm tròn */}
-      <div className="absolute bottom-8 left-1/2 z-30 flex -translate-x-1/2 gap-4">
+      <div className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 gap-4 md:bottom-8 lg:bottom-10">
         {SLIDES.map((slide, index) => (
           <button
             key={slide.id}

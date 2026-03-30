@@ -2,6 +2,7 @@
 using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
@@ -87,6 +88,21 @@ builder.Services.AddAuthentication(options =>
 
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            if (string.IsNullOrWhiteSpace(context.Token))
+            {
+                var forwardedAuth = context.Request.Headers["X-Admin-Authorization"].FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(forwardedAuth) &&
+                    forwardedAuth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Token = forwardedAuth["Bearer ".Length..].Trim();
+                }
+            }
+
+            return Task.CompletedTask;
+        },
+
         OnTokenValidated = context =>
         {
             Console.WriteLine(">>> JWT Token VALIDATED SUCCESSFULLY for user: " + context.Principal?.Identity?.Name);
@@ -133,7 +149,14 @@ if (app.Environment.IsDevelopment())
 // Middleware
 app.UseHttpsRedirection();  // có thể comment tạm nếu dùng HTTP
 
-app.UseStaticFiles(); // Added to serve uploaded media files from wwwroot/uploads
+var webRootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(webRootPath);
+Directory.CreateDirectory(Path.Combine(webRootPath, "uploads"));
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(webRootPath)
+}); // Serve uploaded media files from backend/wwwroot/uploads
 
 app.UseRouting();
 

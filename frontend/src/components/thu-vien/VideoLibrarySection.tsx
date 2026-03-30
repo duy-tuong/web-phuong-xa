@@ -1,41 +1,70 @@
-import VideoItem, { type VideoItemData } from "@/components/thu-vien/VideoItem";
+import Link from "next/link";
 
-const videos: VideoItemData[] = [
-  {
-    title: "Lễ hội Sen hồng 2024",
-    date: "Cập nhật: 10/05/2024",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuB2qoqrl7bc1IcB-JmuXJVXDR3_bIuMR1jD-FMbGPjAECH4IDLDRVtWleiIUwN7Din8YRHARKf6y_2ZPFh9bvzx-h3TU0UPWcz3C2__gXuVFOB2j_S3_fqkAMzDnqnfMYq2X_Cn9-QQZrJBWlVycui3nBr4xqdknlsgAQ62NUis99Ota5fDh-1fXB76QAfEacCOCyiSXfj7OObVkqJrjyJ09VDltibkr-TKB2e97OPXU02vUMe-Tf4BA0CbkXej-2zVgYNi_mXiJXHy",
-  },
-  {
-    title: "Ẩm thực Đồng Tháp",
-    date: "Cập nhật: 12/04/2024",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAExJUPDQqG-SnOabzHShdMm_xKq18RakMA2wfaLP1-zlM4jxOcXQRrfW-12NWPfE3kMAHLN7vBTgo01jk9kDcFwpsrUcuwLHGPvF-yXz-hY1bqe357trVjqsPT66Bhn0Z75rPsnoOx2xu9H8gxBDvwvTiq94bgUheMD3MCLeujFwUNuQvg74tkpVhKi5ZxpA6EI98kfFZ2CFmMrkJYFrG8g_dgsZ30o4s-Y3MvBK3HHDJoqyQKIIaCH1rrLDbmHph5a4qubD3W9eiU",
-  },
-  {
-    title: "Hạ tầng đô thị mới",
-    date: "Cập nhật: 05/04/2024",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDPFdRCdDaxHIpEyMMmAl0srv4ECs1LPnYo3wcGZNwTXn45ZwrYLzvaSbQN52Qxbt_PyBqJIm5c2keDlCYkEPgrZ0apaq1vrxrVOT4fN6Q_FzgMfZIyEC4BaeRW_syLRGAFLokmdBotPb52zJ3SwokX_tFEALWBS97OJQASkML0An4PWJ3RZo9UfmIE3r2CS6M8Mr12MHSJKYoERNG1UOizPRnsHNzmhTDvOxnSSxzzYBk85x4RA1ixI2vY8glfqckp9zd6JpVA3vpo",
-  },
-];
+import LibraryPagination from "@/components/thu-vien/LibraryPagination";
+import VideoItem from "@/components/thu-vien/VideoItem";
+import { fetchLibraryVideoPage } from "@/services/mediaLibraryService";
 
-export default function VideoLibrarySection() {
+type VideoLibrarySectionProps = {
+  page?: number;
+  pageSize?: number;
+  showPagination?: boolean;
+  showViewAllLink?: boolean;
+  heading?: string;
+  subheading?: string;
+};
+
+export default async function VideoLibrarySection({
+  page = 1,
+  pageSize = 4,
+  showPagination = false,
+  showViewAllLink = false,
+  heading = "Kho video",
+  subheading,
+}: VideoLibrarySectionProps) {
+  const videos = await fetchLibraryVideoPage(page, pageSize);
+
   return (
     <section>
-      <div className="mb-8 flex items-center justify-between border-b border-slate-200 pb-4">
-        <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-          <span className="material-symbols-outlined text-[#1f7a5a]">video_library</span>
-          Kho Video Clip
-        </h2>
+      <div className="mb-8 flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+            <span className="material-symbols-outlined text-[#1f7a5a]">video_library</span>
+            {heading}
+          </h2>
+          {subheading ? <p className="mt-2 text-sm text-slate-600">{subheading}</p> : null}
+        </div>
+        {showViewAllLink ? (
+          <Link
+            href="/thu-vien/video"
+            className="flex items-center gap-1 text-sm font-semibold text-[#1f7a5a] hover:underline"
+          >
+            Xem tất cả
+            <span className="material-symbols-outlined text-sm">chevron_right</span>
+          </Link>
+        ) : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-        {videos.map((video) => (
-          <VideoItem key={video.title} video={video} />
-        ))}
-      </div>
+      {videos.items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-slate-600">
+          Hiện chưa có video nào được đăng trong thư viện media.
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {videos.items.map((video) => (
+              <VideoItem key={video.id} video={video} />
+            ))}
+          </div>
+
+          {showPagination ? (
+            <LibraryPagination
+              basePath="/thu-vien/video"
+              currentPage={videos.page}
+              totalPages={videos.totalPages}
+            />
+          ) : null}
+        </>
+      )}
     </section>
   );
 }

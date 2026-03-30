@@ -1,12 +1,33 @@
+/*Form đăng ký tài khoản mới, thu thập thông tin người dùng, 
+ * gửi lên backend để tạo tài khoản. Xử lý kiểm tra hợp lệ, 
+ * báo lỗi, chuyển hướng sau khi đăng ký thành công. */
 "use client";
 
-import { useState, FormEvent } from "react";
+import { FormEvent, useState } from "react";
+import axios from "axios";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import axios from "axios";
 import api from "@/services/api";
 
+import api from "@/services/api";
+
+type LoginSuccessPayload = {
+  token: string;
+  username: string;
+  role?: string;
+};
+
+type BackendErrorPayload =
+  | string
+  | {
+      message?: string;
+      error?: string;
+      title?: string;
+      detail?: string;
+    };
+
 type RegisterFormProps = {
-  onSuccess: (session: { fullName: string; identifier: string }) => void;
+  onSuccess: (payload: LoginSuccessPayload) => void;
 };
 
 export default function RegisterForm({ onSuccess }: RegisterFormProps) {
@@ -26,40 +47,32 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     event.preventDefault();
     setErrorMessage("");
 
-    const fullName = registerForm.fullName.trim();
-    const username = registerForm.username.trim();
-    const email = registerForm.email.trim();
-    const password = registerForm.password;
-
-    if (!fullName || !username || !email || !password) {
-      setErrorMessage(
-        "Vui lòng nhập đầy đủ họ tên, tên đăng nhập, email và mật khẩu.",
-      );
-      return;
-    }
-
     if (registerForm.password !== registerForm.confirmPassword) {
-      setErrorMessage(
-        "Mật khẩu xác nhận không khớp. Bạn kiểm tra lại giúp mình nhé.",
-      );
+      setErrorMessage("Mật khẩu xác nhận không khớp. Bạn kiểm tra lại giúp mình nhé.");
       return;
     }
 
     setIsLoading(true);
+
     try {
-      await api.post("/auth/register", { fullName, username, email, password });
+      await api.post("/auth/register", {
+        fullName: registerForm.fullName.trim(),
+        username: registerForm.username.trim(),
+        email: registerForm.email.trim(),
+        password: registerForm.password,
+      });
 
-      // Auto login sau khi đăng ký
-      const res = await api.post("/auth/login", { username, password });
-      const token: string | undefined = res.data?.token;
-      const role: string | undefined = res.data?.role;
-      const returnedUsername: string | undefined = res.data?.username;
-      const returnedFullName: string | undefined = res.data?.fullName;
+      const loginResponse = await api.post("/auth/login", {
+        username: registerForm.username.trim(),
+        password: registerForm.password,
+      });
 
-      if (!token || !returnedUsername) {
-        setErrorMessage(
-          "Đăng ký thành công nhưng đăng nhập thất bại. Vui lòng đăng nhập lại.",
-        );
+      const token: string | undefined = loginResponse.data?.token;
+      const username: string | undefined = loginResponse.data?.username;
+      const role: string | undefined = loginResponse.data?.role;
+
+      if (!token || !username) {
+        setErrorMessage("Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng thử đăng nhập lại.");
         return;
       }
 
@@ -86,14 +99,18 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       }
 
       onSuccess({
-        fullName: returnedFullName ?? fullName ?? returnedUsername,
-        identifier: returnedUsername,
+        token,
+        username,
+        role,
       });
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        setErrorMessage(
-          "Đăng ký thất bại. Tên đăng nhập hoặc email có thể đã tồn tại.",
-        );
+    } catch (error: unknown) {
+      if (axios.isAxiosError<BackendErrorPayload>(error)) {
+        const data = error.response?.data;
+        const serverMessage =
+          typeof data === "string"
+            ? data
+            : data?.message || data?.error || data?.title || data?.detail;
+        setErrorMessage(serverMessage || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.");
       } else {
         setErrorMessage("Đăng ký thất bại. Vui lòng thử lại.");
       }
@@ -273,11 +290,8 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           >
             Điều khoản dịch vụ
           </a>
-          &{" "}
-          <a
-            href="#"
-            className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline"
-          >
+          {" "}và{" "}
+          <a href="#" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
             Chính sách bảo mật
           </a>
           .

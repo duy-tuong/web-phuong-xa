@@ -8,3 +8,8 @@ export default function GlobalLoading() {
     </main>
   );
 }
+/*Khi Next.js thực hiện SSR hoặc chuyển trang mà dữ liệu chưa sẵn sàng, component này sẽ được hiển thị tự động.
+Giao diện gồm:
+Một vòng tròn xoay (loading spinner) ở giữa màn hình.
+Dòng chữ “Đang tải dữ liệu...” bên dưới.
+Sử dụng các class Tailwind CSS để căn giữa, tạo hiệu ứng xoay, và phối màu nền dịu mắt.*/

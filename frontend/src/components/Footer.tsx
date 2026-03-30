@@ -25,8 +25,8 @@ export default function Footer() {
               </div>
             </div>
             <p className="mt-2 text-sm leading-relaxed text-slate-700">
-              Trang thông tin chính thức của UBND Phường Cao Lãnh, TP Cao Lãnh, Đồng Tháp. Cung cấp thông tin
-              kinh tế - xã hội, dịch vụ công và tin tức địa phương.
+              Trang thông tin chính thức của UBND Phường Cao Lãnh, TP Cao Lãnh, Đồng Tháp. Cung cấp thông tin kinh tế - xã hội,
+              dịch vụ công và tin tức địa phương.
             </p>
           </div>
 
@@ -36,7 +36,7 @@ export default function Footer() {
               <li>Trụ sở UBND: Số 03, Đường 30/4, Phường Cao Lãnh, TP Cao Lãnh, Đồng Tháp</li>
               <li>Điện thoại: 0277 3851 234</li>
               <li>Email: phuongcaolanh@dongthap.gov.vn</li>
-              <li>Giờ tiếp dân: Sáng Thứ Năm hàng tuần</li>
+              <li>Giờ tiếp dân: Sáng Thứ Năm hằng tuần</li>
             </ul>
           </div>
 
@@ -72,7 +72,7 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-300 pt-6 text-sm text-slate-600 md:flex-row">
-          <p>© 2025 Cổng Thông tin điện tử Phường Cao Lãnh — Thành phố Cao Lãnh, Tỉnh Đồng Tháp. Ghi rõ nguồn khi phát hành lại.</p>
+          <p>© 2025 Cổng Thông tin điện tử Phường Cao Lãnh - Thành phố Cao Lãnh, Tỉnh Đồng Tháp. Ghi rõ nguồn khi phát hành lại.</p>
           <p className="font-medium">
             Đang online: <span className="font-bold text-emerald-700">15</span> | Tổng truy cập: <span className="font-bold text-emerald-700">1,234,567</span>
           </p>

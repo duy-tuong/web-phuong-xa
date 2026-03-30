@@ -1,3 +1,4 @@
+// Công dụng: Hook tùy chỉnh để tạo hiệu ứng số đếm lên (count up) khi phần tử xuất hiện trên màn hình
 "use client";
 
 import { useEffect, useState, useRef } from "react";

@@ -1,9 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-
+/* Đây là file CSS toàn cục cho toàn bộ frontend của dự án Next.js. */
+/* Import 2 bộ icon font từ Google Fonts: */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+/* Kích hoạt các layer của Tailwind CSS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* Định nghĩa class cho icon */
 .material-symbols-outlined {
   font-family: "Material Symbols Outlined", "Material Icons", sans-serif;
   font-style: normal;
@@ -25,7 +28,7 @@
     "GRAD" 0,
     "opsz" 24;
 }
-
+/* Biến màu toàn cục */
 :root {
   --background: #f8f6f1;
   --foreground: #1f2521;
@@ -45,56 +48,38 @@
   --input: 36 16% 84%;
   --ring: 156 38% 28%;
   --radius: 0.75rem;
-
-  --color-primary-emerald: #0f5132;
-  --color-primary-emerald-600: #0c3f27;
-  --color-primary-emerald-tint: #e6f2ec;
-  --color-accent-copper: #c47a28;
-  --color-accent-copper-tint: #fff3e0;
-  --color-neutral-900: #1f2521;
-  --color-neutral-700: #3e453f;
-  --color-neutral-500: #6b726b;
-  --color-neutral-300: #c9cec7;
-  --color-neutral-200: #e2e5dd;
 }
-
+/* Định nghĩa biến theme cho Tailwind hoặc các component custom.*/
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-plus-jakarta);
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
-}
-
+/* Đặt màu nền, màu chữ, font mặc định cho toàn bộ trang. */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", "Inter", Arial, Helvetica, sans-serif;
+  font-family: var(--font-plus-jakarta), "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
   letter-spacing: 0.01em;
 }
+/*Tối ưu trải nghiệm cuộn trang khi dùng thư viện Lenis (cuộn mượt). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
 
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+/* Thêm class tiện ích: ẩn thanh cuộn, hiệu ứng chạy chữ . */
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -111,7 +96,7 @@ body {
     animation: marquee 20s linear infinite;
   }
 }
-
+/* Tạo hiệu ứng chữ chạy ngang liên tục. */
 @keyframes marquee {
   0% {
     transform: translateX(0%);
@@ -121,16 +106,7 @@ body {
     transform: translateX(-100%);
   }
 }
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-15px);
-  }
-}
-/* Admin rich text editor styles */
+/* Định nghĩa style cho rich text editor trong trang admin. */
 .admin-rich-editor .ql-container {
   font-size: 15px !important;
   font-family: inherit !important;
@@ -157,4 +133,32 @@ body {
 
 .admin-rich-editor .ql-editor p {
   margin-bottom: 0.7rem;
+}
+
+.page-transition-enter {
+  animation: page-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top center;
+  will-change: opacity, transform, filter;
+}
+
+@keyframes page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.995);
+    filter: blur(6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-enter {
+    animation: none;
+    filter: none;
+    transform: none;
+  }
 }

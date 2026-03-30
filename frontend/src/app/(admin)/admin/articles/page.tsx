@@ -1,15 +1,17 @@
-"use client";
+﻿"use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { FileText, Search, Eye, Pencil, Trash2, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
+import { Eye, FileText, Pencil, Search, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import Editor from "@/components/admin/Editor";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +25,6 @@ import {
 } from "@/components/ui/select";
 import { Article, Category } from "@/types";
 
-// ---------------------------------------------------------------------------
-// Form data shape used for create / edit
-// ---------------------------------------------------------------------------
 interface ArticleFormData {
   title: string;
   slug: string;
@@ -108,12 +107,14 @@ export default function ArticlesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // ----- filter state -----
+export default function ArticlesPage() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  // ----- modal state -----
   const [modalOpen, setModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [formData, setFormData] = useState<ArticleFormData>(emptyForm);
@@ -123,9 +124,29 @@ export default function ArticlesPage() {
 
   // ----- delete state -----
   const [deleteTarget, setDeleteTarget] = useState<Article | null>(null);
-
-  // ----- preview state -----
   const [previewArticle, setPreviewArticle] = useState<Article | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const [articleRows, categoryRows] = await Promise.all([
+        fetchAdminArticles(),
+        fetchCategoriesAdmin(),
+      ]);
+      setArticles(articleRows);
+      setCategories(categoryRows);
+    } catch (loadError) {
+      setError(getErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   const resolvePublicUrl = (value: string) => {
     if (!value) return "";
@@ -213,16 +234,18 @@ export default function ArticlesPage() {
   // -----------------------------------------------------------------------
   const filteredArticles = useMemo(() => {
     return articles.filter((article) => {
-      const matchesSearch = article.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
-      const matchesCategory =
-        categoryFilter === "all" || article.categoryId === categoryFilter;
-      const matchesStatus =
-        statusFilter === "all" || article.status === statusFilter;
+      const keyword = search.toLowerCase();
+      const matchesSearch =
+        keyword === "" ||
+        article.title.toLowerCase().includes(keyword) ||
+        (article.slug || "").toLowerCase().includes(keyword) ||
+        (article.author?.fullName || article.author?.username || "").toLowerCase().includes(keyword);
+
+      const matchesCategory = categoryFilter === "all" || article.categoryId === categoryFilter;
+      const matchesStatus = statusFilter === "all" || article.status === statusFilter;
       return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [articles, search, categoryFilter, statusFilter]);
+  }, [articles, categoryFilter, search, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredArticles.length / pageSize));
 
@@ -389,19 +412,12 @@ export default function ArticlesPage() {
     }
   };
 
-  // -----------------------------------------------------------------------
-  // Table columns
-  // -----------------------------------------------------------------------
   const columns: Column<Article>[] = [
     {
       key: "title",
       label: "Tiêu đề",
       className: "min-w-[300px] max-w-[360px]",
-      render: (article) => (
-        <span className="font-semibold text-stone-900 line-clamp-1">
-          {article.title}
-        </span>
-      ),
+      render: (article) => <span className="line-clamp-1 font-semibold text-stone-900">{article.title}</span>,
     },
     {
       key: "slug",
@@ -429,13 +445,9 @@ export default function ArticlesPage() {
       label: "Trạng thái",
       render: (article) =>
         article.status === "published" ? (
-          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-            Đã đăng
-          </Badge>
+          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Đã đăng</Badge>
         ) : (
-          <Badge className="bg-stone-100 text-stone-600 hover:bg-stone-100">
-            Nháp
-          </Badge>
+          <Badge className="bg-stone-100 text-stone-600 hover:bg-stone-100">Nháp</Badge>
         ),
     },
     {
@@ -463,11 +475,7 @@ export default function ArticlesPage() {
     {
       key: "createdAt",
       label: "Ngày tạo",
-      render: (article) => (
-        <span className="text-stone-500 text-sm">
-          {format(new Date(article.createdAt), "dd/MM/yyyy")}
-        </span>
-      ),
+      render: (article) => <span className="text-sm text-stone-500">{format(new Date(article.createdAt), "dd/MM/yyyy")}</span>,
     },
     {
       key: "actions",
@@ -496,12 +504,7 @@ export default function ArticlesPage() {
           >
             <Eye className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-stone-500 hover:text-emerald-700"
-            onClick={() => openEditModal(article)}
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-stone-500 hover:text-emerald-700" onClick={() => openEditModal(article)}>
             <Pencil className="w-4 h-4" />
           </Button>
           {isEditor ? null : (
@@ -519,9 +522,6 @@ export default function ArticlesPage() {
     },
   ];
 
-  // -----------------------------------------------------------------------
-  // Render
-  // -----------------------------------------------------------------------
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -542,14 +542,18 @@ export default function ArticlesPage() {
         }
       />
 
-      {/* Filters */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       <div className="rounded-xl border border-stone-200 bg-white p-3 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px_180px] gap-3">
-          {/* Search */}
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
             <Input
-              placeholder="Tìm kiếm bài viết..."
+              placeholder="Tìm theo tiêu đề, slug, tác giả..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -600,7 +604,6 @@ export default function ArticlesPage() {
         </div>
       </div>
 
-      {/* Data table */}
       <DataTable
         columns={columns}
         data={pagedArticles}
@@ -656,11 +659,7 @@ export default function ArticlesPage() {
             : undefined
         }
         size="xl"
-        footer={
-          <Button variant="outline" onClick={() => setPreviewArticle(null)}>
-            Đóng
-          </Button>
-        }
+        footer={<Button variant="outline" onClick={() => setPreviewArticle(null)}>Đóng</Button>}
       >
         <div className="max-h-[60vh] overflow-y-auto rounded-lg border border-stone-200 bg-stone-50 p-4">
           {previewArticle?.featuredImage ? (
@@ -692,18 +691,11 @@ export default function ArticlesPage() {
         </div>
       </Modal>
 
-      {/* Create / Edit modal */}
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingArticle ? "Chỉnh sửa bài viết" : "Thêm bài viết mới"}
-        description={
-          editingArticle
-            ? "Cập nhật thông tin bài viết"
-            : "Điền thông tin để tạo bài viết mới"
-        }
-        titleClassName="text-xl sm:text-2xl"
-        descriptionClassName="text-sm sm:text-base text-stone-600"
+        title={editingArticle ? "Cập nhật bài viết" : "Thêm bài viết mới"}
+        description="Dữ liệu được lưu trực tiếp vào API /articles."
         size="xl"
         footer={
           <div className="flex gap-2">
@@ -721,19 +713,13 @@ export default function ArticlesPage() {
         }
       >
         <div className="space-y-4 rounded-xl border border-[hsl(120,10%,88%)] bg-[linear-gradient(180deg,hsl(45,30%,99%),hsl(45,24%,97%))] p-4 sm:p-5">
-          <div className="pb-1">
-            <p className="text-sm font-semibold text-stone-900">Thông tin bài viết</p>
-            <p className="text-xs text-stone-500 mt-0.5">Các trường có dấu * là bắt buộc.</p>
-          </div>
-
-          {/* Title */}
           <FormField
             type="text"
             label="Tiêu đề"
             name="title"
             required
             value={formData.title}
-            onChange={(v) => setFormData((prev) => ({ ...prev, title: v }))}
+            onChange={(value) => setFormData((prev) => ({ ...prev, title: value }))}
             placeholder="Nhập tiêu đề bài viết"
           />
 
@@ -757,7 +743,6 @@ export default function ArticlesPage() {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Category */}
             <FormField
               type="select"
               label="Danh mục"
@@ -867,24 +852,22 @@ export default function ArticlesPage() {
             />
           </div>
 
-          {/* Rich-text editor */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-stone-700">
-              Nội dung <span className="text-red-500 ml-0.5">*</span>
-            </label>
+            <label className="text-sm font-medium text-stone-700">Nội dung <span className="text-red-500 ml-0.5">*</span></label>
             <div className="min-h-[240px]">
-              <Editor
-                value={formData.content}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, content: v }))
-                }
-              />
+              <Editor value={formData.content} onChange={(value) => setFormData((prev) => ({ ...prev, content: value }))} />
             </div>
+            <p className="text-xs text-stone-500">Tóm tắt sẽ được backend tự tạo từ nội dung nếu để trống.</p>
           </div>
+
+          {formData.content && (
+            <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+              <span className="font-semibold text-stone-800">Xem nhanh văn bản:</span> {stripHtml(formData.content).slice(0, 180) || "Nội dung đang rỗng"}
+            </div>
+          )}
         </div>
       </Modal>
 
-      {/* Delete confirmation */}
       <ConfirmDeleteModal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

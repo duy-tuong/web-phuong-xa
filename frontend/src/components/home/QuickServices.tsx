@@ -1,3 +1,6 @@
+// Dịch vụ nhanh
+// Cung cấp các liên kết nhanh đến các dịch vụ phổ biến như đăng ký hộ khẩu, nộp thuế, đặt lịch hẹn, v.v.
+
 import Link from "next/link";
 import { FileText, Map, Store, MessageSquare } from "lucide-react";
 

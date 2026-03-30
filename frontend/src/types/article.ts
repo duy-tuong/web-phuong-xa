@@ -4,6 +4,9 @@ export interface ArticleSectionBullet {
 }
 
 export interface Article {
+  id?: number;
+  isFeatured?: boolean;
+  hasRealImage?: boolean;
   slug: string;
   title: string;
   category: string;
@@ -14,14 +17,14 @@ export interface Article {
   status: string;
   publishedAt: string;
   views: string;
-  heroImage: string;
+  heroImage?: string;
   heroCaption: string;
   bodyLead: string;
   bodyParagraphs: string[];
   sectionTitle: string;
   sectionIntro: string;
   sectionBullets: ArticleSectionBullet[];
-  subImage: string;
+  subImage?: string;
   subCaption: string;
   tags: string[];
 }
@@ -29,7 +32,7 @@ export interface Article {
 export interface ArticleCardProps {
   slug: string;
   title: string;
-  image: string;
+  image?: string;
   date: string;
   summary: string;
   category?: string;

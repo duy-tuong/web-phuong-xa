@@ -1,3 +1,4 @@
+//Component hộp thoại (modal) chuẩn, dùng cho xác nhận, thông báo, form popup.
 "use client"
 
 import * as React from "react"

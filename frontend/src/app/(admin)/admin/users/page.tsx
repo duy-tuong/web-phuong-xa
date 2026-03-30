@@ -1,16 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Users, Search, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { format } from "date-fns";
+import { Eye, EyeOff, Pencil, Search, Trash2, Users } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
-import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/services/api";
@@ -23,13 +24,14 @@ import {
 } from "@/components/ui/select";
 import { Role, User } from "@/types";
 
-// ---------- Form state type ----------
 interface UserFormData {
   username: string;
   fullName: string;
   email: string;
   password: string;
   roleId: string;
+  phone: string;
+  avatarUrl: string;
 }
 
 type RoleApi = {
@@ -64,10 +66,11 @@ const emptyForm: UserFormData = {
   email: "",
   password: "",
   roleId: "",
+  phone: "",
+  avatarUrl: "",
 };
 
-// ---------- Helpers ----------
-function getInitials(name: string): string {
+function getInitials(name: string) {
   return name
     .split(/[\s._-]+/)
     .map((part) => part[0])
@@ -76,7 +79,6 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-// ---------- Component ----------
 export default function UsersPage() {
   // --- data state ---
   const [users, setUsers] = useState<User[]>([]);
@@ -96,10 +98,25 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<UserFormData>(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // --- delete state ---
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const [userRows, roleRows] = await Promise.all([
+        fetchUsers({ page: 1, pageSize: 200 }),
+        fetchRoles(),
+      ]);
+      setUsers(userRows.data);
+      setRoles(roleRows);
+    } catch (loadError) {
+      setError(getErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const fetchRoles = async () => {
     const res = await api.get("/roles");
@@ -163,9 +180,9 @@ export default function UsersPage() {
     return `${users.length} người dùng trong hệ thống • ${todayShort}`;
   }, [users.length]);
 
-  // ---------- Filtered data ----------
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
+      const keyword = search.toLowerCase();
       const matchesSearch =
         user.username.toLowerCase().includes(search.toLowerCase()) ||
         (user.fullName || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -205,6 +222,8 @@ export default function UsersPage() {
       email: user.email,
       password: "",
       roleId: user.roleId,
+      phone: user.phone || "",
+      avatarUrl: user.avatarUrl || "",
     });
     setShowPassword(false);
     setModalOpen(true);
@@ -260,11 +279,10 @@ export default function UsersPage() {
     }
   };
 
-  // ---------- Delete handlers ----------
-  const openDeleteModal = (user: User) => {
-    setDeletingUser(user);
-    setDeleteModalOpen(true);
-  };
+  const handleDelete = async () => {
+    if (!deleteTarget) {
+      return;
+    }
 
   const handleDelete = async () => {
     if (!deletingUser) return;
@@ -300,7 +318,6 @@ export default function UsersPage() {
     return "border-[hsl(210,48%,76%)] text-[hsl(210,56%,42%)] bg-[linear-gradient(180deg,hsl(210,78%,96%),hsl(210,66%,91%))]";
   };
 
-  // ---------- Table columns ----------
   const columns: Column<User>[] = [
     {
       key: "avatar",
@@ -312,7 +329,7 @@ export default function UsersPage() {
             <AvatarImage src={user.avatar} alt={user.username} />
           ) : null}
           <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs font-semibold">
-            {getInitials(user.username)}
+            {getInitials(user.fullName || user.username)}
           </AvatarFallback>
         </Avatar>
       ),
@@ -320,16 +337,12 @@ export default function UsersPage() {
     {
       key: "username",
       label: "Username",
-      render: (user) => (
-        <span className="font-medium text-stone-900">{user.username}</span>
-      ),
+      render: (user) => <span className="font-medium text-stone-900">{user.username}</span>,
     },
     {
       key: "fullName",
-      label: "Họ tên",
-      render: (user) => (
-        <span className="text-stone-600">{user.fullName || "---"}</span>
-      ),
+      label: "Ho ten",
+      render: (user) => <span className="text-stone-600">{user.fullName || "--"}</span>,
     },
     {
       key: "email",
@@ -358,11 +371,7 @@ export default function UsersPage() {
     {
       key: "createdAt",
       label: "Ngày tạo",
-      render: (user) => (
-        <span className="text-sm text-stone-500">
-          {format(new Date(user.createdAt), "dd/MM/yyyy")}
-        </span>
-      ),
+      render: (user) => <span className="text-sm text-stone-500">{format(new Date(user.createdAt), "dd/MM/yyyy")}</span>,
     },
     {
       key: "actions",
@@ -382,7 +391,7 @@ export default function UsersPage() {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-stone-500 hover:text-red-600 hover:bg-red-50"
-            onClick={() => openDeleteModal(user)}
+            onClick={() => setDeleteTarget(user)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -391,14 +400,6 @@ export default function UsersPage() {
     },
   ];
 
-  // ---------- Check if form is valid ----------
-  const isFormValid =
-    formData.username.trim() !== "" &&
-    formData.email.trim() !== "" &&
-    formData.roleId !== "" &&
-    (editingUser !== null || formData.password.trim() !== "");
-
-  // ---------- Render ----------
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -422,12 +423,17 @@ export default function UsersPage() {
         }
       />
 
-      {/* Search & Filter Bar */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <Input
-            placeholder="Tìm kiếm theo tên, họ tên hoặc email..."
+            placeholder="Tìm theo tên, email, username, số điện thoại..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -457,7 +463,6 @@ export default function UsersPage() {
         </Select>
       </div>
 
-      {/* Data Table */}
       <DataTable
         columns={columns}
         data={pagedUsers}
@@ -509,12 +514,8 @@ export default function UsersPage() {
         open={modalOpen}
         onClose={closeModal}
         size="lg"
-        title={editingUser ? "Chỉnh sửa người dùng" : "Thêm người dùng mới"}
-        description={
-          editingUser
-            ? "Cập nhật thông tin tài khoản người dùng"
-            : "Điền thông tin để tạo tài khoản mới"
-        }
+        title={editingUser ? "Cập nhật người dùng" : "Thêm người dùng mới"}
+        description={editingUser ? "Username hiện tại không đổi trên backend." : "Nhập thông tin để tạo tài khoản mới."}
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -523,7 +524,7 @@ export default function UsersPage() {
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSubmit}
-              disabled={!isFormValid}
+              disabled={submitting}
             >
               {editingUser ? "Cập nhật" : "Tạo mới"}
             </Button>
@@ -576,16 +577,24 @@ export default function UsersPage() {
             </Label>
             <div className="relative">
               <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={(e) => updateField("password")(e.target.value)}
-                placeholder={
-                  editingUser
-                    ? "Để trống nếu không muốn đổi mật khẩu"
-                    : "Nhập mật khẩu"
-                }
-                className="pr-11 border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
+                id="username"
+                value={formData.username}
+                disabled={!!editingUser}
+                onChange={(event) => setFormData((prev) => ({ ...prev, username: event.target.value }))}
+                placeholder="Nhập username"
+                className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="fullName" className="text-sm font-medium text-stone-700">
+                Ho ten <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="fullName"
+                value={formData.fullName}
+                onChange={(event) => setFormData((prev) => ({ ...prev, fullName: event.target.value }))}
+                placeholder="Nhập họ tên"
+                className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
               />
               <button
                 type="button"
@@ -623,15 +632,11 @@ export default function UsersPage() {
         </div>
       </Modal>
 
-      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
-        open={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false);
-          setDeletingUser(null);
-        }}
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        itemName={deletingUser?.username}
+        itemName={deleteTarget?.username}
       />
     </div>
   );

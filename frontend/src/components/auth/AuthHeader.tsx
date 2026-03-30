@@ -1,3 +1,4 @@
+//Component hiển thị tiêu đề, logo, hoặc thông tin hướng dẫn ở đầu các trang đăng nhập/đăng ký.
 "use client";
 
 import { useMemo } from "react";

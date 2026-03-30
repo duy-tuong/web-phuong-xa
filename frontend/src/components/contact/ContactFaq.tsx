@@ -1,3 +1,4 @@
+//Hiển thị danh sách các câu hỏi thường gặp 
 "use client";
 
 import { useState } from "react";

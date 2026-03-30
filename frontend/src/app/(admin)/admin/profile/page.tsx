@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   CardDescription,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +38,17 @@ interface ProfileForm {
   newPassword: string;
   confirmPassword: string;
 }
+
+const emptyForm: ProfileForm = {
+  fullName: "",
+  username: "",
+  email: "",
+  phone: "",
+  avatarUrl: "",
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+};
 
 export default function ProfilePage() {
   const [form, setForm] = useState<ProfileForm>({
@@ -128,8 +139,21 @@ export default function ProfilePage() {
         .slice(0, 2)
         .toUpperCase();
     }
-    return "AD";
-  }, [form.fullName]);
+  }, []);
+
+  useEffect(() => {
+    void loadProfile();
+  }, [loadProfile]);
+
+  const initials = useMemo(() => {
+    const name = form.fullName || form.username || "AD";
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }, [form.fullName, form.username]);
 
   const joinedDate = useMemo(() => {
     if (!createdAt) {
@@ -154,13 +178,11 @@ export default function ProfilePage() {
   };
 
   const handleChange = <K extends keyof ProfileForm>(field: K) =>
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
     };
 
-  const togglePasswordVisibility = (
-    field: "currentPassword" | "newPassword" | "confirmPassword"
-  ) => {
+  const togglePasswordVisibility = (field: "currentPassword" | "newPassword" | "confirmPassword") => {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
@@ -172,7 +194,7 @@ export default function ProfilePage() {
     setSuccessMessage("");
 
     if (!file.type.startsWith("image/")) {
-      setAvatarError("Vui lòng chọn tệp ảnh hợp lệ (JPG, PNG, WEBP)");
+      setError("Vui lòng chọn tệp ảnh hợp lệ.");
       return;
     }
 
@@ -282,24 +304,16 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-amber-50 px-4 py-4 sm:px-6">
-        <div className="absolute -right-14 -top-12 h-40 w-40 rounded-full bg-emerald-100/70 blur-2xl" />
-        <div className="absolute -left-14 -bottom-14 h-40 w-40 rounded-full bg-amber-100/60 blur-2xl" />
-        <div className="relative flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm sm:text-base font-extrabold uppercase tracking-[0.16em] text-emerald-700">
-              Khu vực quản trị
-            </p>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-stone-900 mt-1">
-              Tinh chỉnh hồ sơ để nâng cao nhận diện tài khoản admin
-            </h2>
-            <p className="text-sm text-stone-600 mt-1">
-              Cập nhật thông tin, đổi ảnh đại diện và bảo mật trong giao diện.
-            </p>
-          </div>
-
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
         </div>
-      </div>
+      )}
+      {success && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {success}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
         <Card className="xl:col-span-2 border-stone-200 shadow-sm overflow-hidden">
@@ -307,7 +321,7 @@ export default function ProfilePage() {
           <CardHeader className="pt-0 -mt-10 pb-4">
             <div className="flex flex-col items-start gap-4">
               <Avatar className="w-24 h-24 border-4 border-white shadow-lg bg-white">
-                {avatarSrc && <AvatarImage src={avatarSrc} alt={form.fullName} />}
+                {form.avatarUrl && <AvatarImage src={form.avatarUrl} alt={form.fullName || form.username} />}
                 <AvatarFallback className="bg-emerald-700 text-white text-2xl font-bold">
                   {initials}
                 </AvatarFallback>
@@ -315,9 +329,9 @@ export default function ProfilePage() {
 
               <div>
                 <CardTitle className="text-2xl font-bold text-stone-900 leading-tight tracking-tight">
-                  {form.fullName}
+                  {form.fullName || form.username || (loading ? "Đang tải..." : "Người dùng")}
                 </CardTitle>
-                <p className="text-sm text-stone-600 mt-1">{form.email}</p>
+                <p className="mt-1 text-sm text-stone-600">{form.email || "--"}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -326,13 +340,14 @@ export default function ProfilePage() {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={handleAvatarSelect}
+                  onChange={(event) => void handleAvatarSelect(event)}
                 />
                 <Button
                   type="button"
                   size="sm"
                   disabled={isUploadingAvatar}
                   className="bg-emerald-600 hover:bg-emerald-700"
+                  disabled={uploadingAvatar}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Camera className="w-4 h-4 mr-1.5" />
@@ -349,12 +364,7 @@ export default function ProfilePage() {
                 </Button>
               </div>
 
-              <p className="text-xs text-stone-500">
-                Chấp nhận JPG, PNG, WEBP. Dung lượng tối đa 2MB.
-              </p>
-              {avatarError && (
-                <p className="text-xs text-red-600 font-medium">{avatarError}</p>
-              )}
+              <p className="text-xs text-stone-500">Bạn có thể tải ảnh lên rồi dán đường dẫn vào trường Avatar URL bên phải.</p>
             </div>
           </CardHeader>
 
@@ -362,11 +372,11 @@ export default function ProfilePage() {
             <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-3 space-y-3">
               <div className="flex items-center gap-2 text-stone-700">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span className="font-medium">Vai trò: {form.role}</span>
+                <span className="font-medium">Vai trò: {currentUser?.role?.name || "--"}</span>
               </div>
               <div className="flex items-center gap-2 text-stone-600">
                 <Mail className="w-4 h-4 text-emerald-600" />
-                <span>Email quản trị: {form.email}</span>
+                <span>Email: {form.email || "--"}</span>
               </div>
               <div className="flex items-center gap-2 text-stone-600">
                 <Phone className="w-4 h-4 text-emerald-600" />
@@ -375,8 +385,8 @@ export default function ProfilePage() {
             </div>
 
             <div className="pt-2 border-t border-dashed border-stone-200 space-y-1">
-              <p className="text-stone-500">Gia nhập hệ thống</p>
-              <p className="font-semibold text-stone-800 flex items-center gap-2">
+              <p className="text-stone-500">Ngày tạo tài khoản</p>
+              <p className="flex items-center gap-2 font-semibold text-stone-800">
                 <Clock4 className="w-4 h-4 text-emerald-600" />
                 {joinedDate}
               </p>
@@ -384,9 +394,7 @@ export default function ProfilePage() {
           </CardContent>
 
           <CardFooter className="pt-0">
-            <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100">
-              Hồ sơ đang hoạt động
-            </Badge>
+            <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100">Tài khoản đang hoạt động</Badge>
           </CardFooter>
         </Card>
 
@@ -395,7 +403,7 @@ export default function ProfilePage() {
             <CardHeader className="pb-0">
               <CardTitle className="text-xl font-bold text-stone-900">Thông tin cơ bản</CardTitle>
               <CardDescription className="text-stone-500">
-                Cập nhật tên hiển thị, liên hệ và phần mô tả cá nhân.
+                Cập nhật thông tin đang đăng nhập trực tiếp từ API auth/me.
               </CardDescription>
             </CardHeader>
 
@@ -413,134 +421,55 @@ export default function ProfilePage() {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-stone-700">Họ và tên</Label>
-                <Input
-                  id="fullName"
-                  value={form.fullName}
-                  onChange={handleChange("fullName")}
-                  placeholder="Nhập họ tên"
-                  className="h-11 border-stone-300 focus-visible:ring-emerald-600"
-                />
+                <Input id="fullName" value={form.fullName} onChange={handleChange("fullName")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-stone-700">Tên đăng nhập</Label>
-                <Input
-                  id="username"
-                  value={form.username}
-                  disabled
-                  className="h-11 bg-stone-50 border-stone-300"
-                />
+                <Label htmlFor="username" className="text-stone-700">Username</Label>
+                <Input id="username" value={form.username} disabled className="h-11 bg-stone-50 border-stone-300" />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-stone-700">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange("email")}
-                  placeholder="you@example.com"
-                  className="h-11 border-stone-300 focus-visible:ring-emerald-600"
-                />
+                <Input id="email" type="email" value={form.email} onChange={handleChange("email")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-stone-700">Số điện thoại</Label>
-                <Input
-                  id="phone"
-                  value={form.phone}
-                  onChange={handleChange("phone")}
-                  placeholder="0900 000 000"
-                  className="h-11 border-stone-300 focus-visible:ring-emerald-600"
-                />
+                <Input id="phone" value={form.phone} onChange={handleChange("phone")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" />
               </div>
             </CardContent>
 
             <CardHeader className="pb-0 pt-0">
-              <CardTitle className="text-xl font-bold text-stone-900">Bảo mật tài khoản</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900">Đổi mật khẩu</CardTitle>
               <CardDescription className="text-stone-500">
-                Đổi mật khẩu định kỳ để tăng cường an toàn cho khu vực quản trị.
+                Nếu đổi mật khẩu, backend sẽ yêu cầu mật khẩu hiện tại.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword" className="text-stone-700">Mật khẩu hiện tại</Label>
-                <div className="relative">
-                  <Input
-                    id="currentPassword"
-                    type={showPasswords.currentPassword ? "text" : "password"}
-                    value={form.currentPassword}
-                    onChange={handleChange("currentPassword")}
-                    placeholder="********"
-                    className="h-11 border-stone-300 focus-visible:ring-emerald-600 pr-11"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility("currentPassword")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                    aria-label={showPasswords.currentPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                  >
-                    {showPasswords.currentPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
+              {([
+                ["currentPassword", "Mật khẩu hiện tại"],
+                ["newPassword", "Mật khẩu mới"],
+                ["confirmPassword", "Xác nhận mật khẩu"],
+              ] as const).map(([field, label]) => (
+                <div key={field} className="space-y-2">
+                  <Label htmlFor={field} className="text-stone-700">{label}</Label>
+                  <div className="relative">
+                    <Input
+                      id={field}
+                      type={showPasswords[field] ? "text" : "password"}
+                      value={form[field]}
+                      onChange={handleChange(field)}
+                      className="h-11 border-stone-300 focus-visible:ring-emerald-600 pr-11"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility(field)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                    >
+                      {showPasswords[field] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="newPassword" className="text-stone-700">Mật khẩu mới</Label>
-                <div className="relative">
-                  <Input
-                    id="newPassword"
-                    type={showPasswords.newPassword ? "text" : "password"}
-                    value={form.newPassword}
-                    onChange={handleChange("newPassword")}
-                    placeholder="********"
-                    className="h-11 border-stone-300 focus-visible:ring-emerald-600 pr-11"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility("newPassword")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                    aria-label={showPasswords.newPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                  >
-                    {showPasswords.newPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-stone-700">Xác nhận mật khẩu</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showPasswords.confirmPassword ? "text" : "password"}
-                    value={form.confirmPassword}
-                    onChange={handleChange("confirmPassword")}
-                    placeholder="********"
-                    className="h-11 border-stone-300 focus-visible:ring-emerald-600 pr-11"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility("confirmPassword")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                    aria-label={showPasswords.confirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
-                  >
-                    {showPasswords.confirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              ))}
             </CardContent>
 
             <CardFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-stone-200 pt-5">
@@ -564,6 +493,9 @@ export default function ProfilePage() {
                   {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
                 </Button>
               </div>
+              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto" disabled={saving || loading}>
+                {saving ? "Đang lưu..." : "Lưu thay đổi"}
+              </Button>
             </CardFooter>
           </form>
         </Card>

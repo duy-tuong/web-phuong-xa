@@ -1,3 +1,4 @@
+//Đường kẻ phân cách các section, nhóm nội dung.
 "use client"
 
 import * as React from "react"

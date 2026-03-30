@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Shield, Pencil, Trash2 } from "lucide-react";
@@ -10,6 +10,12 @@ import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
 import api from "@/services/api";
 import { Role } from "@/types";
+import {
+  createRole,
+  deleteRole,
+  fetchRoles,
+  updateRole,
+} from "@/services/admin/roles";
 
 // ---------- Form state type ----------
 interface RoleFormData {
@@ -38,11 +44,25 @@ export default function RolesPage() {
   // --- modal state ---
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [formData, setFormData] = useState<RoleFormData>(emptyForm);
+  const [roleName, setRoleName] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // --- delete state ---
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deletingRole, setDeletingRole] = useState<Role | null>(null);
+  const loadRoles = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setRoles(await fetchRoles());
+    } catch (loadError) {
+      setError(getErrorMessage(loadError));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadRoles();
+  }, [loadRoles]);
 
   const fetchRoles = async () => {
     const res = await api.get("/roles");
@@ -82,7 +102,7 @@ export default function RolesPage() {
   // ---------- Modal handlers ----------
   const openCreateModal = () => {
     setEditingRole(null);
-    setFormData(emptyForm);
+    setRoleName("");
     setModalOpen(true);
   };
 
@@ -97,7 +117,7 @@ export default function RolesPage() {
   const closeModal = () => {
     setModalOpen(false);
     setEditingRole(null);
-    setFormData(emptyForm);
+    setRoleName("");
   };
 
   const handleSubmit = async () => {
@@ -121,10 +141,20 @@ export default function RolesPage() {
     }
   };
 
-  // ---------- Delete handlers ----------
-  const openDeleteModal = (role: Role) => {
-    setDeletingRole(role);
-    setDeleteModalOpen(true);
+  const handleDelete = async () => {
+    if (!deleteTarget) {
+      return;
+    }
+
+    try {
+      setError("");
+      await deleteRole(deleteTarget.id);
+      await loadRoles();
+    } catch (deleteError) {
+      setError(getErrorMessage(deleteError));
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
   const handleDelete = async () => {
@@ -154,9 +184,7 @@ export default function RolesPage() {
     {
       key: "name",
       label: "Tên vai trò",
-      render: (role) => (
-        <span className="font-medium text-stone-900">{role.name}</span>
-      ),
+      render: (role) => <span className="font-medium text-stone-900">{role.name}</span>,
     },
     {
       key: "actions",
@@ -176,7 +204,7 @@ export default function RolesPage() {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-stone-500 hover:text-red-600 hover:bg-red-50"
-            onClick={() => openDeleteModal(role)}
+            onClick={() => setDeleteTarget(role)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -185,13 +213,8 @@ export default function RolesPage() {
     },
   ];
 
-  // ---------- Check if form is valid ----------
-  const isFormValid = formData.name.trim() !== "";
-
-  // ---------- Render ----------
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <PageHeader
         icon={Shield}
         title="Quản lý vai trò"
@@ -206,23 +229,23 @@ export default function RolesPage() {
         }
       />
 
-      {/* Data Table */}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       <DataTable
         columns={columns}
         data={roles}
-        emptyMessage="Chưa có vai trò nào"
+        emptyMessage={loading ? "Đang tải dữ liệu..." : "Chưa có vai trò nào"}
       />
 
-      {/* Create / Edit Modal */}
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingRole ? "Chỉnh sửa vai trò" : "Thêm vai trò mới"}
-        description={
-          editingRole
-            ? "Cập nhật thông tin vai trò"
-            : "Điền thông tin để tạo vai trò mới"
-        }
+        title={editingRole ? "Cập nhật vai trò" : "Thêm vai trò mới"}
+        description="Nhập tên vai trò để đồng bộ trực tiếp với backend."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -260,15 +283,11 @@ export default function RolesPage() {
         </div>
       </Modal>
 
-      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
-        open={deleteModalOpen}
-        onClose={() => {
-          setDeleteModalOpen(false);
-          setDeletingRole(null);
-        }}
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        itemName={deletingRole?.name}
+        itemName={deleteTarget?.name}
       />
 
       {errorMessage ? (

@@ -1,3 +1,4 @@
+//Hiển thị ảnh đại diện người dùng, có thể kèm fallback khi không có ảnh.
 "use client"
 
 import * as React from "react"
