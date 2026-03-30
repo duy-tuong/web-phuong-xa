@@ -10,14 +10,14 @@ import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/services/admin/errors";
 import { Service } from "@/types";
 import {
   createService,
   deleteService,
   fetchServicesAdmin,
-  getErrorMessage,
   updateService,
-} from "@/services/adminService";
+} from "@/services/admin/services";
 
 interface ServiceFormState {
   name: string;

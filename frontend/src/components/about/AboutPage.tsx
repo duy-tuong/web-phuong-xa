@@ -3,7 +3,7 @@ import AboutUsSection from "@/components/about/AboutUsSection";
 import Demographics from "@/components/about/Demographics";
 import GeographySection from "@/components/about/GeographySection";
 import HistorySection from "@/components/about/HistorySection";
-import { getAboutPageContent } from "@/services/pageContentService";
+import { getAboutPageContent } from "@/services/page-content/about";
 
 export default function AboutPage() {
   const { timelineItems, natureCards, statsCards, infrastructureCards } = getAboutPageContent();

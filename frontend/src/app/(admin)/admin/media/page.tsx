@@ -7,12 +7,12 @@ import { Calendar, FileText, Image as ImageIcon, Trash2, Upload } from "lucide-r
 import PageHeader from "@/components/admin/PageHeader";
 import { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/services/admin/errors";
 import {
   deleteMediaAdmin,
   fetchMediaAdmin,
-  getErrorMessage,
   uploadMedia,
-} from "@/services/adminService";
+} from "@/services/admin/media";
 import { MediaFile } from "@/types";
 
 function formatFileSize(size: number) {

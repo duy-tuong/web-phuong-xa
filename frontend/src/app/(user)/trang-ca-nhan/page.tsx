@@ -9,24 +9,17 @@ import ProfileRecentRecords from "@/components/profile/ProfileRecentRecords";
 import ProfileSidebar from "@/components/profile/ProfileSidebar";
 import ProfileStats from "@/components/profile/ProfileStats";
 import ProfileUpdateModal from "@/components/profile/ProfileUpdateModal";
+import { buildPathWithSearchParams, cloneSearchParams, setOptionalQueryParam } from "@/lib/query-params";
 import { clearUserSession, readUserSession, writeUserSession } from "@/lib/user-session";
-import { fetchCurrentUser } from "@/services/adminService";
+import { fetchCurrentUser } from "@/services/admin/profile";
 import { searchPublicApplications } from "@/services/applicationService";
 import type { Application, User } from "@/types";
 
 function buildLookupQuery(user: User) {
-  const params = new URLSearchParams();
-
-  if (user.email) {
-    params.set("email", user.email);
-  }
-
-  if (user.phone) {
-    params.set("phone", user.phone);
-  }
-
-  const query = params.toString();
-  return query ? `?${query}` : "";
+  const params = cloneSearchParams("");
+  setOptionalQueryParam(params, "email", user.email);
+  setOptionalQueryParam(params, "phone", user.phone);
+  return buildPathWithSearchParams("", params).replace(/^$/, "");
 }
 
 export default function TrangCaNhanPage() {

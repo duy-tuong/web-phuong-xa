@@ -1,4 +1,3 @@
-//hiển thị một thẻ tin tức (bài viết) dạng tóm tắt, dùng trong danh sách tin tức hoặc các section nổi bật.
 import Image from "next/image";
 import Link from "next/link";
 

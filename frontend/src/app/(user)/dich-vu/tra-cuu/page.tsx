@@ -14,6 +14,11 @@ import {
   Search,
 } from "lucide-react";
 
+import {
+  buildPathWithSearchParams,
+  cloneSearchParams,
+  setOptionalQueryParam,
+} from "@/lib/query-params";
 import { searchPublicApplications } from "@/services/applicationService";
 import type { Application } from "@/types";
 
@@ -129,15 +134,10 @@ export default function TraCuuPage() {
       return;
     }
 
-    const params = new URLSearchParams();
-    if (trimmedPhone) {
-      params.set("phone", trimmedPhone);
-    }
-    if (trimmedEmail) {
-      params.set("email", trimmedEmail);
-    }
-
-    router.push(`${pathname}?${params.toString()}`);
+    const params = cloneSearchParams("");
+    setOptionalQueryParam(params, "phone", trimmedPhone);
+    setOptionalQueryParam(params, "email", trimmedEmail);
+    router.push(buildPathWithSearchParams(pathname, params));
   };
 
   const groupedStats = useMemo(() => {

@@ -3,7 +3,8 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ImagePlus, Loader2, RotateCcw, Trash2, Upload, X } from "lucide-react";
 
-import { getErrorMessage, updateCurrentUser } from "@/services/adminService";
+import { getErrorMessage } from "@/services/admin/errors";
+import { updateCurrentUser } from "@/services/admin/profile";
 import type { User } from "@/types";
 
 type ProfileUpdateModalProps = {

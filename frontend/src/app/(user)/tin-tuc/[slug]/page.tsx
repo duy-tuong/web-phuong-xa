@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { copyLink, openShareUrl } from "@/lib/share";
 import ArticleCard from "@/components/ArticleCard";
 import CommentBox from "@/components/CommentBox";
 import { getArticleBySlug, getArticles, getCategories } from "@/services/articleService";
@@ -12,24 +13,8 @@ import { getCommentsByArticleId } from "@/services/commentService";
 import type { Article } from "@/types/article";
 import type { Comment } from "@/types/comment";
 
-function openShareUrl(url: string) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.open(url, "_blank", "noopener,noreferrer,width=720,height=640");
-}
-
-async function copyLink(url: string) {
-  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(url);
-    return;
-  }
-
-  if (typeof window !== "undefined") {
-    window.prompt("Sao chép liên kết này:", url);
-  }
-}
+const DEFAULT_CATEGORY_LABEL = "Tất cả";
+const RECENT_LABELS = ["2 giờ trước", "1 ngày trước", "2 ngày trước"];
 
 export default function TinTucSlugPage() {
   const params = useParams<{ slug: string }>();
@@ -37,7 +22,7 @@ export default function TinTucSlugPage() {
 
   const [article, setArticle] = useState<Article | null>(null);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
-  const [categoryLabels, setCategoryLabels] = useState<string[]>(["Tất cả"]);
+  const [categoryLabels, setCategoryLabels] = useState<string[]>([DEFAULT_CATEGORY_LABEL]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,7 +44,7 @@ export default function TinTucSlugPage() {
 
         setArticle(nextArticle);
         setAllArticles(nextArticles);
-        setCategoryLabels(nextCategories);
+        setCategoryLabels(nextCategories.length > 0 ? nextCategories : [DEFAULT_CATEGORY_LABEL]);
         setComments(nextComments);
       } finally {
         if (isMounted) {
@@ -82,7 +67,7 @@ export default function TinTucSlugPage() {
   const categories = useMemo(
     () =>
       categoryLabels
-        .filter((label) => label !== "Tất cả")
+        .filter((label) => label !== DEFAULT_CATEGORY_LABEL)
         .map((label) => ({
           label,
           count: allArticles.filter((item) => item.category === label).length,
@@ -99,7 +84,7 @@ export default function TinTucSlugPage() {
         .map((item, index) => ({
           slug: item.slug,
           title: item.title,
-          date: index === 0 ? "2 giờ trước" : index === 1 ? "1 ngày trước" : "2 ngày trước",
+          date: RECENT_LABELS[index] ?? item.date,
           summary: item.bodyLead,
           image: item.heroImage,
         })),
@@ -133,9 +118,13 @@ export default function TinTucSlugPage() {
     return (
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-          <Link href="/" className="transition-colors hover:text-[#1f7a5a]">Trang chủ</Link>
+          <Link href="/" className="transition-colors hover:text-[#1f7a5a]">
+            Trang chủ
+          </Link>
           <span className="material-symbols-outlined text-base">chevron_right</span>
-          <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">Tin tức</Link>
+          <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">
+            Tin tức
+          </Link>
           <span className="material-symbols-outlined text-base">chevron_right</span>
           <span className="font-medium text-slate-900">Đang cập nhật</span>
         </nav>
@@ -160,16 +149,19 @@ export default function TinTucSlugPage() {
     );
   }
 
-  const articleUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/tin-tuc/${article.slug}`
-    : `/tin-tuc/${article.slug}`;
+  const articleUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/tin-tuc/${article.slug}` : `/tin-tuc/${article.slug}`;
 
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-        <Link href="/" className="transition-colors hover:text-[#1f7a5a]">Trang chủ</Link>
+        <Link href="/" className="transition-colors hover:text-[#1f7a5a]">
+          Trang chủ
+        </Link>
         <span className="material-symbols-outlined text-base">chevron_right</span>
-        <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">Tin tức</Link>
+        <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">
+          Tin tức
+        </Link>
         <span className="material-symbols-outlined text-base">chevron_right</span>
         <Link href={`/tin-tuc?category=${encodeURIComponent(article.category)}`} className="transition-colors hover:text-[#1f7a5a]">
           {article.category}
@@ -190,7 +182,9 @@ export default function TinTucSlugPage() {
               </Link>
             </div>
 
-            <h1 className="text-3xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl">{article.title}</h1>
+            <h1 className="text-3xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
+              {article.title}
+            </h1>
 
             <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 pb-4 text-sm text-slate-600">
               <div className="flex items-center gap-1.5">
@@ -211,9 +205,18 @@ export default function TinTucSlugPage() {
           {article.heroImage ? (
             <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               <div className="relative aspect-[16/9] w-full">
-                <Image src={article.heroImage} alt={article.title} fill className="object-cover" unoptimized sizes="(min-width: 1024px) 65vw, 100vw" />
+                <Image
+                  src={article.heroImage}
+                  alt={article.title}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                  sizes="(min-width: 1024px) 65vw, 100vw"
+                />
               </div>
-              <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.heroCaption}</figcaption>
+              <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">
+                {article.heroCaption}
+              </figcaption>
             </figure>
           ) : null}
 
@@ -274,7 +277,9 @@ export default function TinTucSlugPage() {
                     sizes="(min-width: 1024px) 65vw, 100vw"
                   />
                 </div>
-                <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.subCaption}</figcaption>
+                <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">
+                  {article.subCaption}
+                </figcaption>
               </figure>
             ) : null}
           </div>
@@ -284,7 +289,11 @@ export default function TinTucSlugPage() {
             <span className="text-sm font-medium text-slate-700">Từ khóa:</span>
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag) => (
-                <Link key={tag} href={`/tin-tuc?q=${encodeURIComponent(tag)}`} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700 transition-colors hover:bg-slate-200">
+                <Link
+                  key={tag}
+                  href={`/tin-tuc?q=${encodeURIComponent(tag)}`}
+                  className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700 transition-colors hover:bg-slate-200"
+                >
                   {tag}
                 </Link>
               ))}
@@ -304,7 +313,9 @@ export default function TinTucSlugPage() {
                   </span>
                 </div>
               </Link>
-            ) : <div />}
+            ) : (
+              <div />
+            )}
 
             {nextArticle ? (
               <Link href={`/tin-tuc/${nextArticle.slug}`} className="group flex items-center justify-end gap-3 text-right sm:max-w-[45%]">
@@ -324,7 +335,7 @@ export default function TinTucSlugPage() {
           <CommentBox articleSlug={article.slug} comments={comments} />
         </article>
 
-        <aside className="col-span-12 lg:col-span-4 lg:sticky lg:top-24">
+        <aside className="col-span-12 lg:sticky lg:top-24 lg:col-span-4">
           <div className="flex flex-col gap-8">
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h3 className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 text-lg font-bold text-slate-900">
@@ -337,7 +348,9 @@ export default function TinTucSlugPage() {
                     <Link
                       href={`/tin-tuc?category=${encodeURIComponent(item.label)}`}
                       className={`group flex items-center justify-between py-2 text-sm ${
-                        item.active ? "font-medium text-[#1f7a5a]" : "text-slate-700 transition-colors hover:text-[#1f7a5a]"
+                        item.active
+                          ? "font-medium text-[#1f7a5a]"
+                          : "text-slate-700 transition-colors hover:text-[#1f7a5a]"
                       }`}
                     >
                       <span className="flex items-center gap-2">
@@ -350,7 +363,11 @@ export default function TinTucSlugPage() {
                         </span>
                         {item.label}
                       </span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${item.active ? "bg-[#1f7a5a]/10 text-[#1f7a5a]" : "bg-slate-100 text-slate-600"}`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs ${
+                          item.active ? "bg-[#1f7a5a]/10 text-[#1f7a5a]" : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
                         {item.count}
                       </span>
                     </Link>
@@ -383,9 +400,14 @@ export default function TinTucSlugPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
                 <div className="absolute bottom-0 z-10 p-5 text-white">
-                  <span className="mb-2 inline-block rounded bg-[#db2777] px-2 py-0.5 text-[10px] font-bold uppercase">Thông báo quan trọng</span>
+                  <span className="mb-2 inline-block rounded bg-[#db2777] px-2 py-0.5 text-[10px] font-bold uppercase">
+                    Thông báo quan trọng
+                  </span>
                   <h4 className="mb-2 text-lg font-bold leading-tight">Tải ứng dụng Công dân Đồng Tháp</h4>
-                  <Link href="/dich-vu" className="rounded-lg border border-white/30 bg-white/20 px-4 py-1.5 text-sm backdrop-blur-sm transition-colors hover:bg-white/30">
+                  <Link
+                    href="/dich-vu"
+                    className="rounded-lg border border-white/30 bg-white/20 px-4 py-1.5 text-sm backdrop-blur-sm transition-colors hover:bg-white/30"
+                  >
                     Xem dịch vụ công
                   </Link>
                 </div>

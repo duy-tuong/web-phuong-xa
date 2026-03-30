@@ -14,12 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getErrorMessage } from "@/services/admin/errors";
+import { uploadMedia } from "@/services/admin/media";
 import {
   fetchCurrentUser,
-  getErrorMessage,
   updateCurrentUser,
-  uploadMedia,
-} from "@/services/adminService";
+} from "@/services/admin/profile";
 import { User } from "@/types";
 import { Camera, Clock4, Eye, EyeOff, Lock, Mail, Phone, ShieldCheck } from "lucide-react";
 

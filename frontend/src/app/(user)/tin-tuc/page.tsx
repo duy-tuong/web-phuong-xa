@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -6,6 +6,15 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import FeaturedNewsSection from "@/components/tin-tuc/FeaturedNewsSection";
 import NewsArchiveSection from "@/components/tin-tuc/NewsArchiveSection";
 import NewsFiltersSection from "@/components/tin-tuc/NewsFiltersSection";
+import { parseViews } from "@/lib/news";
+import { buildCompactPagination } from "@/lib/pagination";
+import {
+  buildPathWithSearchParams,
+  cloneSearchParams,
+  parsePositivePageParam,
+  setOptionalQueryParam,
+  setPageQueryParam,
+} from "@/lib/query-params";
 import { getArticles, getCategories } from "@/services/articleService";
 import type { Article } from "@/types/article";
 
@@ -13,11 +22,6 @@ type SortMode = "newest" | "oldest" | "popular" | "title";
 
 const ALL_CATEGORY = "Tất cả";
 const DEFAULT_PAGE_SIZE = 6;
-
-function parseViews(views: string) {
-  const digits = views.replace(/[^\d]/g, "");
-  return digits ? Number(digits) : 0;
-}
 
 function parseArticleDate(value: string) {
   const isoTimestamp = Date.parse(value);
@@ -52,13 +56,6 @@ function sortArticles(articles: Article[], sortMode: SortMode) {
   return [...articles].sort(
     (left, right) => parseArticleDate(right.publishedAt || right.date) - parseArticleDate(left.publishedAt || left.date),
   );
-}
-
-function buildPagination(currentPage: number, totalPages: number) {
-  const pages = new Set<number>([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
-  return Array.from(pages)
-    .filter((page) => page >= 1 && page <= totalPages)
-    .sort((left, right) => left - right);
 }
 
 export default function TinTucListPage() {
@@ -110,32 +107,17 @@ export default function TinTucListPage() {
     selectedCategory?: string;
     sortMode?: SortMode;
   }) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = cloneSearchParams(searchParams);
     const nextKeyword = overrides?.keyword ?? keyword;
     const nextCategory = overrides?.selectedCategory ?? selectedCategory;
     const nextSortMode = overrides?.sortMode ?? sortMode;
-    const trimmedKeyword = nextKeyword.trim();
 
-    if (trimmedKeyword) {
-      params.set("q", trimmedKeyword);
-    } else {
-      params.delete("q");
-    }
+    setOptionalQueryParam(params, "q", nextKeyword);
+    setOptionalQueryParam(params, "category", nextCategory !== ALL_CATEGORY ? nextCategory : null);
+    setOptionalQueryParam(params, "sort", nextSortMode !== "newest" ? nextSortMode : null);
+    setPageQueryParam(params, 1);
 
-    if (nextCategory && nextCategory !== ALL_CATEGORY) {
-      params.set("category", nextCategory);
-    } else {
-      params.delete("category");
-    }
-
-    if (nextSortMode !== "newest") {
-      params.set("sort", nextSortMode);
-    } else {
-      params.delete("sort");
-    }
-
-    params.delete("page");
-    router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+    router.push(buildPathWithSearchParams(pathname, params));
   };
 
   const filteredArticles = useMemo(() => {
@@ -164,23 +146,19 @@ export default function TinTucListPage() {
     [filteredArticles],
   );
 
-  const pageSize = DEFAULT_PAGE_SIZE;
-  const totalPages = Math.max(1, Math.ceil(regularArticles.length / pageSize));
-  const requestedPage = Number(searchParams.get("page") ?? "1");
-  const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, totalPages) : 1;
-  const pagedRegularArticles = regularArticles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const paginationPages = buildPagination(currentPage, totalPages);
+  const totalPages = Math.max(1, Math.ceil(regularArticles.length / DEFAULT_PAGE_SIZE));
+  const requestedPage = parsePositivePageParam(searchParams.get("page"));
+  const currentPage = Math.min(requestedPage, totalPages);
+  const pagedRegularArticles = regularArticles.slice(
+    (currentPage - 1) * DEFAULT_PAGE_SIZE,
+    currentPage * DEFAULT_PAGE_SIZE,
+  );
+  const paginationPages = buildCompactPagination(currentPage, totalPages);
 
   const goToPage = (page: number) => {
-    const nextParams = new URLSearchParams(searchParams.toString());
-
-    if (page <= 1) {
-      nextParams.delete("page");
-    } else {
-      nextParams.set("page", String(page));
-    }
-
-    router.push(nextParams.toString() ? `${pathname}?${nextParams.toString()}` : pathname);
+    const nextParams = cloneSearchParams(searchParams);
+    setPageQueryParam(nextParams, page);
+    router.push(buildPathWithSearchParams(pathname, nextParams));
   };
 
   if (isLoading) {
@@ -271,3 +249,4 @@ export default function TinTucListPage() {
     </main>
   );
 }
+

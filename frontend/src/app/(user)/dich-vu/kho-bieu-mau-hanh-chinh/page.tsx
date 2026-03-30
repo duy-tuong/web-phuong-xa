@@ -1,92 +1,26 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Download, Search } from "lucide-react";
+import { Download } from "lucide-react";
 
+import { normalizeKeyword } from "@/lib/normalize";
+import { buildCompactPagination } from "@/lib/pagination";
+import {
+  buildDownloadableTemplates,
+  type DownloadableTemplate,
+} from "@/lib/service-templates";
 import { fetchPublicMedia } from "@/services/mediaLibraryService";
 import { getProcedures } from "@/services/serviceService";
-import type { MediaFile } from "@/types";
-
-type FormTemplate = {
-  id: string;
-  name: string;
-  field: string;
-  downloadUrl: string;
-};
 
 const PAGE_SIZE = 8;
-
-function normalizeKeyword(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function inferField(title: string) {
-  const normalized = normalizeKeyword(title);
-
-  if (normalized.includes("khai sinh") || normalized.includes("khai tu") || normalized.includes("ket hon")) {
-    return "Hộ tịch";
-  }
-
-  if (normalized.includes("tam tru") || normalized.includes("tam vang") || normalized.includes("cu tru")) {
-    return "Cư trú";
-  }
-
-  if (normalized.includes("kinh doanh") || normalized.includes("doanh nghiep")) {
-    return "Kinh doanh";
-  }
-
-  if (normalized.includes("dat") || normalized.includes("nha") || normalized.includes("bat dong san")) {
-    return "Đất đai";
-  }
-
-  if (normalized.includes("xay dung") || normalized.includes("cong trinh")) {
-    return "Xây dựng";
-  }
-
-  if (normalized.includes("ngheo") || normalized.includes("an sinh") || normalized.includes("bao tro")) {
-    return "An sinh";
-  }
-
-  return "Hành chính công";
-}
-
-function toTemplateTitle(fileName: string) {
-  return fileName.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim() || "Biểu mẫu";
-}
-
-function getUrlKey(value: string) {
-  try {
-    if (value.startsWith("http://") || value.startsWith("https://")) {
-      const url = new URL(value);
-      return `${url.pathname}${url.search}`;
-    }
-  } catch {
-    // Keep original value if URL parsing fails.
-  }
-
-  return value;
-}
-
-function buildPagination(currentPage: number, totalPages: number) {
-  const pages = new Set<number>([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
-  return Array.from(pages)
-    .filter((page) => page >= 1 && page <= totalPages)
-    .sort((left, right) => left - right);
-}
+const ALL_FIELDS_LABEL = "Tất cả";
 
 export default function KhoBieuMauHanhChinhPage() {
-  const [templates, setTemplates] = useState<FormTemplate[]>([]);
+  const [templates, setTemplates] = useState<DownloadableTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
-  const [selectedField, setSelectedField] = useState("Tất cả");
+  const [selectedField, setSelectedField] = useState(ALL_FIELDS_LABEL);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -106,46 +40,7 @@ export default function KhoBieuMauHanhChinhPage() {
         const documents = documentsResult.status === "fulfilled" ? documentsResult.value : [];
         const procedures = proceduresResult.status === "fulfilled" ? proceduresResult.value : [];
 
-        const templatesFromProcedures = procedures
-          .filter((procedure) => procedure.wordTemplateHref && procedure.wordTemplateHref !== "#")
-          .map((procedure) => ({
-            id: `procedure-${procedure.slug}`,
-            name: procedure.title,
-            field: inferField(procedure.title),
-            downloadUrl: procedure.wordTemplateHref,
-          }));
-
-        const procedureFieldByUrl = new Map<string, string>(
-          templatesFromProcedures.map((item) => [getUrlKey(item.downloadUrl), item.field]),
-        );
-
-        const templatesFromDocuments = documents.map((file: MediaFile) => {
-          const downloadUrl = file.url || file.filePath;
-          const title = toTemplateTitle(file.fileName);
-          const matchedField = procedureFieldByUrl.get(getUrlKey(downloadUrl));
-
-          return {
-            id: `media-${file.id}`,
-            name: title,
-            field: matchedField || inferField(title),
-            downloadUrl,
-          };
-        });
-
-        const merged = [...templatesFromDocuments, ...templatesFromProcedures];
-        const seen = new Set<string>();
-
-        const uniqueTemplates = merged.filter((template) => {
-          const key = getUrlKey(template.downloadUrl);
-          if (!key || key === "#" || seen.has(key)) {
-            return false;
-          }
-
-          seen.add(key);
-          return true;
-        });
-
-        setTemplates(uniqueTemplates);
+        setTemplates(buildDownloadableTemplates(procedures, documents));
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -162,15 +57,15 @@ export default function KhoBieuMauHanhChinhPage() {
 
   const allFields = useMemo(() => {
     const fields = Array.from(new Set(templates.map((template) => template.field))).sort((a, b) => a.localeCompare(b, "vi"));
-    return ["Tất cả", ...fields];
+    return [ALL_FIELDS_LABEL, ...fields];
   }, [templates]);
 
   const filteredTemplates = useMemo(() => {
     const normalizedKeyword = normalizeKeyword(keyword);
 
     return templates.filter((template) => {
-      const matchesField = selectedField === "Tất cả" || template.field === selectedField;
-      const matchesKeyword = !normalizedKeyword || normalizeKeyword(template.name).includes(normalizedKeyword);
+      const matchesField = selectedField === ALL_FIELDS_LABEL || template.field === selectedField;
+      const matchesKeyword = !normalizedKeyword || normalizeKeyword(template.title).includes(normalizedKeyword);
       return matchesField && matchesKeyword;
     });
   }, [keyword, selectedField, templates]);
@@ -178,7 +73,7 @@ export default function KhoBieuMauHanhChinhPage() {
   const totalPages = Math.max(1, Math.ceil(filteredTemplates.length / PAGE_SIZE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const pageItems = filteredTemplates.slice((safeCurrentPage - 1) * PAGE_SIZE, safeCurrentPage * PAGE_SIZE);
-  const paginationPages = buildPagination(safeCurrentPage, totalPages);
+  const paginationPages = buildCompactPagination(safeCurrentPage, totalPages);
 
   const goToPage = (page: number) => {
     if (page < 1 || page > totalPages) {
@@ -244,7 +139,7 @@ export default function KhoBieuMauHanhChinhPage() {
               >
                 {allFields.map((field) => (
                   <option key={field} value={field}>
-                    {field === "Tất cả" ? "Lọc theo lĩnh vực: Tất cả" : field}
+                    {field === ALL_FIELDS_LABEL ? "Lọc theo lĩnh vực: Tất cả" : field}
                   </option>
                 ))}
               </select>
@@ -286,7 +181,7 @@ export default function KhoBieuMauHanhChinhPage() {
                       <td className="px-5 py-4 font-semibold text-slate-500">
                         {(safeCurrentPage - 1) * PAGE_SIZE + index + 1}
                       </td>
-                      <td className="px-5 py-4 font-medium text-slate-900">{template.name}</td>
+                      <td className="px-5 py-4 font-medium text-slate-900">{template.title}</td>
                       <td className="px-5 py-4">
                         <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                           {template.field}
@@ -294,7 +189,7 @@ export default function KhoBieuMauHanhChinhPage() {
                       </td>
                       <td className="px-5 py-4 text-center">
                         <a
-                          href={template.downloadUrl}
+                          href={template.href}
                           download
                           className="inline-flex items-center gap-2 rounded-lg bg-[#1f7a5a] px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:bg-[#196448]"
                         >
@@ -350,3 +245,4 @@ export default function KhoBieuMauHanhChinhPage() {
     </main>
   );
 }
+

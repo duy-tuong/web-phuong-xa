@@ -23,10 +23,10 @@ import {
   createAdminArticle,
   deleteAdminArticle,
   fetchAdminArticles,
-  fetchCategoriesAdmin,
-  getErrorMessage,
   updateAdminArticle,
-} from "@/services/adminService";
+} from "@/services/admin/articles";
+import { fetchCategoriesAdmin } from "@/services/admin/categories";
+import { getErrorMessage } from "@/services/admin/errors";
 import { Article, Category } from "@/types";
 
 interface ArticleFormData {

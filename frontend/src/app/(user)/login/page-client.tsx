@@ -7,7 +7,7 @@ import AuthHeader from "@/components/auth/AuthHeader";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
 import SocialLogin from "@/components/auth/SocialLogin";
-import { fetchCurrentUser } from "@/services/adminService";
+import { fetchCurrentUser } from "@/services/admin/profile";
 import {
   USER_TOKEN_KEY,
   type UserSession,

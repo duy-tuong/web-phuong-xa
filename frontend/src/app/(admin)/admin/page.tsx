@@ -36,11 +36,11 @@ import {
 } from "@/components/ui/select";
 import {
   fetchAdminArticles,
-  fetchApplicationsAdmin,
-  fetchCommentsAdmin,
-  fetchDashboardSummary,
-  getErrorMessage,
-} from "@/services/adminService";
+} from "@/services/admin/articles";
+import { fetchApplicationsAdmin } from "@/services/admin/applications";
+import { fetchCommentsAdmin } from "@/services/admin/comments";
+import { fetchDashboardSummary } from "@/services/admin/dashboard";
+import { getErrorMessage } from "@/services/admin/errors";
 import { Application, Article, Comment } from "@/types";
 
 type ArticleRange = "3" | "6" | "12";

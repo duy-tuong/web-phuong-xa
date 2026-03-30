@@ -3,35 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { parseViews } from "@/lib/news";
+import { copyLink, openShareUrl } from "@/lib/share";
 import type { Article } from "@/types/article";
 
 type FeaturedNewsSectionProps = {
   articles: Article[];
 };
-
-function parseViews(views: string) {
-  const digits = views.replace(/[^\d]/g, "");
-  return digits ? Number(digits) : 0;
-}
-
-function openShareUrl(url: string) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.open(url, "_blank", "noopener,noreferrer,width=720,height=640");
-}
-
-async function copyLink(url: string) {
-  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(url);
-    return;
-  }
-
-  if (typeof window !== "undefined") {
-    window.prompt("Sao chép liên kết này:", url);
-  }
-}
 
 export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionProps) {
   const featuredArticle = articles[0];
@@ -52,7 +30,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
     <section className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-8">
       <div className="flex flex-col gap-6 lg:col-span-2">
         <div className="border-b border-[#1f7a5a]/10 pb-4">
-          <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">Tin tức nổi bật</h2>
+          <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">Tin tuc noi bat</h2>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
@@ -61,7 +39,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
               type="button"
               onClick={() => openShareUrl(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(articleUrl)}`)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white shadow-sm transition-colors hover:bg-[#166FE5]"
-              title="Chia sẻ Facebook"
+              title="Chia se Facebook"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 666.667 666.667" className="h-4 w-4" aria-hidden="true">
                 <g transform="matrix(1.33333 0 0 -1.33333 -133.333 800)">
@@ -82,7 +60,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
               type="button"
               onClick={() => openShareUrl(`https://zalo.me/share?url=${encodeURIComponent(articleUrl)}`)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0068FF] text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#005AE6]"
-              title="Chia sẻ Zalo"
+              title="Chia se Zalo"
             >
               Zalo
             </button>
@@ -90,7 +68,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
               type="button"
               onClick={() => void copyLink(articleUrl)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 shadow-sm transition-colors hover:bg-slate-200"
-              title="Sao chép liên kết"
+              title="Sao chep lien ket"
             >
               <span className="material-symbols-outlined text-[20px]">link</span>
             </button>
@@ -111,13 +89,13 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
                   sizes="(min-width: 640px) 66vw, 100vw"
                 />
                 <div className="absolute left-4 top-4 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-                  Tin nổi bật
+                  Tin noi bat
                 </div>
               </div>
             ) : (
               <div className="border-b border-[#1f7a5a]/10 px-6 pt-6">
                 <div className="inline-flex rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-                  Tin nổi bật
+                  Tin noi bat
                 </div>
               </div>
             )}
@@ -157,7 +135,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-4">
           <h3 className="flex items-center border-l-4 border-[#1f7a5a] pl-3 text-xl font-bold text-slate-900">
-            Tiêu điểm trong tuần
+            Tieu diem trong tuan
           </h3>
           <div className="flex flex-col gap-4">
             {spotlightItems.map((item) => (
@@ -193,7 +171,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
           <div className="flex flex-col gap-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
               <span className="material-symbols-outlined text-[20px] text-[#1f7a5a]">trending_up</span>
-              Tin đọc nhiều
+              Tin doc nhieu
             </h3>
             <ul className="flex flex-col gap-4">
               {popularNews.map((item, index) => (
@@ -216,7 +194,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
           <div className="flex flex-col gap-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
               <span className="material-symbols-outlined text-[20px] text-[#1f7a5a]">star</span>
-              Tin nổi bật tuần
+              Tin noi bat tuan
             </h3>
             <div className="flex flex-col gap-3">
               {weeklyHighlights.map((item) => (

@@ -20,9 +20,9 @@ import {
 import {
   deleteCommentAdmin,
   fetchCommentsAdmin,
-  getErrorMessage,
   updateCommentStatus,
-} from "@/services/adminService";
+} from "@/services/admin/comments";
+import { getErrorMessage } from "@/services/admin/errors";
 import { Comment } from "@/types";
 
 const statusConfig: Record<Comment["status"], { label: string; className: string }> = {

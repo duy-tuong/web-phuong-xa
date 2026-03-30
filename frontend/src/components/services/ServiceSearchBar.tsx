@@ -1,7 +1,14 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+import {
+  buildPathWithSearchParams,
+  cloneSearchParams,
+  setOptionalQueryParam,
+  setPageQueryParam,
+} from "@/lib/query-params";
 
 const FIELD_OPTIONS = [
   { value: "", label: "Tất cả lĩnh vực" },
@@ -11,39 +18,32 @@ const FIELD_OPTIONS = [
   { value: "hanh-chinh-cong", label: "Hành chính công" },
 ];
 
-export default function ServiceSearchBar() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [keyword, setKeyword] = useState(searchParams.get("q") ?? "");
-  const [field, setField] = useState(searchParams.get("field") ?? "");
+type ServiceSearchFormProps = {
+  initialField: string;
+  initialKeyword: string;
+  pathname: string;
+  searchParamsString: string;
+};
 
-  useEffect(() => {
-    setKeyword(searchParams.get("q") ?? "");
-    setField(searchParams.get("field") ?? "");
-  }, [searchParams]);
+function ServiceSearchForm({
+  initialField,
+  initialKeyword,
+  pathname,
+  searchParamsString,
+}: ServiceSearchFormProps) {
+  const router = useRouter();
+  const [keyword, setKeyword] = useState(initialKeyword);
+  const [field, setField] = useState(initialField);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const params = new URLSearchParams(searchParams.toString());
-    const trimmedKeyword = keyword.trim();
+    const params = cloneSearchParams(searchParamsString);
+    setOptionalQueryParam(params, "q", keyword);
+    setOptionalQueryParam(params, "field", field);
+    setPageQueryParam(params, 1);
 
-    if (trimmedKeyword) {
-      params.set("q", trimmedKeyword);
-    } else {
-      params.delete("q");
-    }
-
-    if (field) {
-      params.set("field", field);
-    } else {
-      params.delete("field");
-    }
-
-    params.delete("page");
-
-    router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+    router.push(buildPathWithSearchParams(pathname, params));
   };
 
   return (
@@ -105,5 +105,21 @@ export default function ServiceSearchBar() {
         </div>
       </div>
     </form>
+  );
+}
+
+export default function ServiceSearchBar() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
+
+  return (
+    <ServiceSearchForm
+      key={searchParamsString}
+      initialField={searchParams.get("field") ?? ""}
+      initialKeyword={searchParams.get("q") ?? ""}
+      pathname={pathname}
+      searchParamsString={searchParamsString}
+    />
   );
 }

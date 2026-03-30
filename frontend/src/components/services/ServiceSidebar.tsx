@@ -5,47 +5,28 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Download } from "lucide-react";
 
+import { normalizeKeyword } from "@/lib/normalize";
+import {
+  buildDownloadableTemplates,
+  type DownloadableTemplate,
+} from "@/lib/service-templates";
 import { fetchPublicMedia } from "@/services/mediaLibraryService";
 import { getProcedures } from "@/services/serviceService";
 import type { MediaFile } from "@/types";
 import type { ProcedureDetail } from "@/types/service";
 
-type DownloadableTemplate = {
-  id: string;
-  title: string;
-  href: string;
-};
-
 const DEFAULT_TEMPLATE_LIMIT = 3;
 const EXPANDED_TEMPLATE_STEP = 8;
-
-function formatTemplateTitle(fileName: string) {
-  return fileName.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim() || "Biểu mẫu";
-}
-
-function normalizeSearch(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 export default function ServiceSidebar() {
   const searchParams = useSearchParams();
   const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
   const [documentFiles, setDocumentFiles] = useState<MediaFile[]>([]);
   const [templateKeyword, setTemplateKeyword] = useState("");
-  const [visibleTemplateCount, setVisibleTemplateCount] = useState(DEFAULT_TEMPLATE_LIMIT);
+  const [templatePage, setTemplatePage] = useState(1);
 
   const showAllTemplates = searchParams.get("templates") === "all";
-
-  useEffect(() => {
-    setVisibleTemplateCount(showAllTemplates ? EXPANDED_TEMPLATE_STEP : DEFAULT_TEMPLATE_LIMIT);
-  }, [showAllTemplates, templateKeyword]);
+  const visibleTemplateCount = showAllTemplates ? EXPANDED_TEMPLATE_STEP * templatePage : DEFAULT_TEMPLATE_LIMIT;
 
   useEffect(() => {
     let isMounted = true;
@@ -72,55 +53,19 @@ export default function ServiceSidebar() {
   }, []);
 
   const featuredProcedures = procedures.slice(0, 3);
-  const templatesFromMedia = useMemo<DownloadableTemplate[]>(
-    () =>
-      documentFiles
-        .map((file) => ({
-          id: `media-${file.id}`,
-          title: formatTemplateTitle(file.fileName),
-          href: file.url || file.filePath,
-        }))
-        .filter((item) => Boolean(item.href)),
-    [documentFiles],
-  );
-
-  const templatesFromProcedures = useMemo<DownloadableTemplate[]>(
-    () =>
-      procedures
-        .filter((procedure) => procedure.wordTemplateHref && procedure.wordTemplateHref !== "#")
-        .map((procedure) => ({
-          id: `procedure-${procedure.slug}`,
-          title: procedure.title,
-          href: procedure.wordTemplateHref,
-        })),
-    [procedures],
-  );
-
   const allDownloadableTemplates = useMemo(
-    () => {
-      const merged = [...templatesFromMedia, ...templatesFromProcedures];
-      const seen = new Set<string>();
-
-      return merged.filter((item) => {
-        if (!item.href || seen.has(item.href)) {
-          return false;
-        }
-
-        seen.add(item.href);
-        return true;
-      });
-    },
-    [templatesFromMedia, templatesFromProcedures],
+    () => buildDownloadableTemplates(procedures, documentFiles),
+    [documentFiles, procedures],
   );
 
   const filteredTemplates = useMemo(() => {
-    const normalizedKeyword = normalizeSearch(templateKeyword);
+    const normalizedKeyword = normalizeKeyword(templateKeyword);
     if (!normalizedKeyword) {
       return allDownloadableTemplates;
     }
 
     return allDownloadableTemplates.filter((template) =>
-      normalizeSearch(template.title).includes(normalizedKeyword),
+      normalizeKeyword(template.title).includes(normalizedKeyword),
     );
   }, [allDownloadableTemplates, templateKeyword]);
 
@@ -165,7 +110,10 @@ export default function ServiceSidebar() {
             <input
               type="text"
               value={templateKeyword}
-              onChange={(event) => setTemplateKeyword(event.target.value)}
+              onChange={(event) => {
+                setTemplateKeyword(event.target.value);
+                setTemplatePage(1);
+              }}
               placeholder="Tìm biểu mẫu..."
               className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#1f7a5a] focus:outline-none"
             />
@@ -205,7 +153,7 @@ export default function ServiceSidebar() {
           {hasMoreTemplates ? (
             <button
               type="button"
-              onClick={() => setVisibleTemplateCount((current) => current + EXPANDED_TEMPLATE_STEP)}
+              onClick={() => setTemplatePage((current) => current + 1)}
               className="mt-1 w-full rounded-xl bg-blue-50 py-2.5 text-center text-xs font-black uppercase tracking-wider text-blue-700 transition-colors hover:bg-blue-100"
             >
               Xem thêm biểu mẫu

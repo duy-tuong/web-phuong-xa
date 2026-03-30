@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/select";
 import {
   fetchApplicationsAdmin,
-  getErrorMessage,
   updateApplicationStatus,
-} from "@/services/adminService";
+} from "@/services/admin/applications";
+import { getErrorMessage } from "@/services/admin/errors";
 import { Application } from "@/types";
 
 const statusConfig: Record<Application["status"], { label: string; className: string }> = {

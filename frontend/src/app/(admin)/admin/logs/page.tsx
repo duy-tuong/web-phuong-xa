@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fetchLogsAdmin, getErrorMessage } from "@/services/adminService";
+import { getErrorMessage } from "@/services/admin/errors";
+import { fetchLogsAdmin } from "@/services/admin/logs";
 import { LogEntry } from "@/types";
 
 const moduleBadgeClass: Record<string, string> = {

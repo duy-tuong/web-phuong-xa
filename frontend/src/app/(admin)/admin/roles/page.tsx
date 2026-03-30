@@ -8,14 +8,14 @@ import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/services/admin/errors";
 import { Role } from "@/types";
 import {
   createRole,
   deleteRole,
   fetchRoles,
-  getErrorMessage,
   updateRole,
-} from "@/services/adminService";
+} from "@/services/admin/roles";
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);

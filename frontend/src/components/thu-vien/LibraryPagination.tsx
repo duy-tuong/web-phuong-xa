@@ -1,17 +1,12 @@
-import Link from "next/link";
+﻿import Link from "next/link";
+
+import { buildCompactPagination } from "@/lib/pagination";
 
 type LibraryPaginationProps = {
   basePath: string;
   currentPage: number;
   totalPages: number;
 };
-
-function buildPagination(currentPage: number, totalPages: number) {
-  const pages = new Set<number>([1, totalPages, currentPage, currentPage - 1, currentPage + 1]);
-  return Array.from(pages)
-    .filter((page) => page >= 1 && page <= totalPages)
-    .sort((left, right) => left - right);
-}
 
 function getPageHref(basePath: string, page: number) {
   return page <= 1 ? basePath : `${basePath}?page=${page}`;
@@ -26,7 +21,7 @@ export default function LibraryPagination({
     return null;
   }
 
-  const pages = buildPagination(currentPage, totalPages);
+  const pages = buildCompactPagination(currentPage, totalPages);
 
   return (
     <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Phân trang thư viện">
@@ -71,3 +66,4 @@ export default function LibraryPagination({
     </nav>
   );
 }
+

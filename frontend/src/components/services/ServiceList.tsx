@@ -3,27 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import {
+  buildPathWithSearchParams,
+  cloneSearchParams,
+  parsePositivePageParam,
+  setPageQueryParam,
+} from "@/lib/query-params";
+import { buildCompactPagination } from "@/lib/pagination";
+import { inferServiceField } from "@/lib/service-templates";
 import { getProcedures } from "@/services/serviceService";
 import type { ProcedureDetail } from "@/types/service";
 import ServiceCard, { type ServiceCardData } from "./ServiceCard";
-
-function inferField(title: string) {
-  const normalized = title.toLowerCase();
-
-  if (normalized.includes("khai sinh") || normalized.includes("khai tử") || normalized.includes("kết hôn")) {
-    return "Hộ tịch";
-  }
-
-  if (normalized.includes("kinh doanh")) {
-    return "Kinh doanh";
-  }
-
-  if (normalized.includes("đất") || normalized.includes("nhà") || normalized.includes("bất động sản")) {
-    return "Đất đai";
-  }
-
-  return "Hành chính công";
-}
 
 function toFieldValue(field: string) {
   return field
@@ -65,7 +55,7 @@ function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceC
     profileCode: procedure.id ? `DV-${String(procedure.id).padStart(3, "0")}` : `DV-${String(index + 1).padStart(3, "0")}`,
     level,
     levelClass,
-    field: inferField(procedure.title),
+    field: inferServiceField(procedure.title),
     title: procedure.title,
     description: buildServiceDescription(procedure),
     duration: procedure.processingTime,
@@ -75,22 +65,6 @@ function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceC
 
 type SortMode = "default" | "name" | "duration";
 const ITEMS_PER_PAGE = 4;
-
-function getVisiblePages(totalPages: number, currentPage: number) {
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  if (currentPage <= 3) {
-    return [1, 2, 3, 4, 5];
-  }
-
-  if (currentPage >= totalPages - 2) {
-    return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-  }
-
-  return [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
-}
 
 export default function ServiceList() {
   const router = useRouter();
@@ -128,8 +102,7 @@ export default function ServiceList() {
   const services = useMemo(() => procedures.map(mapProcedureToCard), [procedures]);
   const keyword = (searchParams.get("q") ?? "").trim().toLowerCase();
   const field = searchParams.get("field") ?? "";
-  const currentPageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
-  const currentPage = Number.isFinite(currentPageParam) && currentPageParam > 0 ? currentPageParam : 1;
+  const currentPage = parsePositivePageParam(searchParams.get("page"));
 
   const filteredServices = useMemo(() => {
     const nextServices = services.filter((service) => {
@@ -167,29 +140,18 @@ export default function ServiceList() {
       return;
     }
 
-    const params = new URLSearchParams(searchParams.toString());
-    if (safeCurrentPage <= 1) {
-      params.delete("page");
-    } else {
-      params.set("page", String(safeCurrentPage));
-    }
-
-    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+    const params = cloneSearchParams(searchParams);
+    setPageQueryParam(params, safeCurrentPage);
+    router.replace(buildPathWithSearchParams(pathname, params));
   }, [currentPage, pathname, router, safeCurrentPage, searchParams]);
 
-  const visiblePages = useMemo(() => getVisiblePages(totalPages, safeCurrentPage), [safeCurrentPage, totalPages]);
+  const visiblePages = useMemo(() => buildCompactPagination(safeCurrentPage, totalPages), [safeCurrentPage, totalPages]);
 
   const handlePageChange = (page: number) => {
     const nextPage = Math.max(1, Math.min(page, totalPages));
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (nextPage <= 1) {
-      params.delete("page");
-    } else {
-      params.set("page", String(nextPage));
-    }
-
-    router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+    const params = cloneSearchParams(searchParams);
+    setPageQueryParam(params, nextPage);
+    router.push(buildPathWithSearchParams(pathname, params));
   };
 
   if (isLoading) {

@@ -22,11 +22,11 @@ import {
 import {
   createUser,
   deleteUser,
-  fetchRoles,
   fetchUsers,
-  getErrorMessage,
   updateUser,
-} from "@/services/adminService";
+} from "@/services/admin/users";
+import { getErrorMessage } from "@/services/admin/errors";
+import { fetchRoles } from "@/services/admin/roles";
 import { Role, User } from "@/types";
 
 interface UserFormData {

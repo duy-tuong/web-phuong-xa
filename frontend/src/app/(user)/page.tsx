@@ -4,7 +4,7 @@ import LocalNews from "@/components/home/LocalNews";
 import QuickServices from "@/components/home/QuickServices";
 import { fetchLibraryPhotos } from "@/services/mediaLibraryService";
 import { getArticles } from "@/services/articleService";
-import { getHomePageContent } from "@/services/pageContentService";
+import { getHomePageContent } from "@/services/page-content/home";
 
 const TOURISM_LAYOUTS = ["md:col-span-2", "", "", "md:col-span-2"];
 

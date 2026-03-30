@@ -1,5 +1,5 @@
 // Công dụng: Hiển thị trang liên hệ với các thông tin liên hệ, form gửi câu hỏi, và phần FAQ.
-import { getContactFaqItems } from "@/services/pageContentService";// gọi hành để lấy dữ liệu FAQ (câu hỏi thường gặp) cho trang liên hệ
+import { getContactFaqItems } from "@/services/page-content/contact";// gọi hành để lấy dữ liệu FAQ (câu hỏi thường gặp) cho trang liên hệ
 import ContactHero from "@/components/contact/ContactHero";// Banner hoặc tiêu đề trang
 import ContactInfo from "@/components/contact/ContactInfo";// thông tin liên lạc
 import ContactForm from "@/components/contact/ContactForm";// form để người dùng gửi câu hỏi hoặc yêu cầu hỗ trợ đến đơn vị quản lý trang web

@@ -13,9 +13,9 @@ import {
   createCategory,
   deleteCategory,
   fetchCategoriesAdmin,
-  getErrorMessage,
   updateCategory,
-} from "@/services/adminService";
+} from "@/services/admin/categories";
+import { getErrorMessage } from "@/services/admin/errors";
 
 interface CategoryFormData {
   name: string;
