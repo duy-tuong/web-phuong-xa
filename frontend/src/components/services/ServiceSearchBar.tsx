@@ -1,14 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const FIELD_OPTIONS = [
-  { value: "", label: "Tat ca linh vuc" },
-  { value: "ho-tich", label: "Ho tich" },
-  { value: "dat-dai", label: "Dat dai" },
+  { value: "", label: "Tất cả lĩnh vực" },
+  { value: "ho-tich", label: "Hộ tịch" },
+  { value: "dat-dai", label: "Đất đai" },
   { value: "kinh-doanh", label: "Kinh doanh" },
-  { value: "hanh-chinh-cong", label: "Hanh chinh cong" },
+  { value: "hanh-chinh-cong", label: "Hành chính công" },
 ];
 
 export default function ServiceSearchBar() {
@@ -41,6 +41,8 @@ export default function ServiceSearchBar() {
       params.delete("field");
     }
 
+    params.delete("page");
+
     router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
   };
 
@@ -52,7 +54,7 @@ export default function ServiceSearchBar() {
       <div className="grid grid-cols-1 gap-5 md:grid-cols-12 md:items-end">
         <div className="md:col-span-5 lg:col-span-5">
           <label className="mb-2 block text-sm font-bold text-slate-800" htmlFor="keyword">
-            Tu khoa tim kiem
+            Từ khóa tìm kiếm
           </label>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
@@ -63,7 +65,7 @@ export default function ServiceSearchBar() {
               type="text"
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
-              placeholder="Nhap ten thu tuc hoac noi dung can tim..."
+              placeholder="Nhập tên thủ tục hoặc nội dung cần tìm..."
               className="w-full rounded-xl border border-slate-300 py-3.5 pl-11 pr-4 text-sm font-medium outline-none transition-all placeholder:text-slate-400 focus:border-[#1f7a5a] focus:ring-4 focus:ring-[#1f7a5a]/10"
             />
           </div>
@@ -71,7 +73,7 @@ export default function ServiceSearchBar() {
 
         <div className="md:col-span-4 lg:col-span-4">
           <label className="mb-2 block text-sm font-bold text-slate-800" htmlFor="category">
-            Linh vuc
+            Lĩnh vực
           </label>
           <div className="relative">
             <select
@@ -98,7 +100,7 @@ export default function ServiceSearchBar() {
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1f7a5a] py-3.5 text-sm font-black tracking-wide text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#186248] focus:ring-4 focus:ring-[#1f7a5a]/30"
           >
             <span className="material-symbols-outlined text-[18px]">search</span>
-            TIM KIEM
+            TÌM KIẾM
           </button>
         </div>
       </div>

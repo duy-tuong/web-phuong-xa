@@ -24,7 +24,7 @@ const TABS = [
     title: "Vươn tầm hiện đại",
     highlight: "Đô thị văn minh",
     desc: "Quy hoạch và phát triển không gian sống hiện đại, đồng bộ về hạ tầng giao thông, tạo ra môi trường sống Sáng - Xanh - Sạch - Đẹp cho cộng đồng dân cư toàn phường.",
-    image: "https://images.unsplash.com/photo-1522851177699-a41dc5d878cb?auto=format&fit=crop&q=80&w=1200",
+    image: "https://upload.wikimedia.org/wikipedia/commons/0/0f/V%C4%83n_mi%E1%BA%BFu_Cao_L%C3%A3nh_v%E1%BB%81_%C4%91%C3%AAm.jpg",
     color: "from-emerald-500 to-teal-400",
     textCol: "text-emerald-600",
     bgCol: "bg-emerald-100",
@@ -36,7 +36,7 @@ const TABS = [
     title: "Cải cách thủ tục",
     highlight: "Chính quyền số",
     desc: "Với triết lý \"Lấy người dân làm trung tâm\", chúng tôi liên tục đổi mới, áp dụng mạnh mẽ chuyển đổi số để mọi thủ tục hành chính trở nên thân thiện, tiện lợi và minh bạch nhất.",
-    image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=1200",
+    image: "https://cdn2.baodongthap.vn/image/ckeditor/2026/20260119/files/wm_4_th_3.jpg",
     color: "from-blue-500 to-cyan-400",
     textCol: "text-blue-600",
     bgCol: "bg-blue-100",
@@ -84,7 +84,7 @@ export default function AboutUsSection() {
             <div key={activeTab.id} className="animate-fade-in-up">
               <h2 className="text-4xl font-black leading-tight text-slate-900 md:text-5xl lg:text-5xl">
                 {activeTab.title}<br />
-                <span className={activeTab.textCol}>{activeTab.highlight}</span>
+                <span className={`mt-1.5 inline-block ${activeTab.textCol}`}>{activeTab.highlight}</span>
               </h2>
 
               <div className="mt-6 space-y-6 text-lg leading-relaxed text-slate-600 min-h-[150px]">

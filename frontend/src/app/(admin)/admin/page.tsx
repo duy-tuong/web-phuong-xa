@@ -68,13 +68,13 @@ const statusColorMap: Record<string, string> = {
 };
 
 const statusLabelMap: Record<string, string> = {
-  published: "Da dang",
-  draft: "Nhap",
-  pending: "Cho xu ly",
-  processing: "Dang xu ly",
-  done: "Hoan thanh",
-  rejected: "Tu choi",
-  approved: "Da duyet",
+  published: "Đã đăng",
+  draft: "Nháp",
+  pending: "Chờ xử lý",
+  processing: "Đang xử lý",
+  done: "Hoàn thành",
+  rejected: "Từ chối",
+  approved: "Đã duyệt",
 };
 
 function buildMonthSeries(articles: Article[]) {
@@ -112,14 +112,14 @@ export default function DashboardPage() {
   const [articleRange, setArticleRange] = useState<ArticleRange>("6");
   const [displayName] = useState(() => {
     if (typeof window === "undefined") {
-      return "Nguoi dung";
+      return "Người dùng";
     }
 
     return (
       localStorage.getItem("admin_display_name") ||
       localStorage.getItem("admin_name") ||
       localStorage.getItem("admin_username") ||
-      "Nguoi dung"
+      "Người dùng"
     );
   });
 
@@ -170,7 +170,7 @@ export default function DashboardPage() {
     labels: visibleSeries.map((item) => item.label),
     datasets: [
       {
-        label: "Bai viet",
+        label: "Bài viết",
         data: visibleSeries.map((item) => item.value),
         backgroundColor: "rgba(79, 122, 104, 0.82)",
         hoverBackgroundColor: "rgba(79, 122, 104, 0.92)",
@@ -183,7 +183,7 @@ export default function DashboardPage() {
   };
 
   const doughnutData = {
-    labels: ["Cho xu ly", "Dang xu ly", "Hoan thanh", "Tu choi"],
+    labels: ["Chờ xử lý", "Đang xử lý", "Hoàn thành", "Từ chối"],
     datasets: [
       {
         data: [
@@ -220,45 +220,45 @@ export default function DashboardPage() {
         <div className="relative flex flex-col gap-1">
           <div className="inline-flex items-center gap-2 text-[24px] sm:text-[30px] lg:text-[35px] font-semibold leading-[1.35] text-[hsl(42,76%,96%)]">
             <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(38,80%,56%)]" />
-            <span>Xin chao, <span className="text-white">{displayName}</span></span>
+            <span>Xin chào, <span className="text-white">{displayName}</span></span>
           </div>
           <p className="text-[13px] sm:text-[16px] lg:text-[22px] text-[hsl(44,44%,82%)]">
-            Tong quan du lieu that tu he thong quan tri. Hom nay, {todayLabel}
+            Tổng quan dữ liệu thật từ hệ thống quản trị. Hôm nay, {todayLabel}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Tong nguoi dung" value={dashboard?.totalUsers || 0} icon={Users} />
-        <StatCard title="Bai viet" value={dashboard?.totalArticles || 0} icon={FileText} />
-        <StatCard title="Dich vu cong" value={dashboard?.totalServices || 0} icon={Landmark} />
-        <StatCard title="Ho so tiep nhan" value={dashboard?.totalApplications || 0} icon={ClipboardList} />
+        <StatCard title="Tổng người dùng" value={dashboard?.totalUsers || 0} icon={Users} />
+        <StatCard title="Bài viết" value={dashboard?.totalArticles || 0} icon={FileText} />
+        <StatCard title="Dịch vụ công" value={dashboard?.totalServices || 0} icon={Landmark} />
+        <StatCard title="Hồ sơ tiếp nhận" value={dashboard?.totalApplications || 0} icon={ClipboardList} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
           <ChartCard
-            title="Bai viet theo thang"
-            description="Thong ke so bai viet tao moi tu API admin articles"
+            title="Bài viết theo tháng"
+            description="Thống kê số bài viết tạo mới từ API admin articles"
             action={
               <Select value={articleRange} onValueChange={(value) => setArticleRange(value as ArticleRange)}>
                 <SelectTrigger className="h-8 w-[126px] border-stone-200 bg-white text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="3">3 thang</SelectItem>
-                  <SelectItem value="6">6 thang</SelectItem>
-                  <SelectItem value="12">12 thang</SelectItem>
+                  <SelectItem value="3">3 tháng</SelectItem>
+                  <SelectItem value="6">6 tháng</SelectItem>
+                  <SelectItem value="12">12 tháng</SelectItem>
                 </SelectContent>
               </Select>
             }
           >
-            <div className="h-[280px]">{loading ? <div className="pt-20 text-center text-sm text-stone-400">Dang tai bieu do...</div> : <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />}</div>
+            <div className="h-[280px]">{loading ? <div className="pt-20 text-center text-sm text-stone-400">Đang tải biểu đồ...</div> : <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />}</div>
           </ChartCard>
         </div>
-        <ChartCard title="Trang thai ho so" description="Phan bo trang thai ho so tu API applications">
+        <ChartCard title="Trạng thái hồ sơ" description="Phân bố trạng thái hồ sơ từ API applications">
           <div className="h-[280px] flex flex-col items-center justify-center">
-            <div className="h-[220px] w-full max-w-[260px]">{loading ? <div className="pt-20 text-center text-sm text-stone-400">Dang tai bieu do...</div> : <Doughnut data={doughnutData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: "65%" }} />}</div>
+            <div className="h-[220px] w-full max-w-[260px]">{loading ? <div className="pt-20 text-center text-sm text-stone-400">Đang tải biểu đồ...</div> : <Doughnut data={doughnutData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: "65%" }} />}</div>
           </div>
         </ChartCard>
       </div>
@@ -268,9 +268,9 @@ export default function DashboardPage() {
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <FileText className="h-3.5 w-3.5 text-[hsl(146,32%,38%)]" />
-              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Bai viet gan day</h3>
+              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Bài viết gần đây</h3>
             </div>
-            <Link href="/admin/articles" className={viewAllLinkClass}>Xem tat ca</Link>
+            <Link href="/admin/articles" className={viewAllLinkClass}>Xem tất cả</Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
             {(dashboard?.articles || []).slice(0, 5).map((article) => (
@@ -294,9 +294,9 @@ export default function DashboardPage() {
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <ClipboardList className="h-3.5 w-3.5 text-[hsl(34,58%,50%)]" />
-              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Ho so gan day</h3>
+              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Hồ sơ gần đây</h3>
             </div>
-            <Link href="/admin/applications" className={viewAllLinkClass}>Xem tat ca</Link>
+            <Link href="/admin/applications" className={viewAllLinkClass}>Xem tất cả</Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
             {(dashboard?.applications || []).slice(0, 5).map((app) => (
@@ -317,9 +317,9 @@ export default function DashboardPage() {
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-3.5 w-3.5 text-[hsl(22,36%,52%)]" />
-              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Binh luan gan day</h3>
+              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Bình luận gần đây</h3>
             </div>
-            <Link href="/admin/comments" className={viewAllLinkClass}>Xem tat ca</Link>
+            <Link href="/admin/comments" className={viewAllLinkClass}>Xem tất cả</Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
             {(dashboard?.comments || []).slice(0, 5).map((comment) => (
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                   </Badge>
                 </div>
                 <p className="mt-0.5 line-clamp-2 text-[12px] text-[hsl(150,8%,44%)]">{comment.content}</p>
-                <p className="mt-0.5 line-clamp-1 text-[11px] text-[hsl(150,8%,64%)]">{comment.articleTitle || "Binh luan bai viet"}</p>
+                <p className="mt-0.5 line-clamp-1 text-[11px] text-[hsl(150,8%,64%)]">{comment.articleTitle || "Bình luận bài viết"}</p>
               </div>
             ))}
           </div>

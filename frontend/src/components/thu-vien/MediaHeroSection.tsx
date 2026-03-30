@@ -9,7 +9,7 @@ export default function MediaHeroSection() {
     <section className="relative flex h-[50vh] min-h-[450px] w-full items-center justify-center overflow-hidden">
       <Image
         src={HERO_IMAGE}
-        alt="Thu vien media Phuong Cao Lanh"
+        alt="Thư viện media Phường Cao Lãnh"
         fill
         className="object-cover"
         unoptimized
@@ -20,16 +20,16 @@ export default function MediaHeroSection() {
 
       <div className="z-10 flex max-w-4xl flex-col items-center gap-6 px-4 text-center">
         <h1 className="text-4xl font-black leading-tight tracking-tight text-white drop-shadow-lg md:text-6xl">
-          Thu Vien Hinh Anh &amp; Video
+          Thư viện hình ảnh và video
         </h1>
         <p className="max-w-2xl text-lg font-medium text-slate-100 drop-shadow-md md:text-xl">
-          Kham pha net dep van hoa, lich su va con nguoi Phuong Cao Lanh qua nhung khung hinh chan thuc va song dong nhat.
+          Khám phá nét đẹp văn hóa, lịch sử và con người Phường Cao Lãnh qua những khung hình chân thực và sống động nhất.
         </p>
         <Link
           href="/thu-vien/hinh-anh"
           className="mt-4 flex items-center gap-2 rounded-full bg-[#1f7a5a] px-8 py-3 font-bold text-white shadow-lg transition-all duration-300 hover:bg-[#1f7a5a]/90"
         >
-          <span>Kham pha ngay</span>
+          <span>Khám phá ngay</span>
           <span className="material-symbols-outlined text-sm">arrow_forward</span>
         </Link>
       </div>

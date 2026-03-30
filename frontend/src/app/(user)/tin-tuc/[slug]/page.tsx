@@ -27,7 +27,7 @@ async function copyLink(url: string) {
   }
 
   if (typeof window !== "undefined") {
-    window.prompt("Sao chep lien ket nay:", url);
+    window.prompt("Sao chép liên kết này:", url);
   }
 }
 
@@ -37,7 +37,7 @@ export default function TinTucSlugPage() {
 
   const [article, setArticle] = useState<Article | null>(null);
   const [allArticles, setAllArticles] = useState<Article[]>([]);
-  const [categoryLabels, setCategoryLabels] = useState<string[]>(["Tat ca"]);
+  const [categoryLabels, setCategoryLabels] = useState<string[]>(["Tất cả"]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -82,7 +82,7 @@ export default function TinTucSlugPage() {
   const categories = useMemo(
     () =>
       categoryLabels
-        .filter((label) => label !== "Tat ca")
+        .filter((label) => label !== "Tất cả")
         .map((label) => ({
           label,
           count: allArticles.filter((item) => item.category === label).length,
@@ -99,7 +99,7 @@ export default function TinTucSlugPage() {
         .map((item, index) => ({
           slug: item.slug,
           title: item.title,
-          date: index === 0 ? "2 gio truoc" : index === 1 ? "1 ngay truoc" : "2 ngay truoc",
+          date: index === 0 ? "2 giờ trước" : index === 1 ? "1 ngày trước" : "2 ngày trước",
           summary: item.bodyLead,
           image: item.heroImage,
         })),
@@ -123,7 +123,7 @@ export default function TinTucSlugPage() {
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-700" />
-          <p className="mt-4 text-sm font-medium text-slate-600">Dang tai noi dung bai viet...</p>
+          <p className="mt-4 text-sm font-medium text-slate-600">Đang tải nội dung bài viết...</p>
         </div>
       </main>
     );
@@ -133,27 +133,27 @@ export default function TinTucSlugPage() {
     return (
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-          <Link href="/" className="transition-colors hover:text-[#1f7a5a]">Trang chu</Link>
+          <Link href="/" className="transition-colors hover:text-[#1f7a5a]">Trang chủ</Link>
           <span className="material-symbols-outlined text-base">chevron_right</span>
-          <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">Tin tuc</Link>
+          <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">Tin tức</Link>
           <span className="material-symbols-outlined text-base">chevron_right</span>
-          <span className="font-medium text-slate-900">Dang cap nhat</span>
+          <span className="font-medium text-slate-900">Đang cập nhật</span>
         </nav>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1f7a5a]/10 text-[#1f7a5a]">
             <span className="material-symbols-outlined">construction</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Bai viet dang cap nhat</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Bài viết đang cập nhật</h1>
           <p className="mx-auto mt-3 max-w-xl text-slate-600">
-            Noi dung chi tiet cho bai viet nay chua duoc dong bo du lieu that. Vui long quay lai sau.
+            Nội dung chi tiết cho bài viết này chưa được đồng bộ dữ liệu thật. Vui lòng quay lại sau.
           </p>
           <Link
             href="/tin-tuc"
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#1f7a5a] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#196448]"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            Quay ve danh sach tin tuc
+            Quay về danh sách tin tức
           </Link>
         </section>
       </main>
@@ -167,9 +167,9 @@ export default function TinTucSlugPage() {
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
-        <Link href="/" className="transition-colors hover:text-[#1f7a5a]">Trang chu</Link>
+        <Link href="/" className="transition-colors hover:text-[#1f7a5a]">Trang chủ</Link>
         <span className="material-symbols-outlined text-base">chevron_right</span>
-        <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">Tin tuc</Link>
+        <Link href="/tin-tuc" className="transition-colors hover:text-[#1f7a5a]">Tin tức</Link>
         <span className="material-symbols-outlined text-base">chevron_right</span>
         <Link href={`/tin-tuc?category=${encodeURIComponent(article.category)}`} className="transition-colors hover:text-[#1f7a5a]">
           {article.category}
@@ -208,12 +208,14 @@ export default function TinTucSlugPage() {
             </div>
           </div>
 
-          <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="relative aspect-[16/9] w-full">
-              <Image src={article.heroImage} alt={article.title} fill className="object-cover" unoptimized sizes="(min-width: 1024px) 65vw, 100vw" />
-            </div>
-            <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.heroCaption}</figcaption>
-          </figure>
+          {article.heroImage ? (
+            <figure className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="relative aspect-[16/9] w-full">
+                <Image src={article.heroImage} alt={article.title} fill className="object-cover" unoptimized sizes="(min-width: 1024px) 65vw, 100vw" />
+              </div>
+              <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.heroCaption}</figcaption>
+            </figure>
+          ) : null}
 
           <div className="flex flex-wrap gap-3 py-1">
             <button
@@ -222,7 +224,7 @@ export default function TinTucSlugPage() {
               className="flex items-center gap-2 rounded-lg bg-[#1877F2] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#1877F2]/90"
             >
               <span className="material-symbols-outlined text-[20px]">share</span>
-              Chia se Facebook
+              Chia sẻ Facebook
             </button>
             <button
               type="button"
@@ -230,7 +232,7 @@ export default function TinTucSlugPage() {
               className="flex items-center gap-2 rounded-lg bg-[#0068FF] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0068FF]/90"
             >
               <span className="material-symbols-outlined text-[20px]">chat</span>
-              Chia se Zalo
+              Chia sẻ Zalo
             </button>
             <button
               type="button"
@@ -238,7 +240,7 @@ export default function TinTucSlugPage() {
               className="ml-auto flex items-center gap-2 rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-300"
             >
               <span className="material-symbols-outlined text-[20px]">link</span>
-              Sao chep lien ket
+              Sao chép liên kết
             </button>
           </div>
 
@@ -260,24 +262,26 @@ export default function TinTucSlugPage() {
               ))}
             </ul>
 
-            <figure className="my-8 overflow-hidden rounded-xl border border-slate-200">
-              <div className="relative aspect-[16/9] w-full">
-                <Image
-                  src={article.subImage}
-                  alt={article.subCaption}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                  sizes="(min-width: 1024px) 65vw, 100vw"
-                />
-              </div>
-              <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.subCaption}</figcaption>
-            </figure>
+            {article.subImage ? (
+              <figure className="my-8 overflow-hidden rounded-xl border border-slate-200">
+                <div className="relative aspect-[16/9] w-full">
+                  <Image
+                    src={article.subImage}
+                    alt={article.subCaption}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                    sizes="(min-width: 1024px) 65vw, 100vw"
+                  />
+                </div>
+                <figcaption className="bg-slate-100 p-3 text-center text-sm italic text-slate-600">{article.subCaption}</figcaption>
+              </figure>
+            ) : null}
           </div>
 
           <div className="mt-2 flex items-center gap-2 border-t border-slate-200 pt-6">
             <span className="material-symbols-outlined text-slate-500">sell</span>
-            <span className="text-sm font-medium text-slate-700">Tu khoa:</span>
+            <span className="text-sm font-medium text-slate-700">Từ khóa:</span>
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag) => (
                 <Link key={tag} href={`/tin-tuc?q=${encodeURIComponent(tag)}`} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700 transition-colors hover:bg-slate-200">
@@ -294,7 +298,7 @@ export default function TinTucSlugPage() {
                   <span className="material-symbols-outlined">arrow_back</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bai truoc</span>
+                  <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bài trước</span>
                   <span className="line-clamp-2 text-sm font-medium text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
                     {previousArticle.title}
                   </span>
@@ -305,7 +309,7 @@ export default function TinTucSlugPage() {
             {nextArticle ? (
               <Link href={`/tin-tuc/${nextArticle.slug}`} className="group flex items-center justify-end gap-3 text-right sm:max-w-[45%]">
                 <div className="flex flex-col">
-                  <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bai tiep theo</span>
+                  <span className="mb-1 text-xs uppercase tracking-wider text-slate-500">Bài tiếp theo</span>
                   <span className="line-clamp-2 text-sm font-medium text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
                     {nextArticle.title}
                   </span>
@@ -317,7 +321,7 @@ export default function TinTucSlugPage() {
             ) : null}
           </div>
 
-          <CommentBox comments={comments} />
+          <CommentBox articleSlug={article.slug} comments={comments} />
         </article>
 
         <aside className="col-span-12 lg:col-span-4 lg:sticky lg:top-24">
@@ -325,7 +329,7 @@ export default function TinTucSlugPage() {
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h3 className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 text-lg font-bold text-slate-900">
                 <span className="material-symbols-outlined text-[#1f7a5a]">category</span>
-                Chuyen muc
+                Chuyên mục
               </h3>
               <ul className="flex flex-col gap-1">
                 {categories.map((item) => (
@@ -358,7 +362,7 @@ export default function TinTucSlugPage() {
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h3 className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 text-lg font-bold text-slate-900">
                 <span className="material-symbols-outlined text-[#1f7a5a]">update</span>
-                Tin moi nhat
+                Tin mới nhất
               </h3>
               <div className="flex flex-col gap-4">
                 {latestNews.map((item) => (
@@ -371,7 +375,7 @@ export default function TinTucSlugPage() {
               <div className="relative aspect-[4/3]">
                 <Image
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmV8EonWtCpmmBIe51DW2fzJPbniXb88cCkYDme909CaKEX_YLVAajuo48w9iidPtpFLKbXCN_j6xLo0_z67wy_6eiIZE_H6RDn6H6LyFOkOyReKJt-QXJ3VczrRp_vcnON98wgmKlNnZa1pt4Pw3TZJ1KGv9xhi6x-y2l8vCLIvjIZHEkZmPFOnD22Fh6Jh5oYFIJ4IZuKLkCq77LcmwpIq3Qpb8OdwnPxudP2cr4Djsey-7OfHM9FQkp2VtyBq_7AczEmYIqII39"
-                  alt="Banner tuyen truyen"
+                  alt="Banner tuyên truyền"
                   fill
                   className="object-cover"
                   unoptimized
@@ -379,10 +383,10 @@ export default function TinTucSlugPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
                 <div className="absolute bottom-0 z-10 p-5 text-white">
-                  <span className="mb-2 inline-block rounded bg-[#db2777] px-2 py-0.5 text-[10px] font-bold uppercase">Thong bao quan trong</span>
-                  <h4 className="mb-2 text-lg font-bold leading-tight">Tai ung dung Cong dan Dong Thap</h4>
+                  <span className="mb-2 inline-block rounded bg-[#db2777] px-2 py-0.5 text-[10px] font-bold uppercase">Thông báo quan trọng</span>
+                  <h4 className="mb-2 text-lg font-bold leading-tight">Tải ứng dụng Công dân Đồng Tháp</h4>
                   <Link href="/dich-vu" className="rounded-lg border border-white/30 bg-white/20 px-4 py-1.5 text-sm backdrop-blur-sm transition-colors hover:bg-white/30">
-                    Xem dich vu cong
+                    Xem dịch vụ công
                   </Link>
                 </div>
               </div>
@@ -392,7 +396,7 @@ export default function TinTucSlugPage() {
               <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h3 className="mb-4 flex items-center gap-2 border-b border-slate-200 pb-3 text-lg font-bold text-slate-900">
                   <span className="material-symbols-outlined text-[#1f7a5a]">interests</span>
-                  Bai viet lien quan
+                  Bài viết liên quan
                 </h3>
                 <div className="flex flex-col gap-4">
                   {relatedArticles.slice(0, 3).map((item) => (

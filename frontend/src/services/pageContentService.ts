@@ -10,7 +10,7 @@ export function getHomePageContent() {
     {
       title: "Hộ tịch",
       desc: "Khai sinh, kết hôn, xác nhận hộ tịch",
-      href: "/dich-vu/nop-ho-so",
+      href: "/dich-vu",
       icon: "FileText",
       color: "text-emerald-700 bg-emerald-50 border-emerald-100",
     },
@@ -121,13 +121,13 @@ export function getAboutPageContent() {
       icon: "water",
       title: "Sông ngòi",
       text: "Mạng lưới kênh rạch dày đặc, gần sông Tiền, thuận lợi cho giao thương và cảnh quan sinh thái.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDBv5sNqZtteiu-1ZeIzNCrWQCfCfVWpZd2hK3PZxsj1VOvwrEwQ40lFsiGAfiOFHoG3iarSt8c4huFFlihpcTnquGhOfGEV2noofnKbpQ9zb5_39iX-g9tUVJlGyC353jKh71hrQM1FnMlzS7fHbkpSACc1in4kOr7M-AbqgSAWgHrusMQ2gmgVbZXB7rX31r1bXnkL_PSPUMOPAofX0SdQUjD0HLww1aNv2REsRS5JtG5BciuddV9cCbVRyZh1vrMZLxq6bmx0ccO"
+      image: "https://upload.wikimedia.org/wikipedia/commons/7/7f/S%C3%B4ng_Ti%E1%BB%81n.jpg"
     },
     {
       icon: "eco",
       title: "Sinh thái",
       text: "Không gian xanh đa dạng với hồ sen, công viên và tuyến đường cây xanh trong khu dân cư.",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDwYVpbmehJll2ftWcua2h_6JjwUDEs_gtSc9XzV4RpRWP9O5aGqNcFwJT4D186fZbypN-xDgpgij0S1D6BGHkkKYTfCgbUP1aTiewXO7KUpU71Gce1u5wSk5Zo7NPI59by3pdlEKxV-K9siPb7Gwx51cGCJ6yGuT5iml1HBseO_TYzM03dN8lp8iG_EXBO_RaO6LPv0eA1FykryHW093hJmUNqOzznQIk_Ikl_piW8b_-ObEQbhQ9Bet_EO8o6UiGOJ5BVMvI6NDKa"
+      image: "https://travelguide.org.vn/upload/images/tbl_news_1556935349.JPG"
     },
   ];
 
@@ -162,22 +162,22 @@ export function getAboutPageContent() {
     {
       title: "Giáo dục",
       text: "Hệ thống trường học các cấp được đầu tư theo hướng chuẩn hóa và hiện đại.",
-      image: "https://images.unsplash.com/photo-1519452575417-564c1401ecc0?auto=format&fit=crop&w=1200&q=80",
+      image: "https://cdn.giaoducthoidai.vn/images/9d9cbe37b83b282b398df9f3e22b52040068a7c471300dad9f274488151f7249cf73f2d975e8fd997c11cc880ba480c4/anh-1-4.jpg",
     },
     {
       title: "Y tế",
       text: "Trạm y tế phường nâng cao chất lượng khám, tư vấn và chăm sóc sức khỏe ban đầu.",
-      image: "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=1200&q=80",
+      image: "https://media.vov.vn/sites/default/files/styles/large/public/2025-11/z7190490219976_99e46b5a856210d278d8d1bcac447981.jpg",
     },
     {
       title: "Giao thông",
       text: "Các tuyến đường nội ô được nâng cấp đồng bộ, kết nối thuận tiện với khu vực trung tâm.",
-      image: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=1200&q=80",
+      image: "https://cdn2.baodongthap.vn/image/news/2025/20251013/fckimage/images2046784-anh-1.jpg",
     },
     {
       title: "Tiện ích đô thị",
       text: "Nhiều không gian công cộng, chiếu sáng và hạ tầng số phục vụ người dân.",
-      image: "https://images.unsplash.com/photo-1499092346589-b9b6be3e94b2?auto=format&fit=crop&w=1200&q=80",
+      image: "https://cdn2.baodongthap.vn/image/news/2025/20250815/fckimage/images2033329-xay-dung-do-thi-thanh-noi-dang-song-anh-2.jpg",
     },
   ];
 

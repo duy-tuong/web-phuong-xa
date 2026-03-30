@@ -93,8 +93,8 @@ export default function MediaPage() {
     <div className="space-y-6">
       <PageHeader
         icon={ImageIcon}
-        title="Thu vien media"
-        description={loading ? "Dang tai tep media..." : `${mediaFiles.length} tep da dong bo voi backend`}
+        title="Thư viện media"
+        description={loading ? "Đang tải tệp media..." : `${mediaFiles.length} tệp đã đồng bộ với backend`}
       />
 
       {error && (
@@ -126,7 +126,7 @@ export default function MediaPage() {
           <Upload className="h-10 w-10 text-stone-400" />
           <div>
             <p className="text-sm font-medium text-stone-700">
-              {uploading ? "Dang tai tep len..." : "Keo tha tep vao day hoac bam de chon tep"}
+              {uploading ? "Đang tải tệp lên..." : "Kéo thả tệp vào đây hoặc bấm để chọn tệp"}
             </p>
             <p className="mt-1 text-xs text-stone-500">Ho tro JPG, PNG, GIF, PDF, DOC, DOCX. Gioi han 5MB.</p>
           </div>
@@ -142,7 +142,7 @@ export default function MediaPage() {
 
       {mediaFiles.length === 0 ? (
         <div className="rounded-xl border border-stone-200 bg-white py-12 text-center text-stone-400">
-          {loading ? "Dang tai du lieu..." : "Chua co tep nao"}
+          {loading ? "Đang tải dữ liệu..." : "Chưa có tệp nào"}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

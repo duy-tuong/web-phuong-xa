@@ -80,6 +80,11 @@ export default function ProfilePage() {
         localStorage.setItem("admin_avatar", user.avatarUrl);
         window.dispatchEvent(new Event("admin-avatar-updated"));
       }
+      localStorage.setItem("admin_display_name", user.fullName || user.username);
+      if (user.role?.name) {
+        localStorage.setItem("admin_role", user.role.name);
+      }
+      window.dispatchEvent(new Event("admin-profile-updated"));
     } catch (loadError) {
       setError(getErrorMessage(loadError));
     } finally {
@@ -129,7 +134,7 @@ export default function ProfilePage() {
     }
 
     if (!file.type.startsWith("image/")) {
-      setError("Vui long chon tep anh hop le.");
+      setError("Vui lòng chọn tệp ảnh hợp lệ.");
       return;
     }
 
@@ -139,7 +144,7 @@ export default function ProfilePage() {
       setSuccess("");
       await uploadMedia(file);
       await loadProfile();
-      setSuccess("Tai avatar thanh cong. Neu muon doi sang anh vua tai, nhap lai duong dan avatar va luu profile.");
+      setSuccess("Tải avatar thành công. Nếu muốn đổi sang ảnh vừa tải, nhập lại đường dẫn avatar và lưu hồ sơ.");
     } catch (uploadError) {
       setError(getErrorMessage(uploadError));
     } finally {
@@ -156,7 +161,7 @@ export default function ProfilePage() {
     setSuccess("");
 
     if (form.newPassword && form.newPassword !== form.confirmPassword) {
-      setError("Mat khau moi va xac nhan mat khau khong khop.");
+      setError("Mật khẩu mới và xác nhận mật khẩu không khớp.");
       return;
     }
 
@@ -191,8 +196,12 @@ export default function ProfilePage() {
         localStorage.removeItem("admin_avatar");
       }
       window.dispatchEvent(new Event("admin-avatar-updated"));
+      if (user.role?.name) {
+        localStorage.setItem("admin_role", user.role.name);
+      }
+      window.dispatchEvent(new Event("admin-profile-updated"));
 
-      setSuccess("Da cap nhat ho so thanh cong.");
+      setSuccess("Đã cập nhật hồ sơ thành công.");
     } catch (saveError) {
       setError(getErrorMessage(saveError));
     } finally {
@@ -227,7 +236,7 @@ export default function ProfilePage() {
 
               <div>
                 <CardTitle className="text-2xl font-bold text-stone-900 leading-tight tracking-tight">
-                  {form.fullName || form.username || (loading ? "Dang tai..." : "Nguoi dung")}
+                  {form.fullName || form.username || (loading ? "Đang tải..." : "Người dùng")}
                 </CardTitle>
                 <p className="mt-1 text-sm text-stone-600">{form.email || "--"}</p>
               </div>
@@ -248,11 +257,11 @@ export default function ProfilePage() {
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Camera className="w-4 h-4 mr-1.5" />
-                  {uploadingAvatar ? "Dang tai anh..." : "Tai avatar"}
+                  {uploadingAvatar ? "Đang tải ảnh..." : "Tải avatar"}
                 </Button>
               </div>
 
-              <p className="text-xs text-stone-500">Ban co the upload anh roi dan duong dan vao truong Avatar URL ben phai.</p>
+              <p className="text-xs text-stone-500">Bạn có thể tải ảnh lên rồi dán đường dẫn vào trường Avatar URL bên phải.</p>
             </div>
           </CardHeader>
 
@@ -260,7 +269,7 @@ export default function ProfilePage() {
             <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-3 space-y-3">
               <div className="flex items-center gap-2 text-stone-700">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span className="font-medium">Vai tro: {currentUser?.role?.name || "--"}</span>
+                <span className="font-medium">Vai trò: {currentUser?.role?.name || "--"}</span>
               </div>
               <div className="flex items-center gap-2 text-stone-600">
                 <Mail className="w-4 h-4 text-emerald-600" />
@@ -268,12 +277,12 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center gap-2 text-stone-600">
                 <Phone className="w-4 h-4 text-emerald-600" />
-                <span>Di dong: {form.phone || "--"}</span>
+                <span>Di động: {form.phone || "--"}</span>
               </div>
             </div>
 
             <div className="pt-2 border-t border-dashed border-stone-200 space-y-1">
-              <p className="text-stone-500">Ngay tao tai khoan</p>
+              <p className="text-stone-500">Ngày tạo tài khoản</p>
               <p className="flex items-center gap-2 font-semibold text-stone-800">
                 <Clock4 className="w-4 h-4 text-emerald-600" />
                 {joinedDate}
@@ -282,22 +291,22 @@ export default function ProfilePage() {
           </CardContent>
 
           <CardFooter className="pt-0">
-            <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100">Tai khoan dang hoat dong</Badge>
+            <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100">Tài khoản đang hoạt động</Badge>
           </CardFooter>
         </Card>
 
         <Card className="xl:col-span-3 border-stone-200 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             <CardHeader className="pb-0">
-              <CardTitle className="text-xl font-bold text-stone-900">Thong tin co ban</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900">Thông tin cơ bản</CardTitle>
               <CardDescription className="text-stone-500">
-                Cap nhat thong tin dang dang nhap truc tiep tu API auth/me.
+                Cập nhật thông tin đang đăng nhập trực tiếp từ API auth/me.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-stone-700">Ho va ten</Label>
+                <Label htmlFor="fullName" className="text-stone-700">Họ và tên</Label>
                 <Input id="fullName" value={form.fullName} onChange={handleChange("fullName")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" />
               </div>
               <div className="space-y-2">
@@ -309,27 +318,27 @@ export default function ProfilePage() {
                 <Input id="email" type="email" value={form.email} onChange={handleChange("email")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-stone-700">So dien thoai</Label>
+                <Label htmlFor="phone" className="text-stone-700">Số điện thoại</Label>
                 <Input id="phone" value={form.phone} onChange={handleChange("phone")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="avatarUrl" className="text-stone-700">Avatar URL</Label>
-                <Input id="avatarUrl" value={form.avatarUrl} onChange={handleChange("avatarUrl")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" placeholder="/uploads/avatar.jpg hoac URL day du" />
+                <Input id="avatarUrl" value={form.avatarUrl} onChange={handleChange("avatarUrl")} className="h-11 border-stone-300 focus-visible:ring-emerald-600" placeholder="/uploads/avatar.jpg hoặc URL đầy đủ" />
               </div>
             </CardContent>
 
             <CardHeader className="pb-0 pt-0">
-              <CardTitle className="text-xl font-bold text-stone-900">Doi mat khau</CardTitle>
+              <CardTitle className="text-xl font-bold text-stone-900">Đổi mật khẩu</CardTitle>
               <CardDescription className="text-stone-500">
-                Neu doi mat khau, backend se yeu cau mat khau hien tai.
+                Nếu đổi mật khẩu, backend sẽ yêu cầu mật khẩu hiện tại.
               </CardDescription>
             </CardHeader>
 
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {([
-                ["currentPassword", "Mat khau hien tai"],
-                ["newPassword", "Mat khau moi"],
-                ["confirmPassword", "Xac nhan mat khau"],
+                ["currentPassword", "Mật khẩu hiện tại"],
+                ["newPassword", "Mật khẩu mới"],
+                ["confirmPassword", "Xác nhận mật khẩu"],
               ] as const).map(([field, label]) => (
                 <div key={field} className="space-y-2">
                   <Label htmlFor={field} className="text-stone-700">{label}</Label>
@@ -356,10 +365,10 @@ export default function ProfilePage() {
             <CardFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-stone-200 pt-5">
               <div className="flex items-center gap-2 text-sm text-stone-500">
                 <Lock className="w-4 h-4 text-stone-400" />
-                Backend chi luu hash mat khau sau khi cap nhat.
+                Backend chỉ lưu hash mật khẩu sau khi cập nhật.
               </div>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto" disabled={saving || loading}>
-                {saving ? "Dang luu..." : "Luu thay doi"}
+                {saving ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>
             </CardFooter>
           </form>

@@ -1,14 +1,24 @@
 const DEFAULT_REMOTE_API_URL = "https://localhost:7065/api";
 const DEFAULT_CLIENT_PROXY_API_URL = "/api/proxy";
 
-function normalizeAbsoluteApiUrl(value?: string) {
+function getRequiredRemoteApiUrl(value?: string) {
   const trimmedValue = value?.trim();
 
-  if (!trimmedValue) {
+  if (trimmedValue) {
+    return trimmedValue.replace(/\/+$/, "");
+  }
+
+  if (process.env.NODE_ENV !== "production") {
     return DEFAULT_REMOTE_API_URL;
   }
 
-  return trimmedValue.replace(/\/+$/, "");
+  throw new Error(
+    "Missing REMOTE_API_URL or NEXT_PUBLIC_API_URL in production. Set it to your deployed backend API URL (for example: https://your-backend.azurewebsites.net/api).",
+  );
+}
+
+function normalizeAbsoluteApiUrl(value?: string) {
+  return getRequiredRemoteApiUrl(value);
 }
 
 function normalizeClientApiUrl(value?: string) {
@@ -25,7 +35,7 @@ function normalizeAbsoluteOrigin(value?: string, fallback?: string) {
   const trimmedValue = value?.trim();
 
   if (!trimmedValue) {
-    return fallback || new URL(DEFAULT_REMOTE_API_URL).origin;
+    return fallback || REMOTE_API_ORIGIN;
   }
 
   return new URL(trimmedValue).origin;
@@ -93,6 +103,13 @@ export function resolveApiAssetUrl(value?: string | null) {
     trimmedValue.startsWith("https://") ||
     trimmedValue.startsWith("data:") ||
     trimmedValue.startsWith("blob:")
+  ) {
+    return trimmedValue;
+  }
+
+  if (
+    trimmedValue === CLIENT_PROXY_API_BASE_URL ||
+    trimmedValue.startsWith(`${CLIENT_PROXY_API_BASE_URL}/`)
   ) {
     return trimmedValue;
   }

@@ -34,10 +34,15 @@ import {
 import { adminNavItems } from "@/components/admin/nav-items";
 import { cn } from "@/lib/utils";
 
+const DEFAULT_ADMIN_NAME = "Quản trị viên";
+const DEFAULT_ADMIN_ROLE = "Quản trị hệ thống";
+
 export default function AdminHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const [avatarSrc, setAvatarSrc] = useState("");
+  const [displayName, setDisplayName] = useState(DEFAULT_ADMIN_NAME);
+  const [roleLabel, setRoleLabel] = useState(DEFAULT_ADMIN_ROLE);
   const [mobileLogoUnavailable, setMobileLogoUnavailable] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const logoPath = "/logo-admin.png";
@@ -50,23 +55,27 @@ export default function AdminHeader() {
 
   const currentSectionLabel =
     pathname === "/admin"
-      ? "Dashboard"
+      ? "Bảng điều khiển"
       : isProfileRoute
         ? "Hồ sơ cá nhân"
-        : activeNavItem?.label || "Dashboard";
+        : activeNavItem?.label || "Bảng điều khiển";
 
   useEffect(() => {
-    const syncAvatar = () => {
+    const syncAdminProfile = () => {
       setAvatarSrc(localStorage.getItem("admin_avatar") || "");
+      setDisplayName(localStorage.getItem("admin_display_name") || DEFAULT_ADMIN_NAME);
+      setRoleLabel(localStorage.getItem("admin_role") || DEFAULT_ADMIN_ROLE);
     };
 
-    syncAvatar();
-    window.addEventListener("storage", syncAvatar);
-    window.addEventListener("admin-avatar-updated", syncAvatar as EventListener);
+    syncAdminProfile();
+    window.addEventListener("storage", syncAdminProfile);
+    window.addEventListener("admin-avatar-updated", syncAdminProfile as EventListener);
+    window.addEventListener("admin-profile-updated", syncAdminProfile as EventListener);
 
     return () => {
-      window.removeEventListener("storage", syncAvatar);
-      window.removeEventListener("admin-avatar-updated", syncAvatar as EventListener);
+      window.removeEventListener("storage", syncAdminProfile);
+      window.removeEventListener("admin-avatar-updated", syncAdminProfile as EventListener);
+      window.removeEventListener("admin-profile-updated", syncAdminProfile as EventListener);
     };
   }, []);
 
@@ -172,9 +181,7 @@ export default function AdminHeader() {
           </h1>
         </div>
 
-        {/* Right section */}
         <div className="relative flex items-center gap-1.5 sm:gap-2.5">
-          {/* Search */}
           <div className="hidden md:block relative">
             {!showSearch && (
               <Button
@@ -211,7 +218,6 @@ export default function AdminHeader() {
             )}
           </div>
 
-          {/* Notification */}
           <Button
             variant="ghost"
             size="icon"
@@ -221,19 +227,23 @@ export default function AdminHeader() {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[hsl(34,72%,50%)] rounded-full" />
           </Button>
 
-          {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors">
                 <Avatar className="w-9 h-9 border border-stone-200">
-                  {avatarSrc && <AvatarImage src={avatarSrc} alt="Admin avatar" />}
+                  {avatarSrc && <AvatarImage src={avatarSrc} alt={displayName} />}
                   <AvatarFallback className="bg-emerald-700 text-white text-xs font-medium">
-                    AD
+                    {displayName
+                      .split(" ")
+                      .map((part) => part[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase() || "AD"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-left hidden sm:block">
-                  <p className="text-sm font-medium text-stone-800">Admin</p>
-                  <p className="text-[11px] text-stone-500">Quản trị viên</p>
+                  <p className="text-sm font-medium text-stone-800">{displayName}</p>
+                  <p className="text-[11px] text-stone-500">{roleLabel}</p>
                 </div>
               </button>
             </DropdownMenuTrigger>

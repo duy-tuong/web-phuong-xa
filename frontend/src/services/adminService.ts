@@ -35,8 +35,8 @@ type ApiUser = {
   fullName?: string | null;
   phone?: string | null;
   avatarUrl?: string | null;
-  roleId: number;
-  role?: ApiRole | null;
+  roleId?: number;
+  role?: ApiRole | string | null;
   createdAt: string;
 };
 
@@ -61,6 +61,12 @@ type ApiArticle = {
   status: string;
   createdAt: string;
   publishedAt?: string | null;
+};
+
+type LegacyCollectionResponse<T> = {
+  value?: T[];
+  Count?: number;
+  count?: number;
 };
 
 type ApiComment = {
@@ -204,7 +210,67 @@ function toRole(role: ApiRole): Role {
   };
 }
 
+function toRoleFromUnknown(role?: ApiRole | string | null, roleId?: number | string | null): Role | undefined {
+  if (role && typeof role === "object") {
+    return toRole(role);
+  }
+
+  if (typeof role === "string" && role.trim()) {
+    const normalizedRoleName = role.trim();
+    const inferredRoleId =
+      roleId != null
+        ? String(roleId)
+        : normalizedRoleName === "Admin"
+          ? "1"
+          : normalizedRoleName === "Editor"
+            ? "2"
+            : normalizedRoleName === "Viewer"
+              ? "3"
+              : "";
+
+    return {
+      id: inferredRoleId,
+      name: normalizedRoleName,
+    };
+  }
+
+  return undefined;
+}
+
+function normalizeRoleId(roleId?: number | string | null, role?: ApiRole | string | null) {
+  if (roleId != null && String(roleId).trim()) {
+    return String(roleId);
+  }
+
+  if (role && typeof role === "object") {
+    return String(role.id);
+  }
+
+  if (typeof role === "string") {
+    const normalizedRoleName = role.trim();
+    if (normalizedRoleName === "Admin") return "1";
+    if (normalizedRoleName === "Editor") return "2";
+    if (normalizedRoleName === "Viewer") return "3";
+  }
+
+  return "";
+}
+
+function unwrapLegacyCollection<T>(payload: T[] | LegacyCollectionResponse<T> | null | undefined): T[] {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (Array.isArray(payload?.value)) {
+    return payload.value;
+  }
+
+  return [];
+}
+
 function toUser(user: ApiUser): User {
+  const role = toRoleFromUnknown(user.role, user.roleId);
+
   return {
     id: String(user.id),
     username: user.username,
@@ -212,8 +278,8 @@ function toUser(user: ApiUser): User {
     fullName: user.fullName ?? undefined,
     phone: user.phone ?? undefined,
     avatarUrl: resolveApiAssetUrl(user.avatarUrl) || user.avatarUrl || undefined,
-    roleId: String(user.roleId),
-    role: user.role ? toRole(user.role) : undefined,
+    roleId: normalizeRoleId(user.roleId, user.role),
+    role,
     createdAt: user.createdAt,
   };
 }
@@ -409,8 +475,8 @@ export function getErrorMessage(error: unknown): string {
 }
 
 export async function fetchRoles(): Promise<Role[]> {
-  const response = await api.get<ApiRole[]>("/roles");
-  return Array.isArray(response.data) ? response.data.map(toRole) : [];
+  const response = await api.get<ApiRole[] | LegacyCollectionResponse<ApiRole>>("/roles");
+  return unwrapLegacyCollection(response.data).map(toRole);
 }
 
 export async function createRole(name: string): Promise<void> {
@@ -547,8 +613,8 @@ export async function deleteService(id: string): Promise<void> {
 }
 
 export async function fetchAdminArticles(): Promise<Article[]> {
-  const response = await api.get<ApiArticle[]>("/articles/admin");
-  return Array.isArray(response.data) ? response.data.map(toArticle) : [];
+  const response = await api.get<ApiArticle[] | LegacyCollectionResponse<ApiArticle>>("/articles/admin");
+  return unwrapLegacyCollection(response.data).map(toArticle);
 }
 
 export async function createAdminArticle(payload: ArticlePayload): Promise<void> {
@@ -580,8 +646,8 @@ export async function deleteAdminArticle(id: string): Promise<void> {
 }
 
 export async function fetchCommentsAdmin(): Promise<Comment[]> {
-  const response = await api.get<ApiComment[]>("/comments");
-  return Array.isArray(response.data) ? response.data.map(toComment) : [];
+  const response = await api.get<ApiComment[] | LegacyCollectionResponse<ApiComment>>("/comments");
+  return unwrapLegacyCollection(response.data).map(toComment);
 }
 
 export async function updateCommentStatus(id: string, status: Comment["status"]): Promise<void> {

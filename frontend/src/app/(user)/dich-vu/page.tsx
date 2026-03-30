@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import ServiceSearchBar from "@/components/services/ServiceSearchBar";
 import ServiceSidebar from "@/components/services/ServiceSidebar";
@@ -10,10 +10,10 @@ export default function DichVuHanhChinhPage() {
       <section className="mx-auto w-full max-w-[1240px] px-4 md:px-6">
         <div className="mb-8 text-center md:mb-10 lg:text-left">
           <h1 className="mb-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-            Dich vu hanh chinh cong
+            Dịch vụ hành chính công
           </h1>
           <p className="mx-auto max-w-2xl text-base text-slate-600 sm:text-lg lg:mx-0">
-            Cong thong tin giai quyet thu tuc hanh chinh truc tuyen Phuong Cao Lanh nhanh chong, minh bach va an toan.
+            Cổng thông tin giải quyết thủ tục hành chính trực tuyến Phường Cao Lãnh nhanh chóng, minh bạch và an toàn.
           </p>
         </div>
 

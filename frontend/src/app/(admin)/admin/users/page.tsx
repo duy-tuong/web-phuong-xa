@@ -224,7 +224,7 @@ export default function UsersPage() {
     },
     {
       key: "role",
-      label: "Vai tro",
+      label: "Vai trò",
       render: (user) => (
         <Badge
           variant="secondary"
@@ -236,12 +236,12 @@ export default function UsersPage() {
     },
     {
       key: "createdAt",
-      label: "Ngay tao",
+      label: "Ngày tạo",
       render: (user) => <span className="text-sm text-stone-500">{format(new Date(user.createdAt), "dd/MM/yyyy")}</span>,
     },
     {
       key: "actions",
-      label: "Thao tac",
+      label: "Thao tác",
       className: "text-right",
       render: (user) => (
         <div className="flex items-center justify-end gap-1">
@@ -270,10 +270,10 @@ export default function UsersPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Users}
-        title="Quan ly nguoi dung"
-        description={loading ? "Dang tai nguoi dung..." : `${users.length} tai khoan dang co trong he thong`}
+        title="Quản lý người dùng"
+        description={loading ? "Đang tải người dùng..." : `${users.length} tài khoản đang có trong hệ thống`}
         action={{
-          label: "Them nguoi dung",
+          label: "Thêm người dùng",
           onClick: openCreateModal,
         }}
       />
@@ -288,7 +288,7 @@ export default function UsersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <Input
-            placeholder="Tim theo ten, email, username, so dien thoai..."
+            placeholder="Tìm theo tên, email, username, số điện thoại..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="pl-9 border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
@@ -296,10 +296,10 @@ export default function UsersPage() {
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
           <SelectTrigger className="w-full sm:w-[220px] border-stone-200">
-            <SelectValue placeholder="Loc theo vai tro" />
+            <SelectValue placeholder="Lọc theo vai trò" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tat ca</SelectItem>
+            <SelectItem value="all">Tất cả</SelectItem>
             {roles.map((role) => (
               <SelectItem key={role.id} value={role.id}>
                 {role.name}
@@ -312,26 +312,26 @@ export default function UsersPage() {
       <DataTable
         columns={columns}
         data={filteredUsers}
-        emptyMessage={loading ? "Dang tai du lieu..." : "Khong tim thay nguoi dung nao"}
+        emptyMessage={loading ? "Đang tải dữ liệu..." : "Không tìm thấy người dùng nào"}
       />
 
       <Modal
         open={modalOpen}
         onClose={closeModal}
         size="lg"
-        title={editingUser ? "Cap nhat nguoi dung" : "Them nguoi dung moi"}
-        description={editingUser ? "Username hien tai khong doi tren backend." : "Nhap thong tin de tao tai khoan moi."}
+        title={editingUser ? "Cập nhật người dùng" : "Thêm người dùng mới"}
+        description={editingUser ? "Username hiện tại không đổi trên backend." : "Nhập thông tin để tạo tài khoản mới."}
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
-              Huy
+              Hủy
             </Button>
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSubmit}
               disabled={submitting}
             >
-              {editingUser ? "Cap nhat" : "Tao moi"}
+              {editingUser ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }
@@ -347,7 +347,7 @@ export default function UsersPage() {
                 value={formData.username}
                 disabled={!!editingUser}
                 onChange={(event) => setFormData((prev) => ({ ...prev, username: event.target.value }))}
-                placeholder="Nhap username"
+                placeholder="Nhập username"
                 className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
               />
             </div>
@@ -359,7 +359,7 @@ export default function UsersPage() {
                 id="fullName"
                 value={formData.fullName}
                 onChange={(event) => setFormData((prev) => ({ ...prev, fullName: event.target.value }))}
-                placeholder="Nhap ho ten"
+                placeholder="Nhập họ tên"
                 className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
               />
             </div>
@@ -380,12 +380,12 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="phone" className="text-sm font-medium text-stone-700">So dien thoai</Label>
+              <Label htmlFor="phone" className="text-sm font-medium text-stone-700">Số điện thoại</Label>
               <Input
                 id="phone"
                 value={formData.phone}
                 onChange={(event) => setFormData((prev) => ({ ...prev, phone: event.target.value }))}
-                placeholder="Nhap so dien thoai"
+                placeholder="Nhập số điện thoại"
                 className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
               />
             </div>
@@ -405,7 +405,7 @@ export default function UsersPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="password" className="text-sm font-medium text-stone-700">
-                Mat khau {!editingUser && <span className="text-red-500">*</span>}
+                Mật khẩu {!editingUser && <span className="text-red-500">*</span>}
               </Label>
               <div className="relative">
                 <Input
@@ -413,7 +413,7 @@ export default function UsersPage() {
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={(event) => setFormData((prev) => ({ ...prev, password: event.target.value }))}
-                  placeholder={editingUser ? "De trong neu khong doi" : "Nhap mat khau"}
+                  placeholder={editingUser ? "Để trống nếu không đổi" : "Nhập mật khẩu"}
                   className="pr-11 border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
                 />
                 <button
@@ -426,7 +426,7 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-stone-700">Vai tro <span className="text-red-500">*</span></Label>
+              <Label className="text-sm font-medium text-stone-700">Vai trò <span className="text-red-500">*</span></Label>
               <Select
                 value={formData.roleId}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, roleId: value }))}

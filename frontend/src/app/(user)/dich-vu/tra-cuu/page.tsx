@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -19,22 +19,22 @@ import type { Application } from "@/types";
 
 const STATUS_MAP: Record<Application["status"], { label: string; className: string; icon: React.ReactNode }> = {
   pending: {
-    label: "Da tiep nhan",
+    label: "Đã tiếp nhận",
     className: "border-amber-200 bg-amber-50 text-amber-700",
     icon: <AlertCircle className="h-4 w-4" />,
   },
   processing: {
-    label: "Dang xu ly",
+    label: "Đang xử lý",
     className: "border-blue-200 bg-blue-50 text-blue-700",
     icon: <Clock className="h-4 w-4" />,
   },
   done: {
-    label: "Da hoan thanh",
+    label: "Đã hoàn thành",
     className: "border-emerald-200 bg-emerald-50 text-emerald-700",
     icon: <CheckCircle2 className="h-4 w-4" />,
   },
   rejected: {
-    label: "Can bo sung / tu choi",
+    label: "Cần bổ sung / từ chối",
     className: "border-red-200 bg-red-50 text-red-700",
     icon: <AlertCircle className="h-4 w-4" />,
   },
@@ -100,7 +100,7 @@ export default function TraCuuPage() {
         if (isMounted) {
           setResults([]);
           setHasSearched(true);
-          setErrorMessage(error instanceof Error ? error.message : "Khong the tra cuu ho so luc nay.");
+          setErrorMessage(error instanceof Error ? error.message : "Không thể tra cứu hồ sơ lúc này.");
         }
       } finally {
         if (isMounted) {
@@ -123,7 +123,7 @@ export default function TraCuuPage() {
     const trimmedEmail = email.trim();
 
     if (!trimmedPhone && !trimmedEmail) {
-      setErrorMessage("Nhap it nhat so dien thoai hoac email de tra cuu.");
+      setErrorMessage("Nhập ít nhất số điện thoại hoặc email để tra cứu.");
       setResults([]);
       setHasSearched(false);
       return;
@@ -152,25 +152,25 @@ export default function TraCuuPage() {
     <div className="mx-auto max-w-[980px] space-y-8 px-4 pb-16 md:px-6">
       <nav className="flex items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-emerald-700">
-          Trang chu
+          Trang chủ
         </Link>
         <span>&gt;</span>
         <Link href="/dich-vu" className="hover:text-emerald-700">
-          Dich vu cong
+          Dịch vụ công
         </Link>
         <span>&gt;</span>
-        <span className="font-medium text-slate-800">Tra cuu ho so</span>
+        <span className="font-medium text-slate-800">Tra cứu hồ sơ</span>
       </nav>
 
       <div className="rounded-3xl bg-gradient-to-br from-emerald-700 to-emerald-800 p-8 text-white shadow-xl md:p-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10">
           <div className="flex-1">
             <div className="mb-2 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-100">
-              Cong dich vu cong
+              Cổng dịch vụ công
             </div>
-            <h1 className="text-3xl font-black leading-tight md:text-4xl">Tra cuu ho so</h1>
+            <h1 className="text-3xl font-black leading-tight md:text-4xl">Tra cứu hồ sơ</h1>
             <p className="mt-3 text-emerald-100/90 md:text-lg">
-              Dung so dien thoai va email da khai khi nop ho so de xem tat ca ket qua xu ly tu he thong.
+              Dùng số điện thoại và email đã khai khi nộp hồ sơ để xem tất cả kết quả xử lý từ hệ thống.
             </p>
           </div>
           <div className="hidden shrink-0 md:block">
@@ -186,7 +186,7 @@ export default function TraCuuPage() {
                 type="tel"
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
-                placeholder="So dien thoai da dung khi nop ho so"
+                placeholder="Số điện thoại đã dùng khi nộp hồ sơ"
                 className="w-full rounded-xl border-0 bg-white py-3.5 pl-10 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50"
               />
             </div>
@@ -196,7 +196,7 @@ export default function TraCuuPage() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                placeholder="Email da dang ky"
+                placeholder="Email đã đăng ký"
                 className="w-full rounded-xl border-0 bg-white py-3.5 pl-10 pr-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-white/50"
               />
             </div>
@@ -209,17 +209,17 @@ export default function TraCuuPage() {
             {isSearching ? (
               <>
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
-                Dang tra cuu...
+                Đang tra cứu...
               </>
             ) : (
               <>
                 <Search className="h-4 w-4" />
-                Tra cuu ho so
+                Tra cứu hồ sơ
               </>
             )}
           </button>
           <p className="text-center text-xs text-emerald-200">
-            Ban co the nhap mot trong hai truong, nhung dung ca hai truong se cho ket qua chinh xac hon.
+            Bạn có thể nhập một trong hai trường, nhưng dùng cả hai trường sẽ cho kết quả chính xác hơn.
           </p>
         </form>
       </div>
@@ -234,15 +234,15 @@ export default function TraCuuPage() {
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm text-slate-500">Tong ho so</p>
+              <p className="text-sm text-slate-500">Tổng hồ sơ</p>
               <p className="mt-2 text-3xl font-black text-slate-900">{groupedStats.total}</p>
             </div>
             <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
-              <p className="text-sm text-blue-700">Dang xu ly</p>
+              <p className="text-sm text-blue-700">Đang xử lý</p>
               <p className="mt-2 text-3xl font-black text-blue-800">{groupedStats.processing}</p>
             </div>
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-              <p className="text-sm text-emerald-700">Da hoan thanh</p>
+              <p className="text-sm text-emerald-700">Đã hoàn thành</p>
               <p className="mt-2 text-3xl font-black text-emerald-800">{groupedStats.done}</p>
             </div>
           </div>
@@ -266,15 +266,15 @@ export default function TraCuuPage() {
                           {statusInfo.label}
                         </span>
                       </div>
-                      <h2 className="text-xl font-bold text-slate-900">{item.serviceName || "Ho so dich vu cong"}</h2>
-                      <p className="text-sm text-slate-600">Nguoi nop: {item.applicantName}</p>
-                      <p className="text-sm text-slate-500">Ngay tiep nhan: {formatDate(item.createdAt)}</p>
+                      <h2 className="text-xl font-bold text-slate-900">{item.serviceName || "Hồ sơ dịch vụ công"}</h2>
+                      <p className="text-sm text-slate-600">Người nộp: {item.applicantName}</p>
+                      <p className="text-sm text-slate-500">Ngày tiếp nhận: {formatDate(item.createdAt)}</p>
                     </div>
 
                     <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                      <p className="font-semibold text-slate-800">Thong tin lien he</p>
-                      <p className="mt-2">So dien thoai: {item.phone || "Dang cap nhat"}</p>
-                      <p>Email: {item.email || "Dang cap nhat"}</p>
+                      <p className="font-semibold text-slate-800">Thông tin liên hệ</p>
+                      <p className="mt-2">Số điện thoại: {item.phone || "Đang cập nhật"}</p>
+                      <p>Email: {item.email || "Đang cập nhật"}</p>
                     </div>
                   </div>
                 </div>
@@ -288,23 +288,23 @@ export default function TraCuuPage() {
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white py-12 text-center shadow-sm">
           <FileSearch className="h-14 w-14 text-slate-300" />
           <div>
-            <p className="text-lg font-bold text-slate-800">Chua tim thay ho so phu hop</p>
+            <p className="text-lg font-bold text-slate-800">Chưa tìm thấy hồ sơ phù hợp</p>
             <p className="mt-1 text-sm text-slate-500">
-              He thong chua co ho so trung voi thong tin ban vua nhap. Kiem tra lai email, so dien thoai, hoac nop ho so moi.
+              Hệ thống chưa có hồ sơ trùng với thông tin bạn vừa nhập. Kiểm tra lại email, số điện thoại, hoặc nộp hồ sơ mới.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
-              href="/dich-vu/nop-ho-so"
+              href="/dich-vu"
               className="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
             >
-              Nop ho so moi
+              Nộp hồ sơ mới
             </Link>
             <a
               href="tel:02773851234"
               className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
-              Goi ho tro
+              Gọi hỗ trợ
             </a>
           </div>
         </div>
@@ -314,16 +314,16 @@ export default function TraCuuPage() {
         <div className="grid gap-4 sm:grid-cols-3">
           {[
             {
-              title: "Thong tin can dung",
-              desc: "Dung so dien thoai va email da khai khi nop de he thong tim dung ho so cua ban.",
+              title: "Thông tin cần dùng",
+              desc: "Dùng số điện thoại và email đã khai khi nộp để hệ thống tìm đúng hồ sơ của bạn.",
             },
             {
-              title: "Ket qua cap nhat",
-              desc: "Trang thai ho so duoc cap nhat tu du lieu backend va dong bo tren trang ca nhan.",
+              title: "Kết quả cập nhật",
+              desc: "Trạng thái hồ sơ được cập nhật từ dữ liệu backend và đồng bộ trên trang cá nhân.",
             },
             {
-              title: "Can nop moi?",
-              desc: "Ban co the quay ve danh sach thu tuc va nop ho so truc tuyen ngay tren website.",
+              title: "Cần nộp mới?",
+              desc: "Bạn có thể quay về danh sách thủ tục và nộp hồ sơ trực tuyến ngay trên website.",
             },
           ].map((item) => (
             <div key={item.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -336,10 +336,10 @@ export default function TraCuuPage() {
 
       <div className="flex justify-end">
         <Link
-          href="/dich-vu/nop-ho-so"
+          href="/dich-vu"
           className="flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
         >
-          Nop ho so moi
+          Nộp hồ sơ mới
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>

@@ -26,48 +26,49 @@ function getStatusClassName(status: Application["status"]) {
 }
 
 function getStatusLabel(status: Application["status"]) {
-  if (status === "done") return "Hoan thanh";
-  if (status === "processing") return "Dang xu ly";
-  if (status === "rejected") return "Bi tu choi";
-  return "Cho tiep nhan";
+  if (status === "done") return "Hoàn thành";
+  if (status === "processing") return "Đang xử lý";
+  if (status === "rejected") return "Bị từ chối";
+  return "Chờ tiếp nhận";
 }
 
 type ProfileRecentRecordsProps = {
   applications: Application[];
+  lookupQuery?: string;
 };
 
-export default function ProfileRecentRecords({ applications }: ProfileRecentRecordsProps) {
+export default function ProfileRecentRecords({ applications, lookupQuery = "" }: ProfileRecentRecordsProps) {
   return (
     <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-bold text-slate-900">Lich su ho so gan day</h3>
-          <p className="mt-1 text-sm text-slate-500">Theo doi trang thai nhung ho so dich vu cong ban da gui.</p>
+          <h3 className="text-lg font-bold text-slate-900">Lịch sử hồ sơ gần đây</h3>
+          <p className="mt-1 text-sm text-slate-500">Theo dõi trạng thái những hồ sơ dịch vụ công bạn đã gửi.</p>
         </div>
-        <Link href="/dich-vu/tra-cuu" className="text-sm font-bold text-emerald-700 transition hover:underline">
-          Xem tat ca
+        <Link href={`/dich-vu/tra-cuu${lookupQuery}`} className="text-sm font-bold text-emerald-700 transition hover:underline">
+          Xem tất cả
         </Link>
       </div>
 
       {applications.length === 0 ? (
-        <div className="px-6 py-10 text-center text-sm text-slate-500">Ban chua co ho so nao duoc nop tren he thong.</div>
+        <div className="px-6 py-10 text-center text-sm text-slate-500">Bạn chưa có hồ sơ nào được nộp trên hệ thống.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse text-left">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-sm text-slate-600">
-                <th className="px-6 py-4 font-semibold">Ma ho so</th>
-                <th className="px-6 py-4 font-semibold">Ten thu tuc</th>
-                <th className="px-6 py-4 font-semibold">Ngay nop</th>
-                <th className="px-6 py-4 font-semibold">Trang thai</th>
-                <th className="px-6 py-4 text-right font-semibold">Thao tac</th>
+                <th className="px-6 py-4 font-semibold">Mã hồ sơ</th>
+                <th className="px-6 py-4 font-semibold">Tên thủ tục</th>
+                <th className="px-6 py-4 font-semibold">Ngày nộp</th>
+                <th className="px-6 py-4 font-semibold">Trạng thái</th>
+                <th className="px-6 py-4 text-right font-semibold">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
               {applications.map((record) => (
                 <tr key={record.id} className="transition-colors hover:bg-slate-50/70">
                   <td className="px-6 py-4 font-medium text-slate-900">HS-{record.id.padStart(6, "0")}</td>
-                  <td className="max-w-[260px] px-6 py-4">{record.serviceName || `Dich vu #${record.serviceId}`}</td>
+                  <td className="max-w-[260px] px-6 py-4">{record.serviceName || `Dịch vụ #${record.serviceId}`}</td>
                   <td className="px-6 py-4">{formatDate(record.createdAt)}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusClassName(record.status)}`}>

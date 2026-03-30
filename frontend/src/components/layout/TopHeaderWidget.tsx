@@ -7,6 +7,7 @@ type TopHeaderWidgetProps = {
   textColor?: string;
   iconColor?: string;
   showDate?: boolean;
+  showWeather?: boolean;
 };
 
 type OpenMeteoResponse = {
@@ -22,6 +23,7 @@ export default function TopHeaderWidget({
   textColor = "text-slate-600",
   iconColor = "text-[#1f7a5a]",
   showDate = true,
+  showWeather = true,
 }: TopHeaderWidgetProps) {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [temp, setTemp] = useState<number | null>(null);
@@ -36,6 +38,11 @@ export default function TopHeaderWidget({
       day: "2-digit",
     };
     setCurrentDate(now.toLocaleDateString("vi-VN", options));
+
+    if (!showWeather) {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchWeather = async () => {
       try {
@@ -69,7 +76,7 @@ export default function TopHeaderWidget({
 
     const weatherInterval = setInterval(fetchWeather, 900000);
     return () => clearInterval(weatherInterval);
-  }, []);
+  }, [showWeather]);
 
   return (
     <div className={`flex items-center gap-3 text-sm font-medium ${textColor}`}>
@@ -80,21 +87,23 @@ export default function TopHeaderWidget({
         </div>
       ) : null}
 
-      {showDate ? <span className="h-4 w-px bg-white/20" /> : null}
+      {showDate && showWeather ? <span className="h-4 w-px bg-white/20" /> : null}
 
-      <div className="flex items-center gap-1.5 whitespace-nowrap">
-        <CloudSun className={`h-4 w-4 ${iconColor}`} />
-        {isLoading ? (
-          <div className="flex items-center gap-1">
-            <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
-            <span className="text-xs opacity-70">Đang cập nhật...</span>
-          </div>
-        ) : temp !== null ? (
-          <span>Cao Lãnh {temp}°C</span>
-        ) : (
-          <span className="text-xs opacity-50">N/A</span>
-        )}
-      </div>
+      {showWeather ? (
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <CloudSun className={`h-4 w-4 ${iconColor}`} />
+          {isLoading ? (
+            <div className="flex items-center gap-1">
+              <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
+              <span className="text-xs opacity-70">Đang cập nhật...</span>
+            </div>
+          ) : temp !== null ? (
+            <span>Cao Lãnh {temp}°C</span>
+          ) : (
+            <span className="text-xs opacity-50">N/A</span>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -10,13 +10,19 @@ const TOURISM_LAYOUTS = ["md:col-span-2", "", "", "md:col-span-2"];
 
 export default async function UserHomePage() {
   const { highlightStats, quickServices, tourismCards } = getHomePageContent();
-  const [articles, libraryPhotos] = await Promise.all([getArticles(), fetchLibraryPhotos(4)]);
+  const [articles, libraryPhotos] = await Promise.all([
+    getArticles(),
+    fetchLibraryPhotos(4).catch((error) => {
+      console.error("Không thể tải hình ảnh thư viện trên trang chủ:", error);
+      return [];
+    }),
+  ]);
 
   const homepageTourismCards = libraryPhotos.length > 0
     ? libraryPhotos.slice(0, 4).map((photo, index) => ({
         title: photo.title,
         desc: photo.desc,
-        tag: index % 2 === 0 ? "Thu vien" : "Van hoa du lich",
+        tag: index % 2 === 0 ? "Thư viện" : "Văn hóa du lịch",
         href: "/thu-vien/hinh-anh",
         className: TOURISM_LAYOUTS[index] ?? "",
         image: photo.image,

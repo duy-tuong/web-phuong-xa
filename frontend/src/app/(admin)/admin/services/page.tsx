@@ -161,18 +161,18 @@ export default function ServicesPage() {
   const columns: Column<Service>[] = [
     {
       key: "name",
-      label: "Ten dich vu",
+      label: "Tên dịch vụ",
       render: (item) => <span className="font-medium text-stone-900">{item.name}</span>,
     },
     {
       key: "description",
-      label: "Mo ta",
+      label: "Mô tả",
       className: "max-w-sm",
       render: (item) => <span className="block max-w-sm truncate text-stone-600">{item.description}</span>,
     },
     {
       key: "requiredDocuments",
-      label: "Ho so yeu cau",
+      label: "Hồ sơ yêu cầu",
       className: "max-w-sm",
       render: (item) => (
         <span className="block max-w-sm truncate text-stone-600">{item.requiredDocuments}</span>
@@ -180,23 +180,23 @@ export default function ServicesPage() {
     },
     {
       key: "processingTime",
-      label: "Thoi gian",
+      label: "Thời gian",
       render: (item) => <span className="text-stone-600">{item.processingTime}</span>,
     },
     {
       key: "fee",
-      label: "Le phi",
+      label: "Lệ phí",
       render: (item) => <span className="font-medium text-stone-700">{formatCurrency(item.fee)}</span>,
     },
     {
       key: "templateFile",
-      label: "Bieu mau",
+      label: "Biểu mẫu",
       render: (item) =>
         item.templateFile ? (
           <a href={item.templateFile} target="_blank" rel="noreferrer">
             <Badge className="gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100">
               <FileDown className="h-3 w-3" />
-              Tai file
+              Tải file
             </Badge>
           </a>
         ) : (
@@ -205,7 +205,7 @@ export default function ServicesPage() {
     },
     {
       key: "createdAt",
-      label: "Cap nhat",
+      label: "Cập nhật",
       render: (item) => (
         <span className="text-sm text-stone-500">
           {format(new Date(item.updatedAt || item.createdAt || new Date().toISOString()), "dd/MM/yyyy")}
@@ -214,7 +214,7 @@ export default function ServicesPage() {
     },
     {
       key: "actions",
-      label: "Thao tac",
+      label: "Thao tác",
       render: (item) => (
         <div className="flex items-center gap-2">
           <Button
@@ -242,9 +242,9 @@ export default function ServicesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Landmark}
-        title="Dich vu cong"
-        description={loading ? "Dang tai dich vu..." : `${services.length} dich vu, tong le phi tham khao ${formatCurrency(totalFee)}`}
-        action={{ label: "Them dich vu", onClick: openCreateModal }}
+        title="Dịch vụ công"
+        description={loading ? "Đang tải dịch vụ..." : `${services.length} dịch vụ, tổng lệ phí tham khảo ${formatCurrency(totalFee)}`}
+        action={{ label: "Thêm dịch vụ", onClick: openCreateModal }}
       />
 
       {error && (
@@ -256,26 +256,26 @@ export default function ServicesPage() {
       <DataTable
         columns={columns}
         data={services}
-        emptyMessage={loading ? "Dang tai du lieu..." : "Chua co dich vu nao"}
+        emptyMessage={loading ? "Đang tải dữ liệu..." : "Chưa có dịch vụ nào"}
       />
 
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingService ? "Cap nhat dich vu" : "Them dich vu moi"}
-        description="Du lieu duoc luu truc tiep vao API services."
+        title={editingService ? "Cập nhật dịch vụ" : "Thêm dịch vụ mới"}
+        description="Dữ liệu được lưu trực tiếp vào API services."
         size="lg"
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
-              Huy
+              Hủy
             </Button>
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSave}
               disabled={submitting}
             >
-              {editingService ? "Cap nhat" : "Tao moi"}
+              {editingService ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }
@@ -283,26 +283,26 @@ export default function ServicesPage() {
         <div className="space-y-4">
           <FormField
             type="text"
-            label="Ten dich vu"
+            label="Tên dịch vụ"
             name="name"
             required
             value={formData.name}
             onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
-            placeholder="Nhap ten dich vu"
+            placeholder="Nhập tên dịch vụ"
           />
           <FormField
             type="textarea"
-            label="Mo ta"
+            label="Mô tả"
             name="description"
             required
             value={formData.description}
             onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
-            placeholder="Mo ta chi tiet dich vu"
+            placeholder="Mô tả chi tiết dịch vụ"
             rows={4}
           />
           <FormField
             type="textarea"
-            label="Ho so yeu cau"
+            label="Hồ sơ yêu cầu"
             name="requiredDocuments"
             required
             value={formData.requiredDocuments}
@@ -313,16 +313,16 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               type="text"
-              label="Thoi gian xu ly"
+              label="Thời gian xử lý"
               name="processingTime"
               required
               value={formData.processingTime}
               onChange={(value) => setFormData((prev) => ({ ...prev, processingTime: value }))}
-              placeholder="VD: 03 ngay lam viec"
+              placeholder="VD: 03 ngày làm việc"
             />
             <FormField
               type="number"
-              label="Le phi"
+              label="Lệ phí"
               name="fee"
               required
               value={formData.fee}
@@ -332,11 +332,11 @@ export default function ServicesPage() {
           </div>
           <FormField
             type="text"
-            label="Link file bieu mau"
+            label="Link file biểu mẫu"
             name="templateFile"
             value={formData.templateFile}
             onChange={(value) => setFormData((prev) => ({ ...prev, templateFile: value }))}
-            placeholder="/uploads/file.docx hoac URL day du"
+            placeholder="/uploads/file.docx hoặc URL đầy đủ"
           />
         </div>
       </Modal>

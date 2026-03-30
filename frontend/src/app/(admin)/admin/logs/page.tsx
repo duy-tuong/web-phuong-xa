@@ -75,17 +75,17 @@ export default function LogsPage() {
   const columns: Column<LogEntry>[] = [
     {
       key: "createdAt",
-      label: "Thoi gian",
+      label: "Thời gian",
       render: (log) => <span className="text-sm text-stone-600">{format(new Date(log.createdAt), "dd/MM/yyyy HH:mm")}</span>,
     },
     {
       key: "user",
-      label: "Nguoi thuc hien",
+      label: "Người thực hiện",
       render: (log) => <span className="font-medium text-stone-800">{log.user || log.userId}</span>,
     },
     {
       key: "module",
-      label: "Phan he",
+      label: "Phân hệ",
       render: (log) => {
         const moduleName = log.module || log.entity;
         return (
@@ -97,12 +97,12 @@ export default function LogsPage() {
     },
     {
       key: "action",
-      label: "Hanh dong",
+      label: "Hành động",
       render: (log) => <span className="text-stone-700">{log.action}</span>,
     },
     {
       key: "detail",
-      label: "Chi tiet",
+      label: "Chi tiết",
       className: "max-w-[340px]",
       render: (log) => <span className="block max-w-[340px] truncate text-stone-600">{log.detail || "--"}</span>,
     },
@@ -112,8 +112,8 @@ export default function LogsPage() {
     <div className="space-y-6">
       <PageHeader
         icon={ScrollText}
-        title="Nhat ky he thong"
-        description={loading ? "Dang tai audit log..." : `${logs.length} ban ghi log da dong bo`}
+        title="Nhật ký hệ thống"
+        description={loading ? "Đang tải audit log..." : `${logs.length} bản ghi log đã đồng bộ`}
       />
 
       {error && (
@@ -126,7 +126,7 @@ export default function LogsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
           <Input
-            placeholder="Tim theo nguoi dung, hanh dong, chi tiet..."
+            placeholder="Tìm theo người dùng, hành động, chi tiết..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className="border-stone-200 bg-white pl-9"
@@ -134,10 +134,10 @@ export default function LogsPage() {
         </div>
         <Select value={moduleFilter} onValueChange={setModuleFilter}>
           <SelectTrigger className="w-full border-stone-200 bg-white sm:w-[220px]">
-            <SelectValue placeholder="Loc theo phan he" />
+            <SelectValue placeholder="Lọc theo phân hệ" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tat ca phan he</SelectItem>
+            <SelectItem value="all">Tất cả phân hệ</SelectItem>
             {moduleOptions.map((moduleName) => (
               <SelectItem key={moduleName} value={moduleName}>
                 {moduleName}
@@ -150,7 +150,7 @@ export default function LogsPage() {
       <DataTable
         columns={columns}
         data={filteredLogs}
-        emptyMessage={loading ? "Dang tai du lieu..." : "Khong co ban ghi nhat ky phu hop"}
+        emptyMessage={loading ? "Đang tải dữ liệu..." : "Không có bản ghi nhật ký phù hợp"}
       />
     </div>
   );

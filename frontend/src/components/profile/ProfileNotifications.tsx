@@ -30,16 +30,16 @@ function buildNotifications(applications: Application[]): NotificationItem[] {
   return applications.slice(0, 3).map((application) => {
     if (application.status === "done") {
       return {
-        title: `Ho so HS-${application.id.padStart(6, "0")} da hoan thanh`,
-        description: `${application.serviceName || "Thu tuc"} cua ban da duoc phe duyet. Vui long theo doi email/so dien thoai de nhan huong dan tiep theo.`,
+        title: `Hồ sơ HS-${application.id.padStart(6, "0")} đã hoàn thành`,
+        description: `${application.serviceName || "Thủ tục"} của bạn đã được phê duyệt. Vui lòng theo dõi email/số điện thoại để nhận hướng dẫn tiếp theo.`,
         time: formatDate(application.createdAt),
         variant: "success",
       };
     }
 
     return {
-      title: `Ho so HS-${application.id.padStart(6, "0")} dang duoc xu ly`,
-      description: `${application.serviceName || "Thu tuc"} dang o trang thai ${application.status === "processing" ? "dang xu ly" : "cho tiep nhan"}. He thong se cap nhat cho ban khi co thay doi.`,
+      title: `Hồ sơ HS-${application.id.padStart(6, "0")} đang được xử lý`,
+      description: `${application.serviceName || "Thủ tục"} đang ở trạng thái ${application.status === "processing" ? "đang xử lý" : "chờ tiếp nhận"}. Hệ thống sẽ cập nhật cho bạn khi có thay đổi.`,
       time: formatDate(application.createdAt),
       variant: "info",
     };
@@ -73,12 +73,12 @@ export default function ProfileNotifications({ applications }: ProfileNotificati
     <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center gap-2">
         <Bell className="h-5 w-5 text-pink-600" />
-        <h3 className="text-lg font-bold text-slate-900">Thong bao moi</h3>
+        <h3 className="text-lg font-bold text-slate-900">Thông báo mới</h3>
       </div>
 
       {notifications.length === 0 ? (
         <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm text-slate-500">
-          Chua co thong bao nao tu he thong.
+          Chưa có thông báo nào từ hệ thống.
         </div>
       ) : (
         <div className="mt-5 space-y-4">

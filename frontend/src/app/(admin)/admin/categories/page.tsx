@@ -120,7 +120,7 @@ export default function CategoriesPage() {
   const columns: Column<Category>[] = [
     {
       key: "name",
-      label: "Ten danh muc",
+      label: "Tên danh mục",
       render: (category) => <span className="font-semibold text-stone-900">{category.name}</span>,
     },
     {
@@ -134,12 +134,12 @@ export default function CategoriesPage() {
     },
     {
       key: "description",
-      label: "Mo ta",
+      label: "Mô tả",
       render: (category) => <span className="text-stone-500">{category.description || "--"}</span>,
     },
     {
       key: "actions",
-      label: "Thao tac",
+      label: "Thao tác",
       className: "text-right",
       render: (category) => (
         <div className="flex items-center justify-end gap-1">
@@ -168,9 +168,9 @@ export default function CategoriesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={FolderTree}
-        title="Danh muc"
-        description={loading ? "Dang tai danh muc..." : `${categories.length} danh muc bai viet`}
-        action={{ label: "Them danh muc", onClick: openCreateModal }}
+        title="Danh mục"
+        description={loading ? "Đang tải danh mục..." : `${categories.length} danh mục bài viết`}
+        action={{ label: "Thêm danh mục", onClick: openCreateModal }}
       />
 
       {error && (
@@ -182,25 +182,25 @@ export default function CategoriesPage() {
       <DataTable
         columns={columns}
         data={categories}
-        emptyMessage={loading ? "Dang tai du lieu..." : "Chua co danh muc nao"}
+        emptyMessage={loading ? "Đang tải dữ liệu..." : "Chưa có danh mục nào"}
       />
 
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingCategory ? "Cap nhat danh muc" : "Them danh muc moi"}
-        description="Thong tin se dong bo truc tiep voi API categories."
+        title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
+        description="Thông tin sẽ đồng bộ trực tiếp với API categories."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
-              Huy
+              Hủy
             </Button>
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSave}
               disabled={submitting || !formData.name.trim()}
             >
-              {editingCategory ? "Cap nhat" : "Tao moi"}
+              {editingCategory ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }
@@ -208,12 +208,12 @@ export default function CategoriesPage() {
         <div className="space-y-4">
           <FormField
             type="text"
-            label="Ten danh muc"
+            label="Tên danh mục"
             name="name"
             required
             value={formData.name}
             onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
-            placeholder="Nhap ten danh muc"
+            placeholder="Nhập tên danh mục"
           />
           <FormField
             type="text"
@@ -221,15 +221,15 @@ export default function CategoriesPage() {
             name="slug"
             value={formData.slug}
             onChange={(value) => setFormData((prev) => ({ ...prev, slug: value }))}
-            placeholder="de trong de backend tu sinh"
+            placeholder="Để trống để backend tự sinh"
           />
           <FormField
             type="textarea"
-            label="Mo ta"
+            label="Mô tả"
             name="description"
             value={formData.description}
             onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
-            placeholder="Mo ta ngan ve danh muc"
+            placeholder="Mô tả ngắn về danh mục"
             rows={3}
           />
         </div>

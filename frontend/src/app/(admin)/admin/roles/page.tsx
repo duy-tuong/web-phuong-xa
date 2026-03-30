@@ -104,25 +104,25 @@ export default function RolesPage() {
   const columns: Column<Role>[] = [
     {
       key: "name",
-      label: "Ten vai tro",
+      label: "Tên vai trò",
       render: (role) => <span className="font-medium text-stone-900">{role.name}</span>,
     },
     {
       key: "description",
-      label: "Mo ta",
+      label: "Mô tả",
       render: (role) => (
         <span className="text-stone-600">
           {role.name === "Admin"
-            ? "Vai tro quan tri he thong"
+            ? "Vai trò quản trị hệ thống"
             : role.name === "Editor"
-              ? "Vai tro quan ly noi dung"
-              : "Vai tro tuy chinh"}
+              ? "Vai trò quản lý nội dung"
+              : "Vai trò tùy chỉnh"}
         </span>
       ),
     },
     {
       key: "actions",
-      label: "Thao tac",
+      label: "Thao tác",
       className: "text-right",
       render: (role) => (
         <div className="flex items-center justify-end gap-1">
@@ -151,10 +151,10 @@ export default function RolesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Shield}
-        title="Quan ly vai tro"
-        description={loading ? "Dang tai vai tro..." : `${roles.length} vai tro dang co trong he thong`}
+        title="Quản lý vai trò"
+        description={loading ? "Đang tải vai trò..." : `${roles.length} vai trò đang có trong hệ thống`}
         action={{
-          label: "Them vai tro",
+          label: "Thêm vai trò",
           onClick: openCreateModal,
         }}
       />
@@ -168,37 +168,37 @@ export default function RolesPage() {
       <DataTable
         columns={columns}
         data={roles}
-        emptyMessage={loading ? "Dang tai du lieu..." : "Chua co vai tro nao"}
+        emptyMessage={loading ? "Đang tải dữ liệu..." : "Chưa có vai trò nào"}
       />
 
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingRole ? "Cap nhat vai tro" : "Them vai tro moi"}
-        description="Nhap ten vai tro de dong bo truc tiep voi backend."
+        title={editingRole ? "Cập nhật vai trò" : "Thêm vai trò mới"}
+        description="Nhập tên vai trò để đồng bộ trực tiếp với backend."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
-              Huy
+              Hủy
             </Button>
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSubmit}
               disabled={submitting || !roleName.trim()}
             >
-              {editingRole ? "Cap nhat" : "Tao moi"}
+              {editingRole ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }
       >
         <FormField
           type="text"
-          label="Ten vai tro"
+          label="Tên vai trò"
           name="roleName"
           required
           value={roleName}
           onChange={setRoleName}
-          placeholder="Nhap ten vai tro"
+          placeholder="Nhập tên vai trò"
         />
       </Modal>
 

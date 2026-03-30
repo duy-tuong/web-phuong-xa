@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { getProcedures } from "@/services/serviceService";
 import type { ProcedureDetail } from "@/types/service";
@@ -10,19 +10,19 @@ import ServiceCard, { type ServiceCardData } from "./ServiceCard";
 function inferField(title: string) {
   const normalized = title.toLowerCase();
 
-  if (normalized.includes("khai sinh") || normalized.includes("khai tu") || normalized.includes("ket hon")) {
-    return "Ho tich";
+  if (normalized.includes("khai sinh") || normalized.includes("khai tử") || normalized.includes("kết hôn")) {
+    return "Hộ tịch";
   }
 
   if (normalized.includes("kinh doanh")) {
     return "Kinh doanh";
   }
 
-  if (normalized.includes("dat") || normalized.includes("nha") || normalized.includes("bat dong san")) {
-    return "Dat dai";
+  if (normalized.includes("đất") || normalized.includes("nhà") || normalized.includes("bất động sản")) {
+    return "Đất đai";
   }
 
-  return "Hanh chinh cong";
+  return "Hành chính công";
 }
 
 function toFieldValue(field: string) {
@@ -37,13 +37,13 @@ function toFieldValue(field: string) {
 function getLevelData(procedure: ProcedureDetail) {
   if (procedure.wordTemplateHref && procedure.wordTemplateHref !== "#") {
     return {
-      level: "Muc do 4",
+      level: "Mức độ 4",
       levelClass: "border-blue-200 bg-blue-50 text-blue-700",
     };
   }
 
   return {
-    level: "Muc do 3",
+    level: "Mức độ 3",
     levelClass: "border-orange-200 bg-orange-50 text-orange-700",
   };
 }
@@ -51,10 +51,10 @@ function getLevelData(procedure: ProcedureDetail) {
 function buildServiceDescription(procedure: ProcedureDetail) {
   const topRequirements = procedure.requirements.slice(0, 2);
   if (topRequirements.length === 0) {
-    return "Thong tin thanh phan ho so dang duoc cap nhat tu he thong dich vu cong.";
+    return "Thông tin thành phần hồ sơ đang được cập nhật từ hệ thống dịch vụ công.";
   }
 
-  return `Ho so can chuan bi: ${topRequirements.join("; ")}.`;
+  return `Hồ sơ cần chuẩn bị: ${topRequirements.join("; ")}.`;
 }
 
 function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceCardData {
@@ -74,8 +74,27 @@ function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceC
 }
 
 type SortMode = "default" | "name" | "duration";
+const ITEMS_PER_PAGE = 4;
+
+function getVisiblePages(totalPages: number, currentPage: number) {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, 5];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  }
+
+  return [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+}
 
 export default function ServiceList() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,6 +128,8 @@ export default function ServiceList() {
   const services = useMemo(() => procedures.map(mapProcedureToCard), [procedures]);
   const keyword = (searchParams.get("q") ?? "").trim().toLowerCase();
   const field = searchParams.get("field") ?? "";
+  const currentPageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const currentPage = Number.isFinite(currentPageParam) && currentPageParam > 0 ? currentPageParam : 1;
 
   const filteredServices = useMemo(() => {
     const nextServices = services.filter((service) => {
@@ -134,12 +155,49 @@ export default function ServiceList() {
     return nextServices;
   }, [field, keyword, services, sortMode]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredServices.length / ITEMS_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const pagedServices = useMemo(() => {
+    const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+    return filteredServices.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredServices, safeCurrentPage]);
+
+  useEffect(() => {
+    if (currentPage === safeCurrentPage) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (safeCurrentPage <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(safeCurrentPage));
+    }
+
+    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+  }, [currentPage, pathname, router, safeCurrentPage, searchParams]);
+
+  const visiblePages = useMemo(() => getVisiblePages(totalPages, safeCurrentPage), [safeCurrentPage, totalPages]);
+
+  const handlePageChange = (page: number) => {
+    const nextPage = Math.max(1, Math.min(page, totalPages));
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextPage <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(nextPage));
+    }
+
+    router.push(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+  };
+
   if (isLoading) {
     return (
       <div className="flex w-full flex-col space-y-4">
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-700" />
-          <p className="mt-4 text-sm font-medium text-slate-600">Dang tai danh sach thu tuc...</p>
+          <p className="mt-4 text-sm font-medium text-slate-600">Đang tải danh sách thủ tục...</p>
         </div>
       </div>
     );
@@ -149,9 +207,9 @@ export default function ServiceList() {
     return (
       <div className="flex w-full flex-col space-y-4">
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <h2 className="text-xl font-bold text-slate-900">Chua co dich vu cong nao</h2>
+          <h2 className="text-xl font-bold text-slate-900">Chưa có dịch vụ công nào</h2>
           <p className="mt-3 text-sm text-slate-600">
-            He thong chua co du lieu thu tuc hanh chinh de hien thi. Khi backend co du lieu, danh sach se tu dong cap nhat.
+            Hệ thống chưa có dữ liệu thủ tục hành chính để hiển thị. Khi backend có dữ liệu, danh sách sẽ tự động cập nhật.
           </p>
         </div>
       </div>
@@ -163,44 +221,81 @@ export default function ServiceList() {
       <div className="mb-4 flex flex-col items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center">
         <div>
           <h2 className="flex items-center gap-3 text-xl font-bold text-slate-900">
-            Danh sach thu tuc
+            Danh sách thủ tục
             <span className="flex h-7 items-center justify-center rounded-full bg-emerald-100 px-3 text-sm font-black text-[#1f7a5a]">
               {filteredServices.length}
             </span>
           </h2>
           {(keyword || field) && (
             <p className="mt-2 text-sm text-slate-500">
-              Dang hien thi ket qua phu hop voi bo loc ban da chon.
+              Đang hiển thị kết quả phù hợp với bộ lọc bạn đã chọn.
             </p>
           )}
         </div>
 
         <div className="flex w-full items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-2 text-sm sm:w-auto md:justify-end md:gap-3">
-          <span className="font-semibold text-slate-500">Sap xep theo:</span>
+          <span className="font-semibold text-slate-500">Sắp xếp theo:</span>
           <select
             value={sortMode}
             onChange={(event) => setSortMode(event.target.value as SortMode)}
             className="cursor-pointer appearance-none border-none bg-transparent font-bold text-[#1f7a5a] outline-none"
           >
-            <option value="default">Mac dinh</option>
-            <option value="name">Ten A-Z</option>
-            <option value="duration">Thoi gian xu ly</option>
+            <option value="default">Mặc định</option>
+            <option value="name">Tên A-Z</option>
+            <option value="duration">Thời gian xử lý</option>
           </select>
         </div>
       </div>
 
       {filteredServices.length === 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900">Khong co thu tuc phu hop</h3>
+          <h3 className="text-lg font-bold text-slate-900">Không có thủ tục phù hợp</h3>
           <p className="mt-2 text-sm text-slate-600">
-            Thu thu hep bo loc hoac doi tu khoa tim kiem de xem them ket qua.
+            Thử thu hẹp bộ lọc hoặc đổi từ khóa tìm kiếm để xem thêm kết quả.
           </p>
         </div>
       ) : (
         <div className="flex w-full flex-col gap-5">
-          {filteredServices.map((service) => (
+          {pagedServices.map((service) => (
             <ServiceCard key={service.slug} service={service} />
           ))}
+
+          {totalPages > 1 ? (
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => handlePageChange(safeCurrentPage - 1)}
+                disabled={safeCurrentPage <= 1}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-[#1f7a5a] hover:text-[#1f7a5a] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Trước
+              </button>
+
+              {visiblePages.map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => handlePageChange(page)}
+                  className={`rounded-lg px-3 py-2 text-sm font-bold transition ${
+                    page === safeCurrentPage
+                      ? "bg-[#1f7a5a] text-white"
+                      : "border border-slate-200 text-slate-700 hover:border-[#1f7a5a] hover:text-[#1f7a5a]"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(safeCurrentPage + 1)}
+                disabled={safeCurrentPage >= totalPages}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-[#1f7a5a] hover:text-[#1f7a5a] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Sau
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
     </div>

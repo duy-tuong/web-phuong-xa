@@ -11,19 +11,19 @@ type ProfileStatsProps = {
 export default function ProfileStats({ total, pending, completed }: ProfileStatsProps) {
   const statistics = [
     {
-      title: "Tong ho so da nop",
+      title: "Tổng hồ sơ đã nộp",
       value: total,
       icon: FileText,
       iconClassName: "bg-blue-50 text-blue-600 p-3 rounded-full",
     },
     {
-      title: "Ho so dang xu ly",
+      title: "Hồ sơ đang xử lý",
       value: pending,
       icon: Clock3,
       iconClassName: "bg-orange-50 text-orange-600 p-3 rounded-full",
     },
     {
-      title: "Ho so da hoan thanh",
+      title: "Hồ sơ đã hoàn thành",
       value: completed,
       icon: CheckCircle2,
       iconClassName: "bg-green-50 text-green-600 p-3 rounded-full",

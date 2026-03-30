@@ -14,6 +14,9 @@ type ApiArticleListItem = {
   id: number;
   title: string;
   slug: string;
+  isFeatured?: boolean;
+  featured?: boolean;
+  IsFeatured?: boolean;
   excerpt?: string | null;
   featuredImage?: string | null;
   createdAt?: string | null;
@@ -41,16 +44,16 @@ const DEFAULT_SUB_IMAGE =
 
 const defaultSectionBullets: ArticleSectionBullet[] = [
   {
-    label: "Nang cao chat luong phuc vu",
-    text: "Tiep tuc cai tien quy trinh xu ly va tang kha nang tiep can thong tin cho nguoi dan.",
+    label: "Nâng cao chất lượng phục vụ",
+    text: "Tiếp tục cải tiến quy trình xử lý và tăng khả năng tiếp cận thông tin cho người dân.",
   },
   {
-    label: "Tang cuong phoi hop",
-    text: "Dong bo giua cac bo phan chuyen mon de bao dam tien do va chat luong trien khai.",
+    label: "Tăng cường phối hợp",
+    text: "Đồng bộ giữa các bộ phận chuyên môn để bảo đảm tiến độ và chất lượng triển khai.",
   },
   {
-    label: "Theo doi ket qua",
-    text: "Duy tri kiem tra dinh ky va cap nhat phan hoi de hoan thien cach van hanh.",
+    label: "Theo dõi kết quả",
+    text: "Duy trì kiểm tra định kỳ và cập nhật phản hồi để hoàn thiện cách vận hành.",
   },
 ];
 
@@ -58,73 +61,73 @@ const fallbackArticles: Article[] = [
   createFallbackArticle({
     id: 1,
     slug: "ubnd-phuong-cao-lanh-to-chuc-hoi-nghi",
-    title: "Dai hoi dai bieu Mat tran To quoc Viet Nam Phuong Cao Lanh nhiem ky 2024-2029 thanh cong tot dep",
-    category: "Tin tuc xa hoi",
+    title: "Đại hội đại biểu Mặt trận Tổ quốc Việt Nam Phường Cao Lãnh nhiệm kỳ 2024-2029 thành công tốt đẹp",
+    category: "Tin tức xã hội",
     date: "15/10/2024",
-    author: "Ban Bien Tap",
-    views: "1,245 luot xem",
-    heroCaption: "Toan canh hoi nghi trien khai cong tac trong tam tai Hoi truong UBND Phuong Cao Lanh.",
-    tags: ["Mat tran To quoc", "UBND Phuong", "Tin tuc xa hoi"],
+    author: "Ban Biên tập",
+    views: "1,245 lượt xem",
+    heroCaption: "Toàn cảnh hội nghị triển khai công tác trọng tâm tại Hội trường UBND Phường Cao Lãnh.",
+    tags: ["Mặt trận Tổ quốc", "UBND Phường", "Tin tức xã hội"],
   }),
   createFallbackArticle({
     id: 2,
     slug: "phat-dong-phong-trao-ngay-chu-nhat-xanh-lam-sach-duong-pho",
-    title: "Phat dong phong trao Ngay Chu nhat xanh lam sach duong pho",
-    category: "Moi truong",
+    title: "Phát động phong trào Ngày Chủ nhật xanh làm sạch đường phố",
+    category: "Môi trường",
     date: "12/10/2023",
-    author: "Doan Thanh Nien",
-    views: "1,460 luot xem",
-    heroCaption: "Luc luong doan vien ra quan lam sach cac tuyen duong kieu mau tren dia ban phuong.",
-    tags: ["Moi truong", "Ngay Chu nhat xanh", "Doan thanh nien"],
+    author: "Đoàn Thanh niên",
+    views: "1,460 lượt xem",
+    heroCaption: "Lực lượng đoàn viên ra quân làm sạch các tuyến đường kiểu mẫu trên địa bàn phường.",
+    tags: ["Môi trường", "Ngày Chủ nhật xanh", "Đoàn thanh niên"],
   }),
   createFallbackArticle({
     id: 3,
     slug: "trao-tang-100-suat-qua-cho-cac-ho-gia-dinh-co-hoan-canh-kho-khan",
-    title: "Trao tang 100 suat qua cho cac ho gia dinh co hoan canh kho khan",
-    category: "An sinh xa hoi",
+    title: "Trao tặng 100 suất quà cho các hộ gia đình có hoàn cảnh khó khăn",
+    category: "An sinh xã hội",
     date: "10/10/2023",
-    author: "Uy ban MTTQ",
-    views: "2,012 luot xem",
-    heroCaption: "Chuong trinh trao qua duoc to chuc nham ho tro kip thoi cac ho gia dinh kho khan.",
-    tags: ["An sinh", "Ho tro ho ngheo", "Cong dong"],
+    author: "Ủy ban MTTQ",
+    views: "2,012 lượt xem",
+    heroCaption: "Chương trình trao quà được tổ chức nhằm hỗ trợ kịp thời các hộ gia đình khó khăn.",
+    tags: ["An sinh", "Hỗ trợ hộ nghèo", "Cộng đồng"],
   }),
   createFallbackArticle({
     id: 4,
     slug: "cong-bo-ke-hoach-phat-trien-ha-tang-giao-thong-khu-vuc-trung-tam",
-    title: "Cong bo ke hoach phat trien ha tang giao thong khu vuc trung tam",
-    category: "Kinh te",
+    title: "Công bố kế hoạch phát triển hạ tầng giao thông khu vực trung tâm",
+    category: "Kinh tế",
     date: "09/10/2023",
-    author: "Ban Kinh te",
-    views: "1,678 luot xem",
-    heroCaption: "Ke hoach nang cap ha tang giao thong duoc cong bo de lay y kien cong dong dan cu.",
-    tags: ["Kinh te", "Ha tang", "Giao thong"],
+    author: "Ban Kinh tế",
+    views: "1,678 lượt xem",
+    heroCaption: "Kế hoạch nâng cấp hạ tầng giao thông được công bố để lấy ý kiến cộng đồng dân cư.",
+    tags: ["Kinh tế", "Hạ tầng", "Giao thông"],
   }),
   createFallbackArticle({
     id: 5,
     slug: "huong-dan-thu-tuc-cap-doi-can-cuoc-cong-dan-gan-chip-dien-tu",
-    title: "Huong dan thu tuc cap doi Can cuoc cong dan gan chip dien tu tai phuong",
-    category: "Cai cach hanh chinh",
+    title: "Hướng dẫn thủ tục cấp đổi Căn cước công dân gắn chip điện tử tại phường",
+    category: "Cải cách hành chính",
     date: "08/10/2023",
-    author: "Bo phan Mot cua",
-    views: "2,654 luot xem",
-    heroCaption: "Nguoi dan duoc ho tro truc tiep ve quy trinh, ho so va lich tiep nhan thu tuc.",
-    tags: ["Thu tuc hanh chinh", "CCCD", "Mot cua"],
+    author: "Bộ phận Một cửa",
+    views: "2,654 lượt xem",
+    heroCaption: "Người dân được hỗ trợ trực tiếp về quy trình, hồ sơ và lịch tiếp nhận thủ tục.",
+    tags: ["Thủ tục hành chính", "CCCD", "Một cửa"],
   }),
   createFallbackArticle({
     id: 6,
     slug: "thong-bao-lich-thu-gom-rac-thai-sinh-hoat-tren-dia-ban-cac-khom",
-    title: "Thong bao lich thu gom rac thai sinh hoat tren dia ban cac khom",
-    category: "Thong bao",
+    title: "Thông báo lịch thu gom rác thải sinh hoạt trên địa bàn các khóm",
+    category: "Thông báo",
     date: "06/10/2023",
-    author: "Ban Do thi",
-    views: "1,904 luot xem",
-    heroCaption: "Lich thu gom rac duoc cap nhat theo tuyen de nguoi dan thuan tien theo doi va phoi hop.",
-    tags: ["Moi truong", "Thu gom rac", "Thong bao"],
+    author: "Ban Đô thị",
+    views: "1,904 lượt xem",
+    heroCaption: "Lịch thu gom rác được cập nhật theo tuyến để người dân thuận tiện theo dõi và phối hợp.",
+    tags: ["Môi trường", "Thu gom rác", "Thông báo"],
   }),
 ];
 
 const fallbackCategories = Array.from(
-  new Set(["Tat ca", ...fallbackArticles.map((article) => article.category)]),
+  new Set(["Tất cả", ...fallbackArticles.map((article) => article.category)]),
 );
 
 function createFallbackArticle(input: {
@@ -140,6 +143,8 @@ function createFallbackArticle(input: {
 }): Article {
   return {
     id: input.id,
+    isFeatured: false,
+    hasRealImage: true,
     slug: input.slug,
     title: input.title,
     category: input.category,
@@ -153,16 +158,16 @@ function createFallbackArticle(input: {
     heroImage: DEFAULT_HERO_IMAGE,
     heroCaption: input.heroCaption,
     bodyLead:
-      "Noi dung duoc cap nhat tu he thong thong tin dien tu phuong, phan anh cac hoat dong dieu hanh va chuong trinh phuc vu nguoi dan.",
+      "Nội dung được cập nhật từ hệ thống thông tin điện tử phường, phản ánh các hoạt động điều hành và chương trình phục vụ người dân.",
     bodyParagraphs: [
-      "Bai viet ghi nhan cac ket qua trien khai tai co so, dong thoi tong hop y kien tu cac don vi lien quan de hoan thien ke hoach hanh dong trong thoi gian toi.",
-      "Lanh dao dia phuong nhan manh yeu cau phoi hop chat che giua cac bo phan chuyen mon, tang cuong truyen thong va bao dam tien do thuc hien cac chi tieu da de ra.",
+      "Bài viết ghi nhận các kết quả triển khai tại cơ sở, đồng thời tổng hợp ý kiến từ các đơn vị liên quan để hoàn thiện kế hoạch hành động trong thời gian tới.",
+      "Lãnh đạo địa phương nhấn mạnh yêu cầu phối hợp chặt chẽ giữa các bộ phận chuyên môn, tăng cường truyền thông và bảo đảm tiến độ thực hiện các chỉ tiêu đã đề ra.",
     ],
-    sectionTitle: "Muc tieu trien khai",
-    sectionIntro: "Trong tam thuc hien giai doan tiep theo gom cac nhom nhiem vu sau:",
+    sectionTitle: "Mục tiêu triển khai",
+    sectionIntro: "Trọng tâm thực hiện giai đoạn tiếp theo gồm các nhóm nhiệm vụ sau:",
     sectionBullets: defaultSectionBullets,
     subImage: DEFAULT_SUB_IMAGE,
-    subCaption: "Cac to cong tac dia phuong huong dan nguoi dan tiep can dich vu so va tien ich cong truc tuyen.",
+    subCaption: "Các tổ công tác địa phương hướng dẫn người dân tiếp cận dịch vụ số và tiện ích công trực tuyến.",
     tags: input.tags,
   };
 }
@@ -188,7 +193,7 @@ function stripHtml(value?: string | null) {
 
 function formatDate(dateValue?: string | null) {
   if (!dateValue) {
-    return "Dang cap nhat";
+    return "Đang cập nhật";
   }
 
   const parsed = new Date(dateValue);
@@ -240,15 +245,21 @@ function buildTags(category?: string | null, title?: string | null) {
   return Array.from(new Set(tags)).slice(0, 3);
 }
 
+function resolveFeaturedFlag(source: ApiArticleListItem | ApiArticleDetail) {
+  return source.isFeatured === true || source.IsFeatured === true || source.featured === true;
+}
+
 function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Article {
   const paragraphs = buildParagraphs("content" in source ? source.content : undefined, source.excerpt);
   const lead = buildLead("content" in source ? source.content : undefined, source.excerpt);
-  const category = source.category?.trim() || "Chua phan loai";
-  const author = source.author?.trim() || "Ban bien tap";
+  const category = source.category?.trim() || "Chưa phân loại";
+  const author = source.author?.trim() || "Ban biên tập";
   const featuredImage = resolveApiAssetUrl(source.featuredImage);
 
   return {
     id: source.id,
+    isFeatured: resolveFeaturedFlag(source),
+    hasRealImage: Boolean(featuredImage),
     slug: source.slug,
     title: source.title,
     category,
@@ -258,16 +269,16 @@ function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Article {
     authorId: slugify(author),
     status: "published",
     publishedAt: formatDate(source.createdAt),
-    views: "Dang cap nhat",
-    heroImage: featuredImage || DEFAULT_HERO_IMAGE,
-    heroCaption: source.excerpt?.trim() || "Noi dung hinh anh dang duoc cap nhat tu he thong.",
+    views: "Đang cập nhật",
+    heroImage: featuredImage || undefined,
+    heroCaption: source.excerpt?.trim() || "Nội dung hình ảnh đang được cập nhật từ hệ thống.",
     bodyLead: lead,
     bodyParagraphs: paragraphs,
-    sectionTitle: "Muc tieu trien khai",
-    sectionIntro: "Cac noi dung trong tam dang duoc dia phuong tiep tuc trien khai va hoan thien:",
+    sectionTitle: "Mục tiêu triển khai",
+    sectionIntro: "Các nội dung trọng tâm đang được địa phương tiếp tục triển khai và hoàn thiện:",
     sectionBullets: defaultSectionBullets,
-    subImage: featuredImage || DEFAULT_SUB_IMAGE,
-    subCaption: "Thong tin, hinh anh va tien do thuc hien dang duoc cap nhat tu he thong du lieu cong.",
+    subImage: featuredImage || undefined,
+    subCaption: "Thông tin, hình ảnh và tiến độ thực hiện đang được cập nhật từ hệ thống dữ liệu công.",
     tags: buildTags(category, source.title),
   };
 }
@@ -297,7 +308,7 @@ export async function getArticles(): Promise<Article[]> {
 
     return isDevelopment ? getFallbackArticles() : [];
   } catch (error) {
-    console.error("Khong the tai danh sach bai viet:", error);
+    console.error("Không thể tải danh sách bài viết:", error);
     return isDevelopment ? getFallbackArticles() : [];
   }
 }
@@ -319,11 +330,11 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
       const detailResponse = await api.get<ApiArticleDetail>(`/articles/${article.id}`);
       return adaptArticle(detailResponse.data);
     } catch (detailError) {
-      console.error(`Khong the tai chi tiet bai viet slug=${slug}:`, detailError);
+      console.error(`Không thể tải chi tiết bài viết slug=${slug}:`, detailError);
       return article;
     }
   } catch (error) {
-    console.error(`Khong the tai bai viet slug=${slug}:`, error);
+    console.error(`Không thể tải bài viết slug=${slug}:`, error);
     return isDevelopment ? getFallbackArticles().find((item) => item.slug === slug) ?? null : null;
   }
 }
@@ -338,14 +349,14 @@ export async function getCategories(): Promise<string[]> {
       : [];
 
     if (categories.length > 0) {
-      return ["Tat ca", ...categories];
+      return ["Tất cả", ...categories];
     }
 
     const articles = await getArticles();
     const derived = Array.from(new Set(articles.map((article) => article.category)));
-    return derived.length > 0 ? ["Tat ca", ...derived] : isDevelopment ? fallbackCategories : ["Tat ca"];
+    return derived.length > 0 ? ["Tất cả", ...derived] : isDevelopment ? fallbackCategories : ["Tất cả"];
   } catch (error) {
-    console.error("Khong the tai danh muc bai viet:", error);
+    console.error("Không thể tải danh mục bài viết:", error);
 
     if (isDevelopment) {
       return fallbackCategories;
@@ -353,6 +364,6 @@ export async function getCategories(): Promise<string[]> {
 
     const articles = await getArticles();
     const derived = Array.from(new Set(articles.map((article) => article.category)));
-    return derived.length > 0 ? ["Tat ca", ...derived] : ["Tat ca"];
+    return derived.length > 0 ? ["Tất cả", ...derived] : ["Tất cả"];
   }
 }

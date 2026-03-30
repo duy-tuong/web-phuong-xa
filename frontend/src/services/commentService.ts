@@ -55,6 +55,12 @@ function adaptComment(comment: ApiComment): Comment {
   };
 }
 
+type SubmitCommentInput = {
+  slug: string;
+  userName: string;
+  content: string;
+};
+
 export async function getCommentsByArticleId(slug: string): Promise<Comment[]> {
   try {
     const article = await getArticleBySlug(slug);
@@ -69,4 +75,17 @@ export async function getCommentsByArticleId(slug: string): Promise<Comment[]> {
     console.error(`Không thể tải bình luận cho bài viết slug=${slug}:`, error);
     return isDevelopment ? fallbackComments : [];
   }
+}
+
+export async function submitCommentByArticleSlug(input: SubmitCommentInput): Promise<void> {
+  const article = await getArticleBySlug(input.slug);
+  if (!article?.id) {
+    throw new Error("Không tìm thấy bài viết để gửi bình luận");
+  }
+
+  await api.post("/comments", {
+    articleId: article.id,
+    userName: input.userName.trim(),
+    content: input.content.trim(),
+  });
 }

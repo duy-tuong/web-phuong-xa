@@ -7,6 +7,7 @@ import AuthHeader from "@/components/auth/AuthHeader";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
 import SocialLogin from "@/components/auth/SocialLogin";
+import { fetchCurrentUser } from "@/services/adminService";
 import {
   USER_TOKEN_KEY,
   type UserSession,
@@ -16,6 +17,7 @@ import {
 type LoginSuccessPayload = {
   token: string;
   username: string;
+  fullName?: string;
   role?: string;
 };
 
@@ -47,12 +49,13 @@ export default function LoginPageClient() {
     }
   }, [router, safeAdminRedirect]);
 
-  const handleAuthSuccess = (payload: LoginSuccessPayload) => {
+  const handleAuthSuccess = async (payload: LoginSuccessPayload) => {
     const isAdmin = payload.role ? ["Admin", "Editor"].includes(payload.role) : false;
+    const displayName = payload.fullName?.trim() || payload.username;
 
     if (isAdmin) {
       window.localStorage.setItem("admin_token", payload.token);
-      window.localStorage.setItem("admin_display_name", payload.username);
+      window.localStorage.setItem("admin_display_name", displayName);
       if (payload.role) {
         window.localStorage.setItem("admin_role", payload.role);
       }
@@ -61,14 +64,27 @@ export default function LoginPageClient() {
       return;
     }
 
-    const session: UserSession = {
-      username: payload.username,
-      fullName: payload.username,
-      role: payload.role,
-    };
-
     window.localStorage.setItem(USER_TOKEN_KEY, payload.token);
-    writeUserSession(session);
+
+    try {
+      const currentUser = await fetchCurrentUser();
+      const session: UserSession = {
+        username: currentUser.username,
+        fullName: currentUser.fullName || currentUser.username,
+        role: currentUser.role?.name,
+        email: currentUser.email,
+        phone: currentUser.phone,
+      };
+      writeUserSession(session);
+    } catch {
+      const fallbackSession: UserSession = {
+        username: payload.username,
+        fullName: displayName,
+        role: payload.role,
+      };
+      writeUserSession(fallbackSession);
+    }
+
     router.replace("/trang-ca-nhan");
   };
 

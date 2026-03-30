@@ -170,38 +170,38 @@ export default function ArticlesPage() {
   const columns: Column<Article>[] = [
     {
       key: "title",
-      label: "Tieu de",
+      label: "Tiêu đề",
       className: "min-w-[300px] max-w-[360px]",
       render: (article) => <span className="line-clamp-1 font-semibold text-stone-900">{article.title}</span>,
     },
     {
       key: "category",
-      label: "Danh muc",
+      label: "Danh mục",
       render: (article) => <Badge variant="secondary">{article.category?.name || article.categoryId}</Badge>,
     },
     {
       key: "status",
-      label: "Trang thai",
+      label: "Trạng thái",
       render: (article) =>
         article.status === "published" ? (
-          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Da dang</Badge>
+          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Đã đăng</Badge>
         ) : (
-          <Badge className="bg-stone-100 text-stone-600 hover:bg-stone-100">Nhap</Badge>
+          <Badge className="bg-stone-100 text-stone-600 hover:bg-stone-100">Nháp</Badge>
         ),
     },
     {
       key: "author",
-      label: "Tac gia",
+      label: "Tác giả",
       render: (article) => <span className="text-stone-600">{article.author?.fullName || article.author?.username || "--"}</span>,
     },
     {
       key: "createdAt",
-      label: "Ngay tao",
+      label: "Ngày tạo",
       render: (article) => <span className="text-sm text-stone-500">{format(new Date(article.createdAt), "dd/MM/yyyy")}</span>,
     },
     {
       key: "actions",
-      label: "Thao tac",
+      label: "Thao tác",
       className: "text-right w-[132px]",
       render: (article) => (
         <div className="flex items-center justify-end gap-1.5">
@@ -223,9 +223,9 @@ export default function ArticlesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={FileText}
-        title="Quan ly bai viet"
-        description={loading ? "Dang tai bai viet..." : `${articles.length} bai viet da dong bo voi API admin`}
-        action={{ label: "Them bai viet", onClick: openCreateModal }}
+        title="Quản lý bài viết"
+        description={loading ? "Đang tải bài viết..." : `${articles.length} bài viết đã đồng bộ với API admin`}
+        action={{ label: "Thêm bài viết", onClick: openCreateModal }}
       />
 
       {error && (
@@ -239,7 +239,7 @@ export default function ArticlesPage() {
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
             <Input
-              placeholder="Tim theo tieu de, slug, tac gia..."
+              placeholder="Tìm theo tiêu đề, slug, tác giả..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="pl-9 border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
@@ -248,10 +248,10 @@ export default function ArticlesPage() {
 
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="w-full border-stone-200">
-              <SelectValue placeholder="Danh muc" />
+              <SelectValue placeholder="Danh mục" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tat ca danh muc</SelectItem>
+              <SelectItem value="all">Tất cả danh mục</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
@@ -262,12 +262,12 @@ export default function ArticlesPage() {
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full border-stone-200">
-              <SelectValue placeholder="Trang thai" />
+              <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tat ca</SelectItem>
-              <SelectItem value="published">Da dang</SelectItem>
-              <SelectItem value="draft">Nhap</SelectItem>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="published">Đã đăng</SelectItem>
+              <SelectItem value="draft">Nháp</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -276,16 +276,16 @@ export default function ArticlesPage() {
       <DataTable
         columns={columns}
         data={filteredArticles}
-        emptyMessage={loading ? "Dang tai du lieu..." : "Khong tim thay bai viet nao"}
+        emptyMessage={loading ? "Đang tải dữ liệu..." : "Không tìm thấy bài viết nào"}
       />
 
       <Modal
         open={!!previewArticle}
         onClose={() => setPreviewArticle(null)}
-        title={previewArticle?.title || "Xem nhanh bai viet"}
-        description={previewArticle ? `Tac gia: ${previewArticle.author?.fullName || previewArticle.author?.username || "--"}` : undefined}
+        title={previewArticle?.title || "Xem nhanh bài viết"}
+        description={previewArticle ? `Tác giả: ${previewArticle.author?.fullName || previewArticle.author?.username || "--"}` : undefined}
         size="xl"
-        footer={<Button variant="outline" onClick={() => setPreviewArticle(null)}>Dong</Button>}
+        footer={<Button variant="outline" onClick={() => setPreviewArticle(null)}>Đóng</Button>}
       >
         <div className="max-h-[60vh] overflow-y-auto rounded-lg border border-stone-200 bg-stone-50 p-4">
           {previewArticle?.featuredImage && (
@@ -298,7 +298,7 @@ export default function ArticlesPage() {
               dangerouslySetInnerHTML={{ __html: previewArticle.content }}
             />
           ) : (
-            <p className="text-sm text-stone-500">Bai viet chua co noi dung.</p>
+            <p className="text-sm text-stone-500">Bài viết chưa có nội dung.</p>
           )}
         </div>
       </Modal>
@@ -306,16 +306,16 @@ export default function ArticlesPage() {
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editingArticle ? "Cap nhat bai viet" : "Them bai viet moi"}
-        description="Du lieu duoc luu truc tiep vao API /articles."
+        title={editingArticle ? "Cập nhật bài viết" : "Thêm bài viết mới"}
+        description="Dữ liệu được lưu trực tiếp vào API /articles."
         size="xl"
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
-              Huy
+              Hủy
             </Button>
             <Button className="bg-emerald-700 hover:bg-emerald-800 text-white" onClick={handleSave} disabled={submitting}>
-              {editingArticle ? "Cap nhat" : "Tao moi"}
+              {editingArticle ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }
@@ -323,12 +323,12 @@ export default function ArticlesPage() {
         <div className="space-y-4 rounded-xl border border-[hsl(120,10%,88%)] bg-[linear-gradient(180deg,hsl(45,30%,99%),hsl(45,24%,97%))] p-4 sm:p-5">
           <FormField
             type="text"
-            label="Tieu de"
+            label="Tiêu đề"
             name="title"
             required
             value={formData.title}
             onChange={(value) => setFormData((prev) => ({ ...prev, title: value }))}
-            placeholder="Nhap tieu de bai viet"
+            placeholder="Nhập tiêu đề bài viết"
           />
 
           <FormField
@@ -337,13 +337,13 @@ export default function ArticlesPage() {
             name="slug"
             value={formData.slug}
             onChange={(value) => setFormData((prev) => ({ ...prev, slug: value }))}
-            placeholder="De trong de backend tu sinh neu can"
+            placeholder="Để trống để backend tự sinh nếu cần"
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               type="select"
-              label="Danh muc"
+              label="Danh mục"
               name="categoryId"
               required
               value={formData.categoryId}
@@ -356,37 +356,37 @@ export default function ArticlesPage() {
             />
             <FormField
               type="select"
-              label="Trang thai"
+              label="Trạng thái"
               name="status"
               value={formData.status}
               onChange={(value) => setFormData((prev) => ({ ...prev, status: value as "draft" | "published" }))}
               options={[
-                { label: "Nhap", value: "draft" },
-                { label: "Da dang", value: "published" },
+                { label: "Nháp", value: "draft" },
+                { label: "Đã đăng", value: "published" },
               ]}
             />
           </div>
 
           <FormField
             type="text"
-            label="Anh dai dien"
+            label="Ảnh đại diện"
             name="featuredImage"
             value={formData.featuredImage}
             onChange={(value) => setFormData((prev) => ({ ...prev, featuredImage: value }))}
-            placeholder="/uploads/ten-anh.jpg hoac URL day du"
+            placeholder="/uploads/ten-anh.jpg hoặc URL đầy đủ"
           />
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-stone-700">Noi dung <span className="text-red-500 ml-0.5">*</span></label>
+            <label className="text-sm font-medium text-stone-700">Nội dung <span className="text-red-500 ml-0.5">*</span></label>
             <div className="min-h-[240px]">
               <Editor value={formData.content} onChange={(value) => setFormData((prev) => ({ ...prev, content: value }))} />
             </div>
-            <p className="text-xs text-stone-500">Tom tat se duoc backend tu tao tu noi dung neu de trong.</p>
+            <p className="text-xs text-stone-500">Tóm tắt sẽ được backend tự tạo từ nội dung nếu để trống.</p>
           </div>
 
           {formData.content && (
             <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
-              <span className="font-semibold text-stone-800">Xem nhanh van ban:</span> {stripHtml(formData.content).slice(0, 180) || "Noi dung dang rong"}
+              <span className="font-semibold text-stone-800">Xem nhanh văn bản:</span> {stripHtml(formData.content).slice(0, 180) || "Nội dung đang rỗng"}
             </div>
           )}
         </div>

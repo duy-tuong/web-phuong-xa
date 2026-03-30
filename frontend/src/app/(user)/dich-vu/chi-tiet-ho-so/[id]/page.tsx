@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -45,14 +45,14 @@ export default function DichVuDetailPage() {
     [procedures, routeId],
   );
 
-  const selectedProcedureTitle = selectedProcedure?.title ?? "Thu tuc dang chon";
+  const selectedProcedureTitle = selectedProcedure?.title ?? "Thủ tục đang chọn";
 
   if (isLoading) {
     return (
       <main className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
         <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-700" />
-          <p className="mt-4 text-sm font-medium text-slate-600">Dang tai bieu mau va thong tin ho so...</p>
+          <p className="mt-4 text-sm font-medium text-slate-600">Đang tải biểu mẫu và thông tin hồ sơ...</p>
         </div>
       </main>
     );
@@ -65,24 +65,24 @@ export default function DichVuDetailPage() {
           <div className="max-w-2xl">
             <nav className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
               <Link href="/" className="hover:text-[#1f7a5a]">
-                Trang chu
+                Trang chủ
               </Link>
               <span>&gt;</span>
               <Link href="/dich-vu" className="hover:text-[#1f7a5a]">
-                Dich vu hanh chinh
+                Dịch vụ hành chính
               </Link>
               <span>&gt;</span>
-              <span className="font-medium text-slate-900">Nop ho so</span>
+              <span className="font-medium text-slate-900">Nộp hồ sơ</span>
               <span>&gt;</span>
               <span className="font-medium text-slate-900">{selectedProcedureTitle}</span>
             </nav>
 
             <h2 className="mb-2 text-3xl font-black leading-tight tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
-              Nop ho so truc tuyen
+              Nộp hồ sơ trực tuyến
             </h2>
-            <p className="mb-3 text-base font-semibold text-[#1f7a5a]">Loai ho so: {selectedProcedureTitle}</p>
+            <p className="mb-3 text-base font-semibold text-[#1f7a5a]">Loại hồ sơ: {selectedProcedureTitle}</p>
             <p className="max-w-xl text-lg text-slate-600">
-              Giai quyet thu tuc hanh chinh nhanh chong, minh bach va hieu qua. Tiet kiem thoi gian cho cong dan va doanh nghiep tai Phuong Cao Lanh.
+              Giải quyết thủ tục hành chính nhanh chóng, minh bạch và hiệu quả. Tiết kiệm thời gian cho công dân và doanh nghiệp tại Phường Cao Lãnh.
             </p>
           </div>
           <div className="hidden size-48 rounded-full bg-gradient-to-tr from-[#1f7a5a]/20 to-[#db2777]/20 blur-3xl opacity-60 md:block" />

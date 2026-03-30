@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import api from "@/services/api";
 type LoginSuccessPayload = {
   token: string;
   username: string;
+  fullName?: string;
   role?: string;
 };
 
@@ -49,33 +50,27 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
       const token: string | undefined = response.data?.token;
       const username: string | undefined = response.data?.username;
       const role: string | undefined = response.data?.role;
+      const fullName: string | undefined = response.data?.fullName;
 
       if (!token || !username) {
-        setErrorMessage("Dang nhap that bai. Khong nhan duoc du lieu nguoi dung tu may chu.");
+        setErrorMessage("Đăng nhập thất bại. Không nhận được dữ liệu người dùng từ máy chủ.");
         return;
       }
 
       const isAdminRole = role ? ["Admin", "Editor"].includes(role) : false;
       if (isAdminFlow && !isAdminRole) {
-        setErrorMessage("Tai khoan khong co quyen truy cap khu vuc quan tri.");
+        setErrorMessage("Tài khoản không có quyền truy cập khu vực quản trị.");
         return;
       }
 
-      onSuccess({
-        token,
-        username,
-        role,
-      });
+      onSuccess({ token, username, fullName, role });
     } catch (error: unknown) {
       if (axios.isAxiosError<BackendErrorPayload>(error)) {
         const data = error.response?.data;
-        const serverMessage =
-          typeof data === "string"
-            ? data
-            : data?.message || data?.error || data?.title || data?.detail;
-        setErrorMessage(serverMessage || "Dang nhap that bai. Vui long kiem tra lai tai khoan hoac mat khau.");
+        const serverMessage = typeof data === "string" ? data : data?.message || data?.error || data?.title || data?.detail;
+        setErrorMessage(serverMessage || "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.");
       } else {
-        setErrorMessage("Dang nhap that bai. Vui long thu lai.");
+        setErrorMessage("Đăng nhập thất bại. Vui lòng thử lại.");
       }
     } finally {
       setIsLoading(false);
@@ -90,8 +85,8 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
     <>
       {isAdminFlow ? (
         <div className="mb-4 rounded-2xl border border-amber-100 bg-amber-50/80 p-4 text-sm text-amber-900">
-          <p className="font-semibold">Dang nhap de truy cap khu vuc quan tri</p>
-          <p className="mt-1">Chi tai khoan co quyen Admin hoac Editor moi duoc vao trang quan tri.</p>
+          <p className="font-semibold">Đăng nhập để truy cập khu vực quản trị</p>
+          <p className="mt-1">Chỉ tài khoản có quyền Admin hoặc Editor mới được vào trang quản trị.</p>
         </div>
       ) : null}
 
@@ -101,7 +96,7 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="block text-sm font-medium text-slate-700" htmlFor="identifier">
-          Ten dang nhap
+          Tên đăng nhập
         </label>
         <input
           id="identifier"
@@ -110,12 +105,12 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
           value={loginForm.identifier}
           onChange={(event) => setLoginForm((prev) => ({ ...prev, identifier: event.target.value }))}
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
-          placeholder="Nhap ten dang nhap"
+          placeholder="Nhập tên đăng nhập"
           required
         />
 
         <label className="block text-sm font-medium text-slate-700" htmlFor="loginPassword">
-          Mat khau
+          Mật khẩu
         </label>
         <div className="relative">
           <input
@@ -125,14 +120,14 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
             value={loginForm.password}
             onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
-            placeholder="Nhap mat khau"
+            placeholder="Nhập mật khẩu"
             required
           />
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-800"
-            aria-label="An hoac hien mat khau"
+            aria-label="Ẩn hoặc hiện mật khẩu"
           >
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
@@ -140,7 +135,7 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
 
         <div className="pt-1 text-right">
           <Link href="/lien-he" className="text-sm font-medium text-[#8b1d1d] hover:underline">
-            Can ho tro dang nhap?
+            Cần hỗ trợ đăng nhập?
           </Link>
         </div>
 
@@ -148,21 +143,21 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Dang xu ly...
+              Đang xử lý...
             </>
           ) : (
-            "Dang nhap"
+            "Đăng nhập"
           )}
         </button>
 
         <p className="mt-4 px-4 text-center text-xs leading-relaxed text-gray-500">
-          Bang viec dang nhap, ban dong y voi{" "}
+          Bằng việc đăng nhập, bạn đồng ý với{" "}
           <Link href="/gioi-thieu" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
-            Thong tin don vi
+            Điều khoản dịch vụ
           </Link>
-          {" "}va{" "}
+          {" "}và{" "}
           <Link href="/lien-he" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
-            Kenh lien he ho tro
+            Chính sách bảo mật
           </Link>
           .
         </p>
