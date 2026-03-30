@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders } from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://localhost:7065/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "/api/proxy",
 });
 
 // Request interceptor - attach token

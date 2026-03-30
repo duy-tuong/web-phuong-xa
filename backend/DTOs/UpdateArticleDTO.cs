@@ -16,6 +16,8 @@ namespace backend.DTOs
         [Required]
         public string Content { get; set; }
 
+        public bool IsFeatured { get; set; } = false;
+
         [Required]
         public int CategoryId { get; set; }
 

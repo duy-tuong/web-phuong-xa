@@ -34,6 +34,7 @@ interface ArticleFormData {
   categoryId: string;
   status: "draft" | "published";
   featuredImage: string;
+  isFeatured: boolean;
 }
 
 const emptyForm: ArticleFormData = {
@@ -44,6 +45,7 @@ const emptyForm: ArticleFormData = {
   categoryId: "",
   status: "draft",
   featuredImage: "",
+  isFeatured: false,
 };
 
 type ArticleApi = {
@@ -61,6 +63,8 @@ type ArticleApi = {
   Content?: string;
   status?: string;
   Status?: string;
+  isFeatured?: boolean;
+  IsFeatured?: boolean;
   createdAt?: string;
   CreatedAt?: string;
   publishedAt?: string | null;
@@ -160,6 +164,8 @@ export default function ArticlesPage() {
           ? "published"
           : "draft",
       featuredImage: article.featuredImage ?? article.FeaturedImage ?? undefined,
+      isFeatured:
+        article.isFeatured ?? article.IsFeatured ?? false,
       createdAt: article.createdAt ?? article.CreatedAt ?? new Date().toISOString(),
       publishedAt: article.publishedAt ?? article.PublishedAt ?? null,
       category: {
@@ -251,6 +257,7 @@ export default function ArticlesPage() {
       categoryId: article.categoryId,
       status: article.status,
       featuredImage: article.featuredImage ?? "",
+      isFeatured: article.isFeatured ?? false,
     });
     setImageError("");
     setModalOpen(true);
@@ -330,6 +337,7 @@ export default function ArticlesPage() {
         excerpt: formData.excerpt.trim() || buildExcerpt(formData.content),
         categoryId,
         status: formData.status === "published" ? "Published" : "Draft",
+        isFeatured: formData.isFeatured,
       };
 
       if (editingArticle) {
@@ -428,6 +436,18 @@ export default function ArticlesPage() {
           <Badge className="bg-stone-100 text-stone-600 hover:bg-stone-100">
             Nháp
           </Badge>
+        ),
+    },
+    {
+      key: "isFeatured",
+      label: "Nổi bật",
+      render: (article) =>
+        article.isFeatured ? (
+          <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+            Nổi bật
+          </Badge>
+        ) : (
+          <span className="text-stone-400">---</span>
         ),
     },
     {
@@ -773,6 +793,24 @@ export default function ArticlesPage() {
                 ]}
               />
             ) : null}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              id="isFeatured"
+              type="checkbox"
+              checked={formData.isFeatured}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isFeatured: event.target.checked,
+                }))
+              }
+              className="h-4 w-4 rounded border-stone-300 text-emerald-700 focus:ring-emerald-400"
+            />
+            <label htmlFor="isFeatured" className="text-sm font-medium text-stone-700">
+              Tin nổi bật
+            </label>
           </div>
 
           {/* Featured Image */}

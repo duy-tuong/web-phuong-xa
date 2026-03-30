@@ -51,6 +51,7 @@ namespace backend.Controllers
                     a.Slug,
                     a.Excerpt,
                     a.FeaturedImage,
+                    a.IsFeatured,
                     a.CreatedAt,
                     Category = a.Category.Name,
                     Author = a.Author.Username
@@ -58,6 +59,33 @@ namespace backend.Controllers
                 .ToListAsync();
 
             return Ok(new { total, page, pageSize, totalPages, data = articles });
+        }
+
+        // 🔹 PUBLIC: API riêng lấy tin nổi bật
+        [AllowAnonymous]
+        [HttpGet("featured")]
+        public async Task<IActionResult> GetFeaturedArticles(int limit = 5)
+        {
+            var articles = await _context.Articles
+                .Include(a => a.Category)
+                .Include(a => a.Author)
+                .Where(a => a.Status == "Published" && a.IsFeatured == true)
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(limit)
+                .Select(a => new
+                {
+                    a.Id,
+                    a.Title,
+                    a.Slug,
+                    a.Excerpt,
+                    a.FeaturedImage,
+                    a.CreatedAt,
+                    Category = a.Category.Name,
+                    Author = a.Author.Username
+                })
+                .ToListAsync();
+
+            return Ok(articles);
         }
 
         // 🔹 PUBLIC: xem chi tiết
@@ -76,6 +104,7 @@ namespace backend.Controllers
                     a.Excerpt,
                     a.FeaturedImage,
                     a.Content,
+                    a.IsFeatured,
                     a.Slug,
                     a.CreatedAt,
                     Category = a.Category.Name,
@@ -105,6 +134,7 @@ namespace backend.Controllers
                     a.Slug,
                     a.Excerpt,
                     a.FeaturedImage,
+                    a.IsFeatured,
                     a.Content,
                     a.Status,
                     a.CreatedAt,
@@ -144,6 +174,7 @@ namespace backend.Controllers
                 Excerpt = dto.Excerpt,
                 FeaturedImage = dto.FeaturedImage,
                 Content = dto.Content,
+                IsFeatured = dto.IsFeatured,
                 CategoryId = dto.CategoryId,
                 AuthorId = currentUserId,
                 CreatedAt = DateTime.Now,
@@ -180,6 +211,7 @@ namespace backend.Controllers
             article.Excerpt = dto.Excerpt;
             article.FeaturedImage = dto.FeaturedImage;
             article.Content = dto.Content;
+            article.IsFeatured = dto.IsFeatured;
             article.Slug = string.IsNullOrWhiteSpace(dto.Slug)
                 ? GenerateSlug(dto.Title)
                 : dto.Slug;

@@ -20,7 +20,7 @@ namespace backend.Controllers
             _env = env;
         }
 
-        // ?? GET ALL MEDIA (CH? ADMIN/EDITOR XEM ???C) KHÔNG C?N DÀNH CHO DÂN
+        // ?? GET ALL MEDIA (CH? ADMIN/EDITOR XEM ???C) KHï¿½NG C?N Dï¿½NH CHO Dï¿½N
         [Authorize(Roles = "Admin,Editor")]
         [HttpGet]
         public async Task<IActionResult> GetAllMedia(int page = 1, int pageSize = 20)
@@ -50,7 +50,42 @@ namespace backend.Controllers
             return Ok(new { total, page, pageSize, totalPages, data = mediaFiles });
         }
 
-        // ?? UPLOAD FILE (?NH/TÀI LI?U) - DÀNH CHO CÁN B? VI?T BÀI
+        // GET PUBLIC MEDIA (NO AUTH)
+        [AllowAnonymous]
+        [HttpGet("public")]
+        public async Task<IActionResult> GetPublicMedia(string? type = null, int page = 1, int pageSize = 20)
+        {
+            var query = _context.Media.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                var normalizedType = type.Trim();
+                query = query.Where(m => m.Type == normalizedType);
+            }
+
+            var total = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+
+            var mediaFiles = await query
+                .OrderByDescending(m => m.UploadedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new
+                {
+                    m.Id,
+                    m.FileName,
+                    m.FilePath,
+                    m.Type,
+                    m.FileType,
+                    m.FileSize,
+                    m.UploadedAt
+                })
+                .ToListAsync();
+
+            return Ok(new { total, page, pageSize, totalPages, data = mediaFiles });
+        }
+
+        // ?? UPLOAD FILE (?NH/Tï¿½I LI?U) - Dï¿½NH CHO Cï¿½N B? VI?T Bï¿½I
         [Authorize(Roles = "Admin,Editor")]
         [HttpPost("upload")]
         public async Task<IActionResult> UploadMedia(IFormFile file)
@@ -58,26 +93,26 @@ namespace backend.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded.");
 
-            // Ki?m tra dung l??ng (Ví d?: t?i ?a 5MB)
+            // Ki?m tra dung l??ng (Vï¿½ d?: t?i ?a 5MB)
             var maxFileSize = 5 * 1024 * 1024;
             if (file.Length > maxFileSize)
                 return BadRequest("File size exceeds the 5MB limit.");
 
-            // Danh sách các ??nh d?ng ???c phép upload
+            // Danh sï¿½ch cï¿½c ??nh d?ng ???c phï¿½p upload
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx" };
             var extension = Path.GetExtension(file.FileName).ToLower();
 
             if (!allowedExtensions.Contains(extension))
                 return BadRequest("Invalid file type. Only JPG, PNG, GIF, PDF, DOC, DOCX are allowed.");
 
-            // T?o th? m?c "uploads" n?u ch?a có
+            // T?o th? m?c "uploads" n?u ch?a cï¿½
             var uploadDir = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
             if (!Directory.Exists(uploadDir))
             {
                 Directory.CreateDirectory(uploadDir);
             }
 
-            // ??i tên file ?? tránh upload ?è ho?c ký t? l?i 
+            // ??i tï¿½n file ?? trï¿½nh upload ?ï¿½ ho?c kï¿½ t? l?i 
             var uniqueFileName = $"{Guid.NewGuid()}{extension}";
             var filePath = Path.Combine(uploadDir, uniqueFileName);
 
@@ -93,17 +128,17 @@ namespace backend.Controllers
                 return Unauthorized("User ID not found in token");
             }
 
-            // T?o ???ng d?n public URL ?? l?u vào DB (Ví d?: /uploads/abc.jpg)
+            // T?o ???ng d?n public URL ?? l?u vï¿½o DB (Vï¿½ d?: /uploads/abc.jpg)
             var relativePath = $"/uploads/{uniqueFileName}";
             var fileType = (extension == ".pdf" || extension.Contains(".doc")) ? "Document" : "Image";
 
             var media = new Media
             {
-                FileName = file.FileName,   // L?u tên g?c
+                FileName = file.FileName,   // L?u tï¿½n g?c
                 FilePath = relativePath,    // L?u ???ng d?n
                 Type = fileType,
                 FileType = file.ContentType, // L?u MIME type
-                FileSize = file.Length,     // L?u kích th??c (byte)
+                FileSize = file.Length,     // L?u kï¿½ch th??c (byte)
                 UploadedBy = currentUserId,
                 UploadedAt = DateTime.Now
             };
@@ -124,7 +159,7 @@ namespace backend.Controllers
 
         // ?? DELETE MEDIA
         [Authorize(Roles = "Admin,Editor")]
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteMedia(int id)
         {
             var media = await _context.Media.FindAsync(id);
@@ -132,7 +167,7 @@ namespace backend.Controllers
             if (media == null)
                 return NotFound("Media not found.");
 
-            // Ch? Admin ho?c CHÍNH NG??I ?Ã UPLOAD m?i ???c xóa
+            // Ch? Admin ho?c CHï¿½NH NG??I ?ï¿½ UPLOAD m?i ???c xï¿½a
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
 
@@ -141,7 +176,7 @@ namespace backend.Controllers
                 return Forbid();
             }
 
-            // Xóa file c?ng trong ? ??a
+            // Xï¿½a file c?ng trong ? ??a
             var uploadDir = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             var physicalPath = Path.Combine(uploadDir, media.FilePath.TrimStart('/'));
 
@@ -150,7 +185,7 @@ namespace backend.Controllers
                 System.IO.File.Delete(physicalPath);
             }
 
-            // Xóa record trong Database
+            // Xï¿½a record trong Database
             _context.Media.Remove(media);
             await _context.SaveChangesAsync();
 

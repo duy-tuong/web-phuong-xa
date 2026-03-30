@@ -43,6 +43,7 @@ export interface Article {
   status: "draft" | "published";
   createdAt: string;
   publishedAt?: string | null;
+  isFeatured?: boolean;
 
   // UI compatibility fields.
   category?: Category;

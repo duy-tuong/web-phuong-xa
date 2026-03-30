@@ -135,7 +135,25 @@ app.UseHttpsRedirection();  // có thể comment tạm nếu dùng HTTP
 
 app.UseStaticFiles(); // Added to serve uploaded media files from wwwroot/uploads
 
+app.UseRouting();
+
 app.UseCors("AllowAll");
+
+app.Use(async (context, next) =>
+{
+    var forwardedAuth = context.Request.Headers["X-Forwarded-Authorization"].ToString();
+    if (!string.IsNullOrWhiteSpace(forwardedAuth))
+    {
+        var currentAuth = context.Request.Headers["Authorization"].ToString();
+        if (string.IsNullOrWhiteSpace(currentAuth) || currentAuth.StartsWith("Basic "))
+        {
+            context.Request.Headers["Authorization"] = forwardedAuth;
+        }
+        context.Request.Headers.Remove("X-Forwarded-Authorization");
+    }
+
+    await next();
+});
 
 app.UseAuthentication();  // phải trước UseAuthorization
 app.UseAuthorization();

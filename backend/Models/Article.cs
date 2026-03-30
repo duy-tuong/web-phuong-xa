@@ -14,6 +14,8 @@
 
         public string Content { get; set; }
 
+        public bool IsFeatured { get; set; } = false;
+
         public int CategoryId { get; set; }
 
         public Category Category { get; set; }

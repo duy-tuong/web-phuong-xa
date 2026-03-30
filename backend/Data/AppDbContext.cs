@@ -27,6 +27,7 @@ namespace backend.Data
 
         public DbSet<AuditLog> AuditLogs { get; set; }
 
+        public DbSet<Contact> Contacts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
