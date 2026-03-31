@@ -1,10 +1,8 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { CheckCircle, MessageSquare, Search, Trash2 } from "lucide-react";
-
-import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import { ConfirmDeleteModal } from "@/components/admin/Modal";
@@ -20,10 +18,11 @@ import {
 } from "@/components/ui/select";
 import { Comment } from "@/types";
 import api from "@/services/api";
-import { MessageSquare, Search, CheckCircle, Trash2 } from "lucide-react";
-import { format } from "date-fns";
 
-const statusConfig: Record<Comment["status"], { label: string; className: string }> = {
+const statusConfig: Record<
+  Comment["status"],
+  { label: string; className: string }
+> = {
   pending: {
     label: "Chờ duyệt",
     className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
@@ -67,10 +66,11 @@ export default function CommentsPage() {
         "approved"
           ? "approved"
           : (comment.status ?? comment.Status ?? "pending").toLowerCase() ===
-            "rejected"
+              "rejected"
             ? "rejected"
             : "pending",
-      createdAt: comment.createdAt ?? comment.CreatedAt ?? new Date().toISOString(),
+      createdAt:
+        comment.createdAt ?? comment.CreatedAt ?? new Date().toISOString(),
       articleTitle: comment.articleTitle ?? comment.ArticleTitle ?? undefined,
     })) as Comment[];
 
@@ -100,13 +100,8 @@ export default function CommentsPage() {
     };
   }, []);
 
-  useEffect(() => {
-    void loadComments();
-  }, [loadComments]);
-
   const filteredComments = useMemo(() => {
     return comments.filter((comment) => {
-      const keyword = searchQuery.toLowerCase();
       const matchesSearch =
         searchQuery === "" ||
         comment.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -117,8 +112,6 @@ export default function CommentsPage() {
 
       const matchesStatus =
         statusFilter === "all" || comment.status === statusFilter;
-
-      const matchesStatus = statusFilter === "all" || comment.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [comments, searchQuery, statusFilter]);
@@ -150,7 +143,9 @@ export default function CommentsPage() {
     {
       key: "userName",
       label: "Người dùng",
-      render: (comment) => <span className="font-medium text-stone-800">{comment.userName}</span>,
+      render: (comment) => (
+        <span className="font-medium text-stone-800">{comment.userName}</span>
+      ),
     },
     {
       key: "articleTitle",
@@ -164,7 +159,11 @@ export default function CommentsPage() {
     {
       key: "content",
       label: "Nội dung",
-      render: (comment) => <p className="line-clamp-2 max-w-xs text-stone-700">{comment.content}</p>,
+      render: (comment) => (
+        <p className="line-clamp-2 max-w-xs text-stone-700">
+          {comment.content}
+        </p>
+      ),
     },
     {
       key: "status",
@@ -177,24 +176,28 @@ export default function CommentsPage() {
     {
       key: "createdAt",
       label: "Ngày tạo",
-      render: (comment) => <span className="text-sm text-stone-500">{format(new Date(comment.createdAt), "dd/MM/yyyy HH:mm")}</span>,
+      render: (comment) => (
+        <span className="text-sm text-stone-500">
+          {format(new Date(comment.createdAt), "dd/MM/yyyy HH:mm")}
+        </span>
+      ),
     },
     {
       key: "actions",
       label: "Thao tác",
       render: (comment) => (
         <div className="flex items-center gap-1">
-          {comment.status !== "approved" && (
+          {comment.status !== "approved" ? (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleStatusChange(comment.id, "approved")}
+              onClick={() => handleApprove(comment.id)}
               className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 w-8 h-8"
               title="Duyệt bình luận"
             >
               <CheckCircle className="w-4 h-4" />
             </Button>
-          )}
+          ) : null}
           {isEditor ? null : (
             <Button
               variant="ghost"
@@ -221,14 +224,12 @@ export default function CommentsPage() {
       <PageHeader
         icon={MessageSquare}
         title="Quản lý bình luận"
-        description={loading ? "Đang tải bình luận..." : `${comments.length} bình luận đang có trong hệ thống`}
+        description={
+          isLoading
+            ? "Đang tải bình luận..."
+            : `${comments.length} bình luận đang có trong hệ thống`
+        }
       />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -256,14 +257,18 @@ export default function CommentsPage() {
       <DataTable
         columns={columns}
         data={filteredComments}
-        emptyMessage={isLoading ? "Đang tải bình luận..." : "Không có bình luận nào"}
+        emptyMessage={
+          isLoading ? "Đang tải bình luận..." : "Không có bình luận nào"
+        }
       />
 
       <ConfirmDeleteModal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        itemName={deleteTarget ? `bình luận của ${deleteTarget.userName}` : undefined}
+        itemName={
+          deleteTarget ? `bình luận của ${deleteTarget.userName}` : undefined
+        }
       />
     </div>
   );

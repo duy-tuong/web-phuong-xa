@@ -19,5 +19,7 @@ namespace backend.DTOs
         [EmailAddress]
         [MaxLength(100)]
         public string Email { get; set; }
+
+        public string? AttachedFiles { get; set; }
     }
 }

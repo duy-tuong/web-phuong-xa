@@ -60,6 +60,9 @@ export default function LoginPageClient() {
         window.localStorage.setItem("admin_role", payload.role);
       }
       document.cookie = `admin_token=${payload.token}; Path=/; Max-Age=86400; SameSite=Lax`;
+      if (payload.role) {
+        document.cookie = `admin_role=${payload.role}; Path=/; Max-Age=86400; SameSite=Lax`;
+      }
       router.replace(safeAdminRedirect ?? "/admin");
       return;
     }
@@ -96,9 +99,9 @@ export default function LoginPageClient() {
       <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-xl shadow-slate-300/40 backdrop-blur-sm sm:p-7">
         <AuthHeader activeTab={activeTab} setActiveTab={setActiveTab} />
         {activeTab === "login" ? (
-          <LoginForm onSuccess={handleAuthSuccess} adminRedirectPath={safeAdminRedirect} />
+          <LoginForm onSuccessAction={handleAuthSuccess} adminRedirectPath={safeAdminRedirect} />
         ) : (
-          <RegisterForm onSuccess={handleAuthSuccess} />
+          <RegisterForm onSuccessAction={handleAuthSuccess} />
         )}
 
         <SocialLogin />

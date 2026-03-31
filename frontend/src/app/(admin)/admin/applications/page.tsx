@@ -23,7 +23,10 @@ import {
 import { getErrorMessage } from "@/services/admin/errors";
 import { Application } from "@/types";
 
-const statusConfig: Record<Application["status"], { label: string; className: string }> = {
+const statusConfig: Record<
+  Application["status"],
+  { label: string; className: string }
+> = {
   pending: {
     label: "Chờ xử lý",
     className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
@@ -44,21 +47,23 @@ const statusConfig: Record<Application["status"], { label: string; className: st
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const loadApplications = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       setError("");
       const response = await fetchApplicationsAdmin({ page: 1, pageSize: 200 });
       setApplications(response.data);
     } catch (loadError) {
       setError(getErrorMessage(loadError));
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -76,12 +81,32 @@ export default function ApplicationsPage() {
         app.phone.toLowerCase().includes(keyword) ||
         app.email.toLowerCase().includes(keyword);
 
-      const matchesStatus = statusFilter === "all" || app.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || app.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [applications, searchQuery, statusFilter]);
 
-  const handleStatusChange = async (id: string, newStatus: Application["status"]) => {
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredApplications.length / pageSize),
+  );
+
+  const pagedApplications = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredApplications.slice(start, start + pageSize);
+  }, [filteredApplications, page, pageSize]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const handleStatusChange = async (
+    id: string,
+    newStatus: Application["status"],
+  ) => {
     try {
       setError("");
       await updateApplicationStatus(id, newStatus);
@@ -95,7 +120,9 @@ export default function ApplicationsPage() {
     {
       key: "applicantName",
       label: "Công dân",
-      render: (item) => <span className="font-medium text-stone-800">{item.applicantName}</span>,
+      render: (item) => (
+        <span className="font-medium text-stone-800">{item.applicantName}</span>
+      ),
     },
     {
       key: "phone",
@@ -106,31 +133,52 @@ export default function ApplicationsPage() {
       key: "email",
       label: "Email",
       className: "max-w-[220px]",
-      render: (item) => <span className="block max-w-[220px] truncate text-stone-700">{item.email}</span>,
+      render: (item) => (
+        <span className="block max-w-[220px] truncate text-stone-700">
+          {item.email}
+        </span>
+      ),
     },
     {
       key: "serviceName",
       label: "Dịch vụ",
-      render: (item) => <span className="text-stone-700">{item.serviceName || item.serviceId}</span>,
+      render: (item) => (
+        <span className="text-stone-700">
+          {item.serviceName || item.serviceId}
+        </span>
+      ),
     },
     {
       key: "createdAt",
       label: "Ngày nộp",
-      render: (item) => <span className="text-sm text-stone-600">{format(new Date(item.createdAt), "dd/MM/yyyy")}</span>,
+      render: (item) => (
+        <span className="text-sm text-stone-600">
+          {format(new Date(item.createdAt), "dd/MM/yyyy")}
+        </span>
+      ),
     },
     {
       key: "status",
       label: "Trạng thái",
       render: (item) => {
         const config = statusConfig[item.status];
-        return <Badge variant="secondary" className={config.className}>{config.label}</Badge>;
+        return (
+          <Badge variant="secondary" className={config.className}>
+            {config.label}
+          </Badge>
+        );
       },
     },
     {
       key: "actions",
       label: "Cập nhật trạng thái",
       render: (item) => (
-        <Select value={item.status} onValueChange={(value) => handleStatusChange(item.id, value as Application["status"])}>
+        <Select
+          value={item.status}
+          onValueChange={(value) =>
+            handleStatusChange(item.id, value as Application["status"])
+          }
+        >
           <SelectTrigger className="w-full min-w-[160px] h-9 text-sm border-stone-200">
             <SelectValue />
           </SelectTrigger>
@@ -147,15 +195,14 @@ export default function ApplicationsPage() {
 
   return (
     <div className="space-y-6">
-      {errorMessage ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage}
-        </div>
-      ) : null}
       <PageHeader
         icon={ClipboardList}
         title="Quản lý hồ sơ"
-        description={loading ? "Đang tải hồ sơ..." : `${applications.length} hồ sơ đang có trong hệ thống`}
+        description={
+          isLoading
+            ? "Đang tải hồ sơ..."
+            : `${applications.length} hồ sơ đang có trong hệ thống`
+        }
       />
 
       {error && (
@@ -196,8 +243,10 @@ export default function ApplicationsPage() {
 
       <DataTable
         columns={columns}
-        data={filteredApplications}
-        emptyMessage={loading ? "Đang tải dữ liệu..." : "Không tìm thấy hồ sơ nào"}
+        data={pagedApplications}
+        emptyMessage={
+          isLoading ? "Đang tải dữ liệu..." : "Không tìm thấy hồ sơ nào"
+        }
       />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

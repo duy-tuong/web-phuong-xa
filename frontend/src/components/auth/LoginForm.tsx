@@ -24,11 +24,11 @@ type BackendErrorPayload =
     };
 
 type LoginFormProps = {
-  onSuccess: (payload: LoginSuccessPayload) => void;
+  onSuccessAction: (payload: LoginSuccessPayload) => void;
   adminRedirectPath?: string | null;
 };
 
-export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormProps) {
+export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginFormProps) {
   const [loginForm, setLoginForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,24 +50,14 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
 
     setIsLoading(true);
     try {
-      const res = await api.post("/auth/login", { username, password });
-      const token: string | undefined = res.data?.token;
-      const role: string | undefined = res.data?.role;
-      const returnedUsername: string | undefined = res.data?.username;
-      const returnedFullName: string | undefined = res.data?.fullName;
-
-    try {
-      const response = await api.post("/auth/login", {
-        username: loginForm.identifier.trim(),
-        password: loginForm.password,
-      });
+      const response = await api.post("/auth/login", { username, password });
 
       const token: string | undefined = response.data?.token;
-      const username: string | undefined = response.data?.username;
+      const returnedUsername: string | undefined = response.data?.username;
       const role: string | undefined = response.data?.role;
       const fullName: string | undefined = response.data?.fullName;
 
-      if (!token || !username) {
+      if (!token || !returnedUsername) {
         setErrorMessage("Đăng nhập thất bại. Không nhận được dữ liệu người dùng từ máy chủ.");
         return;
       }
@@ -78,7 +68,7 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
         return;
       }
 
-      onSuccess({ token, username, fullName, role });
+      onSuccessAction({ token, username: returnedUsername, fullName, role });
     } catch (error: unknown) {
       if (axios.isAxiosError<BackendErrorPayload>(error)) {
         const data = error.response?.data;

@@ -8,7 +8,6 @@ import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
-import api from "@/services/api";
 import { Category } from "@/types";
 import {
   createCategory,
@@ -16,7 +15,6 @@ import {
   fetchCategoriesAdmin,
   updateCategory,
 } from "@/services/admin/categories";
-import { getErrorMessage } from "@/services/admin/errors";
 
 interface CategoryFormData {
   name: string;
@@ -28,17 +26,6 @@ const emptyForm: CategoryFormData = {
   name: "",
   slug: "",
   description: "",
-};
-
-type CategoryApi = {
-  id?: number | string;
-  Id?: number | string;
-  name?: string;
-  Name?: string;
-  description?: string;
-  Description?: string;
-  slug?: string;
-  Slug?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -66,37 +53,6 @@ export default function CategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const loadCategories = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      setCategories(await fetchCategoriesAdmin());
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadCategories();
-  }, [loadCategories]);
-
-  const fetchCategories = async () => {
-    const res = await api.get("/categories");
-    const data = Array.isArray(res.data) ? (res.data as CategoryApi[]) : [];
-    const mapped = data
-      .map((category) => ({
-        id: String(category.id ?? category.Id ?? ""),
-        name: category.name ?? category.Name ?? "",
-        description: category.description ?? category.Description ?? undefined,
-        slug: category.slug ?? category.Slug ?? "",
-      }))
-      .filter((category) => category.id && category.name);
-    setCategories(mapped);
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -105,7 +61,7 @@ export default function CategoriesPage() {
       setIsLoading(true);
       setErrorMessage("");
       try {
-        await fetchCategories();
+        setCategories(await fetchCategoriesAdmin());
       } catch {
         if (!mounted) return;
         setErrorMessage("Không thể tải danh mục.");
@@ -156,20 +112,20 @@ export default function CategoriesPage() {
     setIsSaving(true);
     try {
       if (editingCategory) {
-        await api.put(`/categories/${editingCategory.id}`, {
+        await updateCategory(editingCategory.id, {
           name: formData.name.trim(),
           slug: formData.slug.trim(),
-          description: formData.description.trim() || null,
+          description: formData.description.trim() || "",
         });
       } else {
-        await api.post("/categories", {
+        await createCategory({
           name: formData.name.trim(),
           slug: formData.slug.trim(),
-          description: formData.description.trim() || null,
+          description: formData.description.trim() || "",
         });
       }
 
-      await fetchCategories();
+      setCategories(await fetchCategoriesAdmin());
       closeModal();
     } catch {
       setErrorMessage("Lưu danh mục thất bại.");
@@ -184,8 +140,8 @@ export default function CategoriesPage() {
     setErrorMessage("");
     setIsSaving(true);
     try {
-      await api.delete(`/categories/${deleteTarget.id}`);
-      await fetchCategories();
+      await deleteCategory(deleteTarget.id);
+      setCategories(await fetchCategoriesAdmin());
       setDeleteTarget(null);
     } catch {
       setErrorMessage("Xóa danh mục thất bại.");
@@ -214,7 +170,9 @@ export default function CategoriesPage() {
     {
       key: "name",
       label: "Tên danh mục",
-      render: (category) => <span className="font-semibold text-stone-900">{category.name}</span>,
+      render: (category) => (
+        <span className="font-semibold text-stone-900">{category.name}</span>
+      ),
     },
     {
       key: "slug",
@@ -228,7 +186,9 @@ export default function CategoriesPage() {
     {
       key: "description",
       label: "Mô tả",
-      render: (category) => <span className="text-stone-500">{category.description || "--"}</span>,
+      render: (category) => (
+        <span className="text-stone-500">{category.description || "--"}</span>
+      ),
     },
     {
       key: "actions",
@@ -278,12 +238,6 @@ export default function CategoriesPage() {
             : { label: "Thêm danh mục", onClick: openCreateModal }
         }
       />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <DataTable
         columns={columns}
@@ -343,7 +297,11 @@ export default function CategoriesPage() {
               onClick={handleSave}
               disabled={isSaving}
             >
-              {isSaving ? "Đang lưu..." : editingCategory ? "Cập nhật" : "Tạo mới"}
+              {isSaving
+                ? "Đang lưu..."
+                : editingCategory
+                  ? "Cập nhật"
+                  : "Tạo mới"}
             </Button>
           </div>
         }
@@ -355,7 +313,9 @@ export default function CategoriesPage() {
             name="name"
             required
             value={formData.name}
-            onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, name: value }))
+            }
             placeholder="Nhập tên danh mục"
           />
           <FormField
@@ -363,7 +323,9 @@ export default function CategoriesPage() {
             label="Slug"
             name="slug"
             value={formData.slug}
-            onChange={(value) => setFormData((prev) => ({ ...prev, slug: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, slug: value }))
+            }
             placeholder="Để trống để backend tự sinh"
           />
           <FormField
@@ -371,7 +333,9 @@ export default function CategoriesPage() {
             label="Mô tả"
             name="description"
             value={formData.description}
-            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, description: value }))
+            }
             placeholder="Mô tả ngắn về danh mục"
             rows={3}
           />

@@ -39,6 +39,7 @@ namespace backend.Controllers
                 ApplicantName = dto.ApplicantName,
                 Phone = dto.Phone,
                 Email = dto.Email,
+                AttachedFiles = dto.AttachedFiles,
                 Status = "Pending",
                 CreatedAt = DateTime.Now
             };
@@ -87,6 +88,7 @@ namespace backend.Controllers
                     a.ApplicantName,
                     a.Phone,
                     a.Email,
+                    a.AttachedFiles,
                     a.Status,
                     a.CreatedAt
                 })
@@ -123,6 +125,7 @@ namespace backend.Controllers
                     a.ApplicantName,
                     a.Phone,
                     a.Email,
+                    a.AttachedFiles,
                     a.Status,
                     a.CreatedAt
                 })
@@ -147,6 +150,7 @@ namespace backend.Controllers
                     a.ApplicantName,
                     a.Phone,
                     a.Email,
+                    a.AttachedFiles,
                     a.Status,
                     a.CreatedAt
                 })

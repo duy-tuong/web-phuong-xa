@@ -2,9 +2,15 @@
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { FileText, Search, Eye, Pencil, Trash2, CheckCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Eye,
+  FileText,
+  Pencil,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { format } from "date-fns";
-import { Eye, FileText, Pencil, Search, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
@@ -14,7 +20,6 @@ import Editor from "@/components/admin/Editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import api from "@/services/api";
 import {
   Select,
@@ -106,12 +111,6 @@ export default function ArticlesPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-
-export default function ArticlesPage() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -125,28 +124,6 @@ export default function ArticlesPage() {
   // ----- delete state -----
   const [deleteTarget, setDeleteTarget] = useState<Article | null>(null);
   const [previewArticle, setPreviewArticle] = useState<Article | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const [articleRows, categoryRows] = await Promise.all([
-        fetchAdminArticles(),
-        fetchCategoriesAdmin(),
-      ]);
-      setArticles(articleRows);
-      setCategories(categoryRows);
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadData();
-  }, [loadData]);
 
   const resolvePublicUrl = (value: string) => {
     if (!value) return "";
@@ -184,10 +161,11 @@ export default function ArticlesPage() {
         "published"
           ? "published"
           : "draft",
-      featuredImage: article.featuredImage ?? article.FeaturedImage ?? undefined,
-      isFeatured:
-        article.isFeatured ?? article.IsFeatured ?? false,
-      createdAt: article.createdAt ?? article.CreatedAt ?? new Date().toISOString(),
+      featuredImage:
+        article.featuredImage ?? article.FeaturedImage ?? undefined,
+      isFeatured: article.isFeatured ?? article.IsFeatured ?? false,
+      createdAt:
+        article.createdAt ?? article.CreatedAt ?? new Date().toISOString(),
       publishedAt: article.publishedAt ?? article.PublishedAt ?? null,
       category: {
         id: String(article.categoryId ?? article.CategoryId ?? ""),
@@ -239,10 +217,14 @@ export default function ArticlesPage() {
         keyword === "" ||
         article.title.toLowerCase().includes(keyword) ||
         (article.slug || "").toLowerCase().includes(keyword) ||
-        (article.author?.fullName || article.author?.username || "").toLowerCase().includes(keyword);
+        (article.author?.fullName || article.author?.username || "")
+          .toLowerCase()
+          .includes(keyword);
 
-      const matchesCategory = categoryFilter === "all" || article.categoryId === categoryFilter;
-      const matchesStatus = statusFilter === "all" || article.status === statusFilter;
+      const matchesCategory =
+        categoryFilter === "all" || article.categoryId === categoryFilter;
+      const matchesStatus =
+        statusFilter === "all" || article.status === statusFilter;
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [articles, categoryFilter, search, statusFilter]);
@@ -293,7 +275,9 @@ export default function ArticlesPage() {
     setImageError("");
   };
 
-  const handleFeaturedImageSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFeaturedImageSelect = async (
+    e: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -339,9 +323,18 @@ export default function ArticlesPage() {
   // CRUD handlers
   // -----------------------------------------------------------------------
   const buildExcerpt = (content: string) => {
-    const plain = content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const plain = content
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     return plain.length > 160 ? `${plain.slice(0, 160)}...` : plain;
   };
+
+  const stripHtml = (content: string) =>
+    content
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
   const handleSave = async () => {
     if (!formData.title.trim() || !formData.categoryId) return;
@@ -417,7 +410,11 @@ export default function ArticlesPage() {
       key: "title",
       label: "Tiêu đề",
       className: "min-w-[300px] max-w-[360px]",
-      render: (article) => <span className="line-clamp-1 font-semibold text-stone-900">{article.title}</span>,
+      render: (article) => (
+        <span className="line-clamp-1 font-semibold text-stone-900">
+          {article.title}
+        </span>
+      ),
     },
     {
       key: "slug",
@@ -445,9 +442,13 @@ export default function ArticlesPage() {
       label: "Trạng thái",
       render: (article) =>
         article.status === "published" ? (
-          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Đã đăng</Badge>
+          <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
+            Đã đăng
+          </Badge>
         ) : (
-          <Badge className="bg-stone-100 text-stone-600 hover:bg-stone-100">Nháp</Badge>
+          <Badge className="bg-stone-100 text-stone-600 hover:bg-stone-100">
+            Nháp
+          </Badge>
         ),
     },
     {
@@ -467,15 +468,18 @@ export default function ArticlesPage() {
       label: "Tác giả",
       render: (article) => (
         <span className="text-stone-600">
-          {article.author?.username ||
-            article.authorId}
+          {article.author?.username || article.authorId}
         </span>
       ),
     },
     {
       key: "createdAt",
       label: "Ngày tạo",
-      render: (article) => <span className="text-sm text-stone-500">{format(new Date(article.createdAt), "dd/MM/yyyy")}</span>,
+      render: (article) => (
+        <span className="text-sm text-stone-500">
+          {format(new Date(article.createdAt), "dd/MM/yyyy")}
+        </span>
+      ),
     },
     {
       key: "actions",
@@ -504,7 +508,12 @@ export default function ArticlesPage() {
           >
             <Eye className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-stone-500 hover:text-emerald-700" onClick={() => openEditModal(article)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-stone-500 hover:text-emerald-700"
+            onClick={() => openEditModal(article)}
+          >
             <Pencil className="w-4 h-4" />
           </Button>
           {isEditor ? null : (
@@ -541,12 +550,6 @@ export default function ArticlesPage() {
             : { label: "Thêm bài viết", onClick: openCreateModal }
         }
       />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <div className="rounded-xl border border-stone-200 bg-white p-3 sm:p-4">
         <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px_180px] gap-3">
@@ -659,7 +662,11 @@ export default function ArticlesPage() {
             : undefined
         }
         size="xl"
-        footer={<Button variant="outline" onClick={() => setPreviewArticle(null)}>Đóng</Button>}
+        footer={
+          <Button variant="outline" onClick={() => setPreviewArticle(null)}>
+            Đóng
+          </Button>
+        }
       >
         <div className="max-h-[60vh] overflow-y-auto rounded-lg border border-stone-200 bg-stone-50 p-4">
           {previewArticle?.featuredImage ? (
@@ -707,7 +714,11 @@ export default function ArticlesPage() {
               onClick={handleSave}
               disabled={isSaving}
             >
-              {isSaving ? "Đang lưu..." : editingArticle ? "Cập nhật" : "Tạo mới"}
+              {isSaving
+                ? "Đang lưu..."
+                : editingArticle
+                  ? "Cập nhật"
+                  : "Tạo mới"}
             </Button>
           </div>
         }
@@ -719,7 +730,9 @@ export default function ArticlesPage() {
             name="title"
             required
             value={formData.title}
-            onChange={(value) => setFormData((prev) => ({ ...prev, title: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, title: value }))
+            }
             placeholder="Nhập tiêu đề bài viết"
           />
 
@@ -793,14 +806,19 @@ export default function ArticlesPage() {
               }
               className="h-4 w-4 rounded border-stone-300 text-emerald-700 focus:ring-emerald-400"
             />
-            <label htmlFor="isFeatured" className="text-sm font-medium text-stone-700">
+            <label
+              htmlFor="isFeatured"
+              className="text-sm font-medium text-stone-700"
+            >
               Tin nổi bật
             </label>
           </div>
 
           {/* Featured Image */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-stone-700">Ảnh đại diện</label>
+            <label className="text-sm font-medium text-stone-700">
+              Ảnh đại diện
+            </label>
             <div className="flex flex-wrap items-center gap-2">
               <input
                 ref={fileInputRef}
@@ -853,16 +871,29 @@ export default function ArticlesPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-stone-700">Nội dung <span className="text-red-500 ml-0.5">*</span></label>
+            <label className="text-sm font-medium text-stone-700">
+              Nội dung <span className="text-red-500 ml-0.5">*</span>
+            </label>
             <div className="min-h-[240px]">
-              <Editor value={formData.content} onChange={(value) => setFormData((prev) => ({ ...prev, content: value }))} />
+              <Editor
+                value={formData.content}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, content: value }))
+                }
+              />
             </div>
-            <p className="text-xs text-stone-500">Tóm tắt sẽ được backend tự tạo từ nội dung nếu để trống.</p>
+            <p className="text-xs text-stone-500">
+              Tóm tắt sẽ được backend tự tạo từ nội dung nếu để trống.
+            </p>
           </div>
 
           {formData.content && (
             <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
-              <span className="font-semibold text-stone-800">Xem nhanh văn bản:</span> {stripHtml(formData.content).slice(0, 180) || "Nội dung đang rỗng"}
+              <span className="font-semibold text-stone-800">
+                Xem nhanh văn bản:
+              </span>{" "}
+              {stripHtml(formData.content).slice(0, 180) ||
+                "Nội dung đang rỗng"}
             </div>
           )}
         </div>

@@ -1,19 +1,18 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, Search, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
-import { format } from "date-fns";
 import { Eye, EyeOff, Pencil, Search, Trash2, Users } from "lucide-react";
+import { format } from "date-fns";
 
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
+import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import api from "@/services/api";
 import {
   Select,
@@ -48,6 +47,8 @@ type UserApi = {
   Username?: string;
   email?: string;
   Email?: string;
+  phone?: string;
+  Phone?: string;
   fullName?: string;
   FullName?: string;
   roleId?: number | string;
@@ -99,24 +100,6 @@ export default function UsersPage() {
   const [formData, setFormData] = useState<UserFormData>(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const [userRows, roleRows] = await Promise.all([
-        fetchUsers({ page: 1, pageSize: 200 }),
-        fetchRoles(),
-      ]);
-      setUsers(userRows.data);
-      setRoles(roleRows);
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const fetchRoles = async () => {
     const res = await api.get("/roles");
@@ -140,12 +123,14 @@ export default function UsersPage() {
       username: user.username ?? user.Username ?? "",
       email: user.email ?? user.Email ?? "",
       fullName: user.fullName ?? user.FullName ?? undefined,
+      phone: user.phone ?? user.Phone ?? undefined,
       roleId: String(user.roleId ?? user.RoleId ?? ""),
       role: {
         id: String(user.roleId ?? user.RoleId ?? ""),
         name: user.role ?? user.Role ?? "",
       },
       createdAt: user.createdAt ?? user.CreatedAt ?? new Date().toISOString(),
+      avatarUrl: user.avatarUrl ?? user.AvatarUrl ?? undefined,
       avatar: user.avatarUrl ?? user.AvatarUrl ?? undefined,
     })) as User[];
     setUsers(mapped);
@@ -159,7 +144,7 @@ export default function UsersPage() {
       setErrorMessage("");
       try {
         await Promise.all([fetchRoles(), fetchUsers()]);
-      } catch (err) {
+      } catch {
         if (!isMounted) return;
         setErrorMessage("Không thể tải danh sách người dùng.");
       } finally {
@@ -182,7 +167,6 @@ export default function UsersPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
-      const keyword = search.toLowerCase();
       const matchesSearch =
         user.username.toLowerCase().includes(search.toLowerCase()) ||
         (user.fullName || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -236,6 +220,16 @@ export default function UsersPage() {
     setShowPassword(false);
   };
 
+  const isFormValid = useMemo(() => {
+    const hasUsername = formData.username.trim().length > 0;
+    const hasEmail = formData.email.trim().length > 0;
+    const hasRole = formData.roleId.trim().length > 0;
+    const hasPassword = editingUser
+      ? true
+      : formData.password.trim().length > 0;
+    return hasUsername && hasEmail && hasRole && hasPassword;
+  }, [editingUser, formData]);
+
   const handleSubmit = async () => {
     setErrorMessage("");
 
@@ -272,7 +266,7 @@ export default function UsersPage() {
 
       await fetchUsers();
       closeModal();
-    } catch (err) {
+    } catch {
       setErrorMessage("Lưu người dùng thất bại. Vui lòng thử lại.");
     } finally {
       setIsSaving(false);
@@ -280,21 +274,15 @@ export default function UsersPage() {
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
-
-  const handleDelete = async () => {
-    if (!deletingUser) return;
+    if (!deleteTarget) return;
 
     setErrorMessage("");
     setIsSaving(true);
     try {
-      await api.delete(`/users/${deletingUser.id}`);
+      await api.delete(`/users/${deleteTarget.id}`);
       await fetchUsers();
-      setDeletingUser(null);
-      setDeleteModalOpen(false);
-    } catch (err) {
+      setDeleteTarget(null);
+    } catch {
       setErrorMessage("Xóa người dùng thất bại.");
     } finally {
       setIsSaving(false);
@@ -325,8 +313,11 @@ export default function UsersPage() {
       className: "w-[60px]",
       render: (user) => (
         <Avatar className="h-9 w-9 bg-emerald-100 text-emerald-700">
-          {user.avatar ? (
-            <AvatarImage src={user.avatar} alt={user.username} />
+          {user.avatarUrl || user.avatar ? (
+            <AvatarImage
+              src={user.avatarUrl || user.avatar}
+              alt={user.username}
+            />
           ) : null}
           <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs font-semibold">
             {getInitials(user.fullName || user.username)}
@@ -337,12 +328,16 @@ export default function UsersPage() {
     {
       key: "username",
       label: "Username",
-      render: (user) => <span className="font-medium text-stone-900">{user.username}</span>,
+      render: (user) => (
+        <span className="font-medium text-stone-900">{user.username}</span>
+      ),
     },
     {
       key: "fullName",
       label: "Ho ten",
-      render: (user) => <span className="text-stone-600">{user.fullName || "--"}</span>,
+      render: (user) => (
+        <span className="text-stone-600">{user.fullName || "--"}</span>
+      ),
     },
     {
       key: "email",
@@ -371,7 +366,11 @@ export default function UsersPage() {
     {
       key: "createdAt",
       label: "Ngày tạo",
-      render: (user) => <span className="text-sm text-stone-500">{format(new Date(user.createdAt), "dd/MM/yyyy")}</span>,
+      render: (user) => (
+        <span className="text-sm text-stone-500">
+          {format(new Date(user.createdAt), "dd/MM/yyyy")}
+        </span>
+      ),
     },
     {
       key: "actions",
@@ -422,12 +421,6 @@ export default function UsersPage() {
               }
         }
       />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -515,7 +508,11 @@ export default function UsersPage() {
         onClose={closeModal}
         size="lg"
         title={editingUser ? "Cập nhật người dùng" : "Thêm người dùng mới"}
-        description={editingUser ? "Username hiện tại không đổi trên backend." : "Nhập thông tin để tạo tài khoản mới."}
+        description={
+          editingUser
+            ? "Username hiện tại không đổi trên backend."
+            : "Nhập thông tin để tạo tài khoản mới."
+        }
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -524,7 +521,7 @@ export default function UsersPage() {
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={isSaving || !isFormValid}
             >
               {editingUser ? "Cập nhật" : "Tạo mới"}
             </Button>
@@ -541,15 +538,28 @@ export default function UsersPage() {
             </p>
           </div>
 
-          <FormField
-            type="text"
-            label="Tên đăng nhập"
-            name="username"
-            required
-            value={formData.username}
-            onChange={updateField("username")}
-            placeholder="Nhập tên đăng nhập"
-          />
+          <div className="space-y-1.5">
+            <Label
+              htmlFor="username"
+              className="text-sm font-medium text-stone-700"
+            >
+              Tên đăng nhập
+              <span className="text-red-500 ml-0.5">*</span>
+            </Label>
+            <Input
+              id="username"
+              value={formData.username}
+              disabled={!!editingUser}
+              onChange={(event) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  username: event.target.value,
+                }))
+              }
+              placeholder="Nhập tên đăng nhập"
+              className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
+            />
+          </div>
           <FormField
             type="text"
             label="Họ và tên"
@@ -577,23 +587,20 @@ export default function UsersPage() {
             </Label>
             <div className="relative">
               <Input
-                id="username"
-                value={formData.username}
-                disabled={!!editingUser}
-                onChange={(event) => setFormData((prev) => ({ ...prev, username: event.target.value }))}
-                placeholder="Nhập username"
-                className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="fullName" className="text-sm font-medium text-stone-700">
-                Ho ten <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="fullName"
-                value={formData.fullName}
-                onChange={(event) => setFormData((prev) => ({ ...prev, fullName: event.target.value }))}
-                placeholder="Nhập họ tên"
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={(event) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    password: event.target.value,
+                  }))
+                }
+                placeholder={
+                  editingUser
+                    ? "Để trống nếu không đổi mật khẩu"
+                    : "Nhập mật khẩu"
+                }
                 className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
               />
               <button

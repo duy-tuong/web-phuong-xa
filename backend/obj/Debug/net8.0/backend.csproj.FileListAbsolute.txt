@@ -143,13 +143,4 @@ D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\backend.pdb
 D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\backend.genruntimeconfig.cache
 D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\ref\backend.dll
 D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\backend.staticwebassets.runtime.json
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.Internal.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
-D:\HK6_25_26\BackEnd\web-phuong-xa\backend\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+D:\HK6_25_26\BackEnd\web-phuong-xa\backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

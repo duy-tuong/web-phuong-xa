@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Shield, Pencil, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
@@ -8,7 +8,6 @@ import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
-import api from "@/services/api";
 import { Role } from "@/types";
 import {
   createRole,
@@ -26,13 +25,6 @@ const emptyForm: RoleFormData = {
   name: "",
 };
 
-type RoleApi = {
-  id?: number | string;
-  Id?: number | string;
-  name?: string;
-  Name?: string;
-};
-
 // ---------- Component ----------
 export default function RolesPage() {
   // --- data state ---
@@ -44,37 +36,8 @@ export default function RolesPage() {
   // --- modal state ---
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [roleName, setRoleName] = useState("");
+  const [formData, setFormData] = useState<RoleFormData>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const loadRoles = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      setRoles(await fetchRoles());
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadRoles();
-  }, [loadRoles]);
-
-  const fetchRoles = async () => {
-    const res = await api.get("/roles");
-    const data = Array.isArray(res.data) ? (res.data as RoleApi[]) : [];
-    const mapped = data
-      .map((role) => ({
-        id: String(role.id ?? role.Id ?? ""),
-        name: role.name ?? role.Name ?? "",
-      }))
-      .filter((role: Role) => role.id && role.name);
-    setRoles(mapped);
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -83,7 +46,7 @@ export default function RolesPage() {
       setIsLoading(true);
       setErrorMessage("");
       try {
-        await fetchRoles();
+        setRoles(await fetchRoles());
       } catch {
         if (!mounted) return;
         setErrorMessage("Không thể tải danh sách vai trò.");
@@ -102,7 +65,7 @@ export default function RolesPage() {
   // ---------- Modal handlers ----------
   const openCreateModal = () => {
     setEditingRole(null);
-    setRoleName("");
+    setFormData(emptyForm);
     setModalOpen(true);
   };
 
@@ -117,8 +80,10 @@ export default function RolesPage() {
   const closeModal = () => {
     setModalOpen(false);
     setEditingRole(null);
-    setRoleName("");
+    setFormData(emptyForm);
   };
+
+  const isFormValid = useMemo(() => formData.name.trim().length > 0, [formData.name]);
 
   const handleSubmit = async () => {
     if (!isFormValid) return;
@@ -127,12 +92,12 @@ export default function RolesPage() {
 
     try {
       if (editingRole) {
-        await api.put(`/roles/${editingRole.id}`, formData.name.trim());
+        await updateRole(editingRole.id, formData.name.trim());
       } else {
-        await api.post("/roles", formData.name.trim());
+        await createRole(formData.name.trim());
       }
 
-      await fetchRoles();
+      setRoles(await fetchRoles());
       closeModal();
     } catch {
       setErrorMessage("Lưu vai trò thất bại.");
@@ -142,31 +107,14 @@ export default function RolesPage() {
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
-
-    try {
-      setError("");
-      await deleteRole(deleteTarget.id);
-      await loadRoles();
-    } catch (deleteError) {
-      setError(getErrorMessage(deleteError));
-    } finally {
-      setDeleteTarget(null);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deletingRole) return;
+    if (!deleteTarget) return;
 
     setErrorMessage("");
     setIsSaving(true);
     try {
-      await api.delete(`/roles/${deletingRole.id}`);
-      await fetchRoles();
-      setDeletingRole(null);
-      setDeleteModalOpen(false);
+      await deleteRole(deleteTarget.id);
+      setRoles(await fetchRoles());
+      setDeleteTarget(null);
     } catch {
       setErrorMessage("Xóa vai trò thất bại.");
     } finally {
@@ -229,16 +177,16 @@ export default function RolesPage() {
         }
       />
 
-      {error && (
+      {errorMessage ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
+          {errorMessage}
         </div>
-      )}
+      ) : null}
 
       <DataTable
         columns={columns}
         data={roles}
-        emptyMessage={loading ? "Đang tải dữ liệu..." : "Chưa có vai trò nào"}
+        emptyMessage={isLoading ? "Đang tải dữ liệu..." : "Chưa có vai trò nào"}
       />
 
       <Modal
@@ -290,11 +238,6 @@ export default function RolesPage() {
         itemName={deleteTarget?.name}
       />
 
-      {errorMessage ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage}
-        </div>
-      ) : null}
     </div>
   );
 }

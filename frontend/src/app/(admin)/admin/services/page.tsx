@@ -1,10 +1,8 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FileDown, Landmark, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-
-import { useEffect, useMemo, useRef, useState } from "react";
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
@@ -13,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Service } from "@/types";
-import { Landmark, Pencil, Trash2, FileDown } from "lucide-react";
-import { format } from "date-fns";
 import api from "@/services/api";
 
 interface ServiceFormState {
@@ -41,7 +37,7 @@ function formatCurrency(value: number) {
     currency: "VND",
     maximumFractionDigits: 0,
   }).format(value);
-};
+}
 
 type ServiceApi = {
   id?: number | string;
@@ -99,46 +95,37 @@ export default function ServicesPage() {
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [formData, setFormData] = useState<ServiceFormState>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  // Form state
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
-  const [formRequiredDocuments, setFormRequiredDocuments] = useState("");
-  const [formProcessingTime, setFormProcessingTime] = useState("");
-  const [formFee, setFormFee] = useState("0");
-  const [formTemplateFile, setFormTemplateFile] = useState("");
   const [formTemplateName, setFormTemplateName] = useState("");
   const templateInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    void loadServices();
-  }, [loadServices]);
 
   // ---------- Handlers ----------
 
   const openCreateModal = () => {
     setEditingService(null);
-    setFormName("");
-    setFormDescription("");
-    setFormRequiredDocuments("");
-    setFormProcessingTime("");
-    setFormFee("0");
-    setFormTemplateFile("");
+    setFormData(emptyForm);
     setFormTemplateName("");
     setModalOpen(true);
   };
 
   const openEditModal = (service: Service) => {
     setEditingService(service);
-    setFormName(service.name);
-    setFormDescription(service.description);
-    setFormRequiredDocuments(service.requiredDocuments);
-    setFormProcessingTime(service.processingTime);
-    setFormFee(String(service.fee));
-    setFormTemplateFile(service.templateFile || "");
+    setFormData({
+      name: service.name,
+      description: service.description,
+      requiredDocuments: service.requiredDocuments,
+      processingTime: service.processingTime,
+      fee: String(service.fee ?? 0),
+      templateFile: service.templateFile || "",
+    });
     setFormTemplateName(getTemplateLabel(service.templateFile || ""));
     setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingService(null);
+    setFormData(emptyForm);
+    setFormTemplateName("");
   };
 
   const fetchServices = async () => {
@@ -195,31 +182,29 @@ export default function ServicesPage() {
   }, []);
 
   const handleSave = async () => {
+    const feeValue = Number(formData.fee);
     if (
       !formData.name.trim() ||
       !formData.description.trim() ||
       !formData.requiredDocuments.trim() ||
       !formData.processingTime.trim() ||
-      Number.isNaN(fee) ||
-      fee < 0
+      Number.isNaN(feeValue) ||
+      feeValue < 0
     ) {
+      setErrorMessage("Vui lòng kiểm tra lại thông tin dịch vụ.");
       return;
     }
-
-    try {
-      setSubmitting(true);
-      setError("");
 
     setErrorMessage("");
     setIsSaving(true);
     try {
       const payload = {
-        name: formName.trim(),
-        description: formDescription.trim(),
-        requiredDocuments: formRequiredDocuments.trim(),
-        processingTime: formProcessingTime.trim(),
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        requiredDocuments: formData.requiredDocuments.trim(),
+        processingTime: formData.processingTime.trim(),
         fee: feeValue,
-        templateFile: formTemplateFile.trim() || null,
+        templateFile: formData.templateFile.trim() || null,
       };
 
       if (editingService) {
@@ -229,17 +214,12 @@ export default function ServicesPage() {
       }
 
       await fetchServices();
-      setModalOpen(false);
+      closeModal();
     } catch {
       setErrorMessage("Lưu dịch vụ thất bại.");
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const openDeleteModal = (service: Service) => {
-    setDeletingService(service);
-    setDeleteModalOpen(true);
   };
 
   const handleTemplateUpload = async (file: File) => {
@@ -253,7 +233,7 @@ export default function ServicesPage() {
       if (!url) {
         throw new Error("Upload failed");
       }
-      setFormTemplateFile(url);
+      setFormData((prev) => ({ ...prev, templateFile: url }));
       setFormTemplateName(file.name);
     } catch {
       setErrorMessage("Tải biểu mẫu thất bại.");
@@ -272,15 +252,14 @@ export default function ServicesPage() {
   };
 
   const handleDelete = async () => {
-    if (!deletingService) return;
+    if (!deleteTarget) return;
 
     setErrorMessage("");
     setIsSaving(true);
     try {
-      await api.delete(`/services/${deletingService.id}`);
+      await api.delete(`/services/${deleteTarget.id}`);
       await fetchServices();
-      setDeletingService(null);
-      setDeleteModalOpen(false);
+      setDeleteTarget(null);
     } catch {
       setErrorMessage("Xóa dịch vụ thất bại.");
     } finally {
@@ -294,20 +273,28 @@ export default function ServicesPage() {
     {
       key: "name",
       label: "Tên dịch vụ",
-      render: (item) => <span className="font-medium text-stone-900">{item.name}</span>,
+      render: (item) => (
+        <span className="font-medium text-stone-900">{item.name}</span>
+      ),
     },
     {
       key: "description",
       label: "Mô tả",
       className: "max-w-sm",
-      render: (item) => <span className="block max-w-sm truncate text-stone-600">{item.description}</span>,
+      render: (item) => (
+        <span className="block max-w-sm truncate text-stone-600">
+          {item.description}
+        </span>
+      ),
     },
     {
       key: "requiredDocuments",
       label: "Hồ sơ yêu cầu",
       className: "max-w-sm",
       render: (item) => (
-        <span className="block max-w-sm truncate text-stone-600">{item.requiredDocuments}</span>
+        <span className="block max-w-sm truncate text-stone-600">
+          {item.requiredDocuments}
+        </span>
       ),
     },
     {
@@ -379,7 +366,7 @@ export default function ServicesPage() {
               variant="ghost"
               size="sm"
               className="text-stone-500 hover:text-red-600 hover:bg-red-50"
-              onClick={() => openDeleteModal(item)}
+              onClick={() => setDeleteTarget(item)}
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -465,10 +452,10 @@ export default function ServicesPage() {
               onClick={handleSave}
               disabled={
                 isSaving ||
-                !formName.trim() ||
-                !formDescription.trim() ||
-                !formRequiredDocuments.trim() ||
-                !formProcessingTime.trim()
+                !formData.name.trim() ||
+                !formData.description.trim() ||
+                !formData.requiredDocuments.trim() ||
+                !formData.processingTime.trim()
               }
             >
               {isSaving
@@ -495,8 +482,10 @@ export default function ServicesPage() {
             label="Tên dịch vụ"
             name="name"
             required
-            value={formName}
-            onChange={setFormName}
+            value={formData.name}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, name: value }))
+            }
             placeholder="Nhập tên dịch vụ hành chính"
           />
           <FormField
@@ -505,7 +494,9 @@ export default function ServicesPage() {
             name="description"
             required
             value={formData.description}
-            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, description: value }))
+            }
             placeholder="Mô tả chi tiết dịch vụ"
             rows={4}
           />
@@ -514,8 +505,10 @@ export default function ServicesPage() {
             label="Giấy tờ yêu cầu"
             name="requiredDocuments"
             required
-            value={formRequiredDocuments}
-            onChange={setFormRequiredDocuments}
+            value={formData.requiredDocuments}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, requiredDocuments: value }))
+            }
             placeholder="Liệt kê giấy tờ cần nộp"
             rows={3}
           />
@@ -525,8 +518,10 @@ export default function ServicesPage() {
               label="Thời gian xử lý"
               name="processingTime"
               required
-              value={formProcessingTime}
-              onChange={setFormProcessingTime}
+              value={formData.processingTime}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, processingTime: value }))
+              }
               placeholder="VD: 03 ngày làm việc"
             />
             <FormField
@@ -535,7 +530,9 @@ export default function ServicesPage() {
               name="fee"
               required
               value={formData.fee}
-              onChange={(value) => setFormData((prev) => ({ ...prev, fee: value }))}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, fee: value }))
+              }
               placeholder="0"
             />
           </div>
@@ -544,7 +541,9 @@ export default function ServicesPage() {
             label="Đường dẫn biểu mẫu"
             name="templateFile"
             value={formData.templateFile}
-            onChange={(value) => setFormData((prev) => ({ ...prev, templateFile: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, templateFile: value }))
+            }
             placeholder="/uploads/file.docx hoặc URL đầy đủ"
           />
           <div className="space-y-1.5">
@@ -582,14 +581,14 @@ export default function ServicesPage() {
               >
                 {isUploadingTemplate ? "Đang tải..." : "Chọn file biểu mẫu"}
               </Button>
-              {formTemplateFile ? (
+              {formData.templateFile ? (
                 <a
-                  href={resolvePublicUrl(formTemplateFile)}
+                  href={resolvePublicUrl(formData.templateFile)}
                   target="_blank"
                   rel="noreferrer"
                   className="text-xs text-emerald-700 hover:underline"
                 >
-                  {getTemplateLabel(formTemplateFile)}
+                  {getTemplateLabel(formData.templateFile)}
                 </a>
               ) : null}
             </div>

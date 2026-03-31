@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ScrollText, Search } from "lucide-react";
 
@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { LogEntry } from "@/types";
 import { Button } from "@/components/ui/button";
 import api from "@/services/api";
@@ -55,7 +54,7 @@ export default function LogsPage() {
     CreatedAt?: string;
   };
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     const params: Record<string, string | number> = {
       page,
       pageSize,
@@ -86,7 +85,7 @@ export default function LogsPage() {
 
     setLogs(mapped);
     setTotalPages(Number(payload.totalPages ?? 1) || 1);
-  };
+  }, [moduleFilter, page, pageSize, searchQuery]);
 
   useEffect(() => {
     let mounted = true;
@@ -109,10 +108,12 @@ export default function LogsPage() {
     return () => {
       mounted = false;
     };
-  }, [page, pageSize, searchQuery, moduleFilter]);
+  }, [fetchLogs]);
 
   const moduleOptions = useMemo(() => {
-    return Array.from(new Set(logs.map((log) => log.module || log.entity))).filter(Boolean);
+    return Array.from(
+      new Set(logs.map((log) => log.module || log.entity)),
+    ).filter(Boolean);
   }, [logs]);
 
   const filteredLogs = useMemo(() => logs, [logs]);
@@ -121,12 +122,20 @@ export default function LogsPage() {
     {
       key: "createdAt",
       label: "Thời gian",
-      render: (log) => <span className="text-sm text-stone-600">{format(new Date(log.createdAt), "dd/MM/yyyy HH:mm")}</span>,
+      render: (log) => (
+        <span className="text-sm text-stone-600">
+          {format(new Date(log.createdAt), "dd/MM/yyyy HH:mm")}
+        </span>
+      ),
     },
     {
       key: "user",
       label: "Người thực hiện",
-      render: (log) => <span className="font-medium text-stone-800">{log.user || log.userId}</span>,
+      render: (log) => (
+        <span className="font-medium text-stone-800">
+          {log.user || log.userId}
+        </span>
+      ),
     },
     {
       key: "module",
@@ -134,7 +143,13 @@ export default function LogsPage() {
       render: (log) => {
         const moduleName = log.module || log.entity;
         return (
-          <Badge variant="secondary" className={moduleBadgeClass[moduleName] || "bg-stone-100 text-stone-700 hover:bg-stone-100"}>
+          <Badge
+            variant="secondary"
+            className={
+              moduleBadgeClass[moduleName] ||
+              "bg-stone-100 text-stone-700 hover:bg-stone-100"
+            }
+          >
             {moduleName}
           </Badge>
         );
@@ -149,7 +164,11 @@ export default function LogsPage() {
       key: "detail",
       label: "Chi tiết",
       className: "max-w-[340px]",
-      render: (log) => <span className="block max-w-[340px] truncate text-stone-600">{log.detail || "--"}</span>,
+      render: (log) => (
+        <span className="block max-w-[340px] truncate text-stone-600">
+          {log.detail || "--"}
+        </span>
+      ),
     },
   ];
 
@@ -163,14 +182,12 @@ export default function LogsPage() {
       <PageHeader
         icon={ScrollText}
         title="Nhật ký hệ thống"
-        description={loading ? "Đang tải audit log..." : `${logs.length} bản ghi log đã đồng bộ`}
+        description={
+          isLoading
+            ? "Đang tải audit log..."
+            : `${logs.length} bản ghi log đã đồng bộ`
+        }
       />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
@@ -209,7 +226,9 @@ export default function LogsPage() {
       <DataTable
         columns={columns}
         data={filteredLogs}
-        emptyMessage={isLoading ? "Đang tải nhật ký..." : "Không có bản ghi nhật ký phù hợp"}
+        emptyMessage={
+          isLoading ? "Đang tải nhật ký..." : "Không có bản ghi nhật ký phù hợp"
+        }
       />
 
       <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

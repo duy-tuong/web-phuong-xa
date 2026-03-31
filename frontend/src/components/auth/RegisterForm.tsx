@@ -6,9 +6,6 @@
 import { FormEvent, useState } from "react";
 import axios from "axios";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import axios from "axios";
-import api from "@/services/api";
-
 import api from "@/services/api";
 
 type LoginSuccessPayload = {
@@ -27,10 +24,10 @@ type BackendErrorPayload =
     };
 
 type RegisterFormProps = {
-  onSuccess: (payload: LoginSuccessPayload) => void;
+  onSuccessAction: (payload: LoginSuccessPayload) => void;
 };
 
-export default function RegisterForm({ onSuccess }: RegisterFormProps) {
+export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
   const [registerForm, setRegisterForm] = useState({
     fullName: "",
     username: "",
@@ -78,7 +75,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       localStorage.setItem("user_token", token);
       localStorage.setItem("user_role", role ?? "");
-      localStorage.setItem("user_username", returnedUsername);
+      localStorage.setItem("user_username", username);
 
       const clearAdminSession = () => {
         localStorage.removeItem("admin_role");
@@ -90,7 +87,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       if (role === "Admin" || role === "Editor") {
         localStorage.setItem("admin_token", token);
-        localStorage.setItem("admin_display_name", returnedUsername);
+        localStorage.setItem("admin_display_name", username);
         localStorage.setItem("admin_role", role);
         document.cookie = `admin_token=${encodeURIComponent(token)}; Path=/; Max-Age=86400; SameSite=Lax`;
         document.cookie = `admin_role=${encodeURIComponent(role)}; Path=/; Max-Age=86400; SameSite=Lax`;
@@ -98,7 +95,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         clearAdminSession();
       }
 
-      onSuccess({
+      onSuccessAction({
         token,
         username,
         role,
