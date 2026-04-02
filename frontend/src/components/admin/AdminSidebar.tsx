@@ -40,15 +40,15 @@ export default function AdminSidebar({
         <div className={cn("flex items-center min-w-0", isCollapsed ? "justify-center" : "gap-3")}>
           <div
             className={cn(
-              "rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0",
-              isCollapsed ? "w-10 h-10" : "w-11 h-11"
+              "rounded-full overflow-hidden flex items-center justify-center flex-shrink-0",
+              isCollapsed ? "w-11 h-11" : "w-12 h-12"
             )}
           >
             {logoUnavailable ? (
               <div
                 className={cn(
-                  "rounded-xl bg-[hsl(156,32%,18%)] flex items-center justify-center",
-                  isCollapsed ? "w-10 h-10" : "w-11 h-11"
+                  "rounded-full bg-[hsl(156,32%,18%)] flex items-center justify-center",
+                  isCollapsed ? "w-11 h-11" : "w-12 h-12"
                 )}
               >
                 <Landmark
@@ -62,9 +62,9 @@ export default function AdminSidebar({
               <NextImage
                 src={logoPath}
                 alt="Logo Phường Cao Lãnh"
-                width={isCollapsed ? 40 : 44}
-                height={isCollapsed ? 40 : 44}
-                className="h-full w-full object-contain"
+                width={isCollapsed ? 44 : 48}
+                height={isCollapsed ? 44 : 48}
+                className="h-full w-full object-contain [clip-path:circle(46%_at_50%_50%)]"
                 priority
                 onError={() => setLogoUnavailable(true)}
               />

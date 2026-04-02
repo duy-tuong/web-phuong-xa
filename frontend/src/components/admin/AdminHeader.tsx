@@ -98,18 +98,18 @@ export default function AdminHeader() {
               <SheetHeader className="border-b border-[hsl(156,24%,18%)] px-4 py-4 text-left bg-[linear-gradient(145deg,hsl(156,38%,22%),hsl(152,34%,26%))]">
                 <SheetTitle className="text-left">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
                       {mobileLogoUnavailable ? (
-                        <div className="w-11 h-11 rounded-xl bg-[hsl(156,32%,18%)] flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-[hsl(156,32%,18%)] flex items-center justify-center">
                           <Landmark className="w-6 h-6 text-[hsl(40,33%,88%)]" />
                         </div>
                       ) : (
                         <NextImage
                           src={logoPath}
                           alt="Logo Phường Cao Lãnh"
-                          width={44}
-                          height={44}
-                          className="h-full w-full object-contain"
+                          width={48}
+                          height={48}
+                          className="h-full w-full object-contain [clip-path:circle(46%_at_50%_50%)]"
                           priority
                           onError={() => setMobileLogoUnavailable(true)}
                         />
