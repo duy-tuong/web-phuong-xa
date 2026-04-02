@@ -4,7 +4,10 @@ import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 import { readUserSession } from "@/lib/user-session";
-import { createPublicApplication } from "@/services/applicationService";
+import {
+  createPublicApplication,
+  uploadApplicationAttachment,
+} from "@/services/applicationService";
 import type { ProcedureDetail } from "@/types/service";
 
 type ServiceDetailFormSectionProps = {
@@ -21,6 +24,7 @@ type FormState = {
 type AttachmentItem = {
   id: string;
   file: File;
+  url?: string;
 };
 
 const INITIAL_FORM: FormState = {
@@ -33,6 +37,7 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [isDraggingFiles, setIsDraggingFiles] = useState(false);
+  const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -76,7 +81,7 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
     }
   };
 
-  const appendAttachments = (files: File[]) => {
+  const appendAttachments = async (files: File[]) => {
     if (files.length === 0) {
       return;
     }
@@ -94,34 +99,52 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
       return;
     }
 
-    const mappedFiles = files.map((file) => ({
-      id: `${file.name}-${file.lastModified}-${file.size}`,
-      file,
-    }));
+    setAttachmentMessage("");
+    setIsUploadingAttachments(true);
 
-    setAttachments((current) => {
-      const merged = [...current];
+    try {
+      const uploaded = await Promise.all(
+        files.map(async (file) => {
+          const url = await uploadApplicationAttachment(file);
+          if (!url) {
+            throw new Error("Upload failed");
+          }
+          return {
+            id: `${file.name}-${file.lastModified}-${file.size}`,
+            file,
+            url,
+          };
+        }),
+      );
 
-      for (const item of mappedFiles) {
-        if (!merged.some((existing) => existing.id === item.id)) {
-          merged.push(item);
+      setAttachments((current) => {
+        const merged = [...current];
+
+        for (const item of uploaded) {
+          if (!merged.some((existing) => existing.id === item.id)) {
+            merged.push(item);
+          }
         }
-      }
 
-      return merged;
-    });
+        return merged;
+      });
 
-    setAttachmentMessage(
-      "Tệp đã được thêm vào danh sách chuẩn bị hồ sơ. API hiện tại chưa hỗ trợ lưu tài liệu đính kèm lên máy chủ.",
-    );
+      setAttachmentMessage("Tệp đã được tải lên và lưu vào hồ sơ.");
+    } catch {
+      setAttachmentMessage("Tải file thất bại. Vui lòng thử lại.");
+    } finally {
+      setIsUploadingAttachments(false);
+    }
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleAttachmentSelect = (event: ChangeEvent<HTMLInputElement>) => {
-    appendAttachments(Array.from(event.target.files || []));
+  const handleAttachmentSelect = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    await appendAttachments(Array.from(event.target.files || []));
   };
 
   const handleRemoveAttachment = (attachmentId: string) => {
@@ -129,7 +152,7 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
   };
 
   const handleSubmit = async () => {
-    if (isSubmitting || !procedure?.id) {
+    if (isSubmitting || isUploadingAttachments || !procedure?.id) {
       return;
     }
 
@@ -138,6 +161,14 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
       applicantName: form.applicantName.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
+      attachedFiles:
+        attachments.length > 0
+          ? JSON.stringify(
+              attachments
+                .map((item) => item.url)
+                .filter((url): url is string => Boolean(url)),
+            )
+          : undefined,
     };
 
     if (!payload.applicantName || !payload.phone || !payload.email) {
@@ -158,9 +189,7 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
       setApplicationId(String(response.applicationId));
       setIsSuccess(true);
       if (attachments.length > 0) {
-        setAttachmentMessage(
-          "Hồ sơ đã gửi thành công, nhưng tài liệu đính kèm vẫn chưa được lưu vì API hiện tại chưa hỗ trợ upload cho người dùng.",
-        );
+        setAttachmentMessage("Hồ sơ đã gửi thành công kèm tài liệu đính kèm.");
       }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Không thể gửi hồ sơ lúc này.");
@@ -316,11 +345,8 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
           </div>
         </div>
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          API nộp hồ sơ hiện tại chỉ lưu thông tin liên hệ cơ bản. Mình đã kiểm tra trực tiếp và gửi file lên
-          <code className="mx-1 rounded bg-white/70 px-1.5 py-0.5 text-[12px]">/api/applications</code>
-          đang trả về <strong>415 Unsupported Media Type</strong>, nên tài liệu bên dưới mới ở trạng thái chuẩn bị,
-          chưa được lưu thật lên máy chủ.
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Tài liệu đính kèm sẽ được tải lên ngay khi bạn chọn file và lưu vào hồ sơ khi gửi.
         </div>
 
         <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-5">
@@ -343,16 +369,19 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
             onDrop={(event) => {
               event.preventDefault();
               setIsDraggingFiles(false);
-              appendAttachments(Array.from(event.dataTransfer.files || []));
+              void appendAttachments(Array.from(event.dataTransfer.files || []));
             }}
             className={`flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${
               isDraggingFiles
                 ? "border-emerald-500 bg-emerald-50"
                 : "border-slate-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/40"
             }`}
+            disabled={isUploadingAttachments}
           >
             <span className="material-symbols-outlined text-5xl text-[#1f7a5a]">upload_file</span>
-            <p className="mt-4 text-base font-bold text-slate-900">Kéo thả tài liệu vào đây</p>
+            <p className="mt-4 text-base font-bold text-slate-900">
+              {isUploadingAttachments ? "Đang tải tài liệu..." : "Kéo thả tài liệu vào đây"}
+            </p>
             <p className="mt-2 text-sm text-slate-600">
               hoặc bấm để chọn tệp từ máy tính
             </p>
@@ -378,6 +407,7 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
                     type="button"
                     onClick={() => handleRemoveAttachment(attachment.id)}
                     className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    disabled={isUploadingAttachments}
                   >
                     Gỡ tệp
                   </button>
@@ -422,13 +452,18 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploadingAttachments}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1f7a5a] px-8 py-3 font-bold text-white shadow-lg shadow-[#1f7a5a]/30 transition-colors hover:bg-[#0f5f46] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
           >
             {isSubmitting ? (
               <>
                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 Đang gửi...
+              </>
+            ) : isUploadingAttachments ? (
+              <>
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Đang tải tệp...
               </>
             ) : (
               <>
@@ -465,8 +500,8 @@ export default function ServiceDetailFormSection({ id, procedure }: ServiceDetai
               Hệ thống đã tiếp nhận hồ sơ của bạn. Mã hồ sơ vừa tạo là <strong>HS-{applicationId.padStart(6, "0")}</strong>.
             </p>
             {attachments.length > 0 ? (
-              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm text-amber-800">
-                Các tài liệu bạn đã chọn hiện chưa được lưu lên máy chủ vì API chưa hỗ trợ upload file cho hồ sơ công dân.
+              <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left text-sm text-emerald-800">
+                Tài liệu đính kèm đã được tải lên và gắn vào hồ sơ.
               </div>
             ) : null}
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">

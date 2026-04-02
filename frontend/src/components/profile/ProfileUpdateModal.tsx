@@ -5,6 +5,7 @@ import { ImagePlus, Loader2, RotateCcw, Trash2, Upload, X } from "lucide-react";
 
 import { getErrorMessage } from "@/services/admin/errors";
 import { updateCurrentUser } from "@/services/admin/profile";
+import api from "@/services/api";
 import type { User } from "@/types";
 
 type ProfileUpdateModalProps = {
@@ -76,6 +77,20 @@ async function renderAvatarDataUrl(input: {
   context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
 
   return canvas.toDataURL("image/jpeg", 0.92);
+}
+
+function dataUrlToFile(dataUrl: string, fileName: string) {
+  const [header, data] = dataUrl.split(",");
+  const mimeMatch = header.match(/data:(.*?);/);
+  const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+  const binary = atob(data);
+  const buffer = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i += 1) {
+    buffer[i] = binary.charCodeAt(i);
+  }
+
+  return new File([buffer], fileName, { type: mimeType });
 }
 
 function validateForm(input: {
@@ -266,14 +281,25 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
       let nextAvatarUrl = user.avatarUrl || "";
 
       if (avatarWasEdited) {
-        nextAvatarUrl = avatarSource
-          ? await renderAvatarDataUrl({
-              src: avatarSource,
-              scale: avatarScale,
-              offsetX: avatarOffsetX,
-              offsetY: avatarOffsetY,
-            })
-          : "";
+        if (!avatarSource) {
+          nextAvatarUrl = "";
+        } else {
+          const renderedDataUrl = await renderAvatarDataUrl({
+            src: avatarSource,
+            scale: avatarScale,
+            offsetX: avatarOffsetX,
+            offsetY: avatarOffsetY,
+          });
+          if (renderedDataUrl.startsWith("data:")) {
+            const avatarFile = dataUrlToFile(renderedDataUrl, `avatar-${user.id}.jpg`);
+            const uploadData = new FormData();
+            uploadData.append("file", avatarFile);
+            const uploadResponse = await api.post("/media/avatar", uploadData);
+            nextAvatarUrl = uploadResponse.data?.url || "";
+          } else {
+            nextAvatarUrl = renderedDataUrl;
+          }
+        }
       }
 
       const updatedUser = await updateCurrentUser({

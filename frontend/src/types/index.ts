@@ -88,6 +88,7 @@ export interface MediaFile {
 export interface Service {
   id: string;
   name: string;
+  field?: string;
   description: string;
   requiredDocuments: string;
   processingTime: string;
@@ -106,6 +107,7 @@ export interface Application {
   applicantName: string;
   phone: string;
   email: string;
+  attachedFiles?: string;
   status: "pending" | "processing" | "done" | "rejected";
   createdAt: string;
 
@@ -130,6 +132,18 @@ export interface LogEntry {
   detail?: string;
   module?: string;
   timestamp?: string;
+}
+
+// ==================== Contacts ====================
+export interface Contact {
+  id: string;
+  fullName: string;
+  phone: string;
+  email?: string;
+  category: string;
+  content: string;
+  status: "pending" | "processed" | "resolved";
+  createdAt: string;
 }
 
 // ==================== Dashboard Stats ====================

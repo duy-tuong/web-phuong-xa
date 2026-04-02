@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/services/api";
+import { resolveApiAssetUrl } from "@/lib/api-base-url";
 import {
   Select,
   SelectContent,
@@ -167,15 +168,18 @@ export default function UsersPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
+      const resolvedRoleId =
+        user.roleId ||
+        roles.find((role) => role.name === user.role?.name)?.id ||
+        "";
       const matchesSearch =
         user.username.toLowerCase().includes(search.toLowerCase()) ||
         (user.fullName || "").toLowerCase().includes(search.toLowerCase()) ||
         user.email.toLowerCase().includes(search.toLowerCase());
-      const matchesRole =
-        roleFilter === "all" || String(user.roleId) === roleFilter;
+      const matchesRole = roleFilter === "all" || resolvedRoleId === roleFilter;
       return matchesSearch && matchesRole;
     });
-  }, [users, search, roleFilter]);
+  }, [users, search, roleFilter, roles]);
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
 
@@ -315,7 +319,7 @@ export default function UsersPage() {
         <Avatar className="h-9 w-9 bg-emerald-100 text-emerald-700">
           {user.avatarUrl || user.avatar ? (
             <AvatarImage
-              src={user.avatarUrl || user.avatar}
+              src={resolveApiAssetUrl(user.avatarUrl || user.avatar)}
               alt={user.username}
             />
           ) : null}
@@ -510,7 +514,7 @@ export default function UsersPage() {
         title={editingUser ? "Cập nhật người dùng" : "Thêm người dùng mới"}
         description={
           editingUser
-            ? "Username hiện tại không đổi trên backend."
+            ? "Username hiện tại không được đổi."
             : "Nhập thông tin để tạo tài khoản mới."
         }
         footer={

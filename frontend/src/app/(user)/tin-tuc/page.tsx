@@ -199,7 +199,7 @@ export default function TinTucListPage() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Không tìm thấy bài viết phù hợp</h1>
           <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-            Thử đổi từ khóa hoặc bộ lọc danh mục để xem thêm bài viết được đồng bộ từ backend.
+            
           </p>
         </section>
       ) : (

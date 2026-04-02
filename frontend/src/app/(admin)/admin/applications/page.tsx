@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { ClipboardList, Search } from "lucide-react";
+import { ClipboardList, Search, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
+import { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +19,10 @@ import {
 } from "@/components/ui/select";
 import {
   fetchApplicationsAdmin,
+  deleteApplication,
   updateApplicationStatus,
 } from "@/services/admin/applications";
+import { resolveApiAssetUrl } from "@/lib/api-base-url";
 import { getErrorMessage } from "@/services/admin/errors";
 import { Application } from "@/types";
 
@@ -45,6 +48,26 @@ const statusConfig: Record<
   },
 };
 
+const parseAttachmentUrls = (value?: string) => {
+  if (!value) return [] as string[];
+  const trimmed = value.trim();
+  if (!trimmed) return [] as string[];
+  if (trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map(String).map((item) => item.trim()).filter(Boolean);
+      }
+    } catch {
+      // Fall back to comma split.
+    }
+  }
+  return trimmed
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +76,8 @@ export default function ApplicationsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [deleteTarget, setDeleteTarget] = useState<Application | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadApplications = useCallback(async () => {
     try {
@@ -116,6 +141,22 @@ export default function ApplicationsPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      setIsDeleting(true);
+      setError("");
+      await deleteApplication(deleteTarget.id);
+      await loadApplications();
+      setDeleteTarget(null);
+    } catch (deleteError) {
+      setError(getErrorMessage(deleteError));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const columns: Column<Application>[] = [
     {
       key: "applicantName",
@@ -149,6 +190,32 @@ export default function ApplicationsPage() {
       ),
     },
     {
+      key: "attachedFiles",
+      label: "Tệp đính kèm",
+      render: (item) => {
+        const urls = parseAttachmentUrls(item.attachedFiles);
+        if (urls.length === 0) {
+          return <span className="text-stone-400">--</span>;
+        }
+
+        return (
+          <div className="flex flex-col gap-1">
+            {urls.map((url, index) => (
+              <a
+                key={`${url}-${index}`}
+                href={resolveApiAssetUrl(url)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-emerald-700 hover:underline"
+              >
+                Tệp {index + 1}
+              </a>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
       key: "createdAt",
       label: "Ngày nộp",
       render: (item) => (
@@ -171,24 +238,35 @@ export default function ApplicationsPage() {
     },
     {
       key: "actions",
-      label: "Cập nhật trạng thái",
+      label: "Thao tác",
       render: (item) => (
-        <Select
-          value={item.status}
-          onValueChange={(value) =>
-            handleStatusChange(item.id, value as Application["status"])
-          }
-        >
-          <SelectTrigger className="w-full min-w-[160px] h-9 text-sm border-stone-200">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="pending">Chờ xử lý</SelectItem>
-            <SelectItem value="processing">Đang xử lý</SelectItem>
-            <SelectItem value="done">Hoàn thành</SelectItem>
-            <SelectItem value="rejected">Từ chối</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-2 min-w-[200px]">
+          <Select
+            value={item.status}
+            onValueChange={(value) =>
+              handleStatusChange(item.id, value as Application["status"])
+            }
+          >
+            <SelectTrigger className="w-full h-9 text-sm border-stone-200">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="pending">Chờ xử lý</SelectItem>
+              <SelectItem value="processing">Đang xử lý</SelectItem>
+              <SelectItem value="done">Hoàn thành</SelectItem>
+              <SelectItem value="rejected">Từ chối</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            className="h-9 w-full text-red-600 hover:text-red-700"
+            onClick={() => setDeleteTarget(item)}
+            disabled={isDeleting}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Xóa hồ sơ
+          </Button>
+        </div>
       ),
     },
   ];
@@ -247,6 +325,13 @@ export default function ApplicationsPage() {
         emptyMessage={
           isLoading ? "Đang tải dữ liệu..." : "Không tìm thấy hồ sơ nào"
         }
+      />
+
+      <ConfirmDeleteModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        itemName={deleteTarget?.applicantName}
       />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

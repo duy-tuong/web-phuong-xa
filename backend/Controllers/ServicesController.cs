@@ -21,14 +21,22 @@ namespace backend.Controllers
         // 🔹 GET ALL
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetServices()
+        public async Task<IActionResult> GetServices([FromQuery] string? category)
         {
-            var services = await _context.Services
+            var query = _context.Services.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(s => s.Category == category);
+            }
+
+            var services = await query
                 .OrderByDescending(s => s.Id)
                 .Select(s => new
                 {
                     s.Id,
                     s.Name,
+                    s.Category,
                     s.Description,
                     s.RequiredDocuments,
                     s.ProcessingTime,
@@ -51,6 +59,7 @@ namespace backend.Controllers
                 {
                     s.Id,
                     s.Name,
+                    s.Category,
                     s.Description,
                     s.RequiredDocuments,
                     s.ProcessingTime,
@@ -79,9 +88,13 @@ namespace backend.Controllers
                 return BadRequest("Service with the same name already exists.");
             }
 
+            var allowedCategories = new[] { "Hộ tịch", "Đất đai", "Kinh doanh", "Hành chính công" };
+            var category = allowedCategories.Contains(dto.Category) ? dto.Category : "Hành chính công";
+
             var service = new Service
             {
                 Name = dto.Name,
+                Category = category,
                 Description = dto.Description,
                 RequiredDocuments = dto.RequiredDocuments,
                 ProcessingTime = dto.ProcessingTime,
@@ -117,6 +130,9 @@ namespace backend.Controllers
             {
                 return BadRequest("Service with the same name already exists.");
             }
+
+            var allowedCategories = new[] { "Hộ tịch", "Đất đai", "Kinh doanh", "Hành chính công" };
+            service.Category = allowedCategories.Contains(dto.Category) ? dto.Category : "Hành chính công";
 
             service.Name = dto.Name;
             service.Description = dto.Description;

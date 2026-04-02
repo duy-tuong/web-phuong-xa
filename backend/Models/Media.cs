@@ -19,5 +19,7 @@
         public User User { get; set; }
 
         public DateTime UploadedAt { get; set; }
+
+        public bool IsPublic { get; set; } = true;
     }
 }

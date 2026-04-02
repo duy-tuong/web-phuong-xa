@@ -12,10 +12,62 @@ namespace backend.Controllers
     public class ApplicationsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public ApplicationsController(AppDbContext context)
+        public ApplicationsController(AppDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
+        }
+
+        // 🔹 UPLOAD TÀI LIỆU ĐÍNH KÈM (Dành cho người dân - Không cần đăng nhập)
+        [AllowAnonymous]
+        [HttpPost("upload-attachment")]
+        public async Task<IActionResult> UploadAttachment(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Vui lòng chọn file để tải lên.");
+            }
+
+            // Giới hạn file 10MB cho hồ sơ
+            var maxFileSize = 10 * 1024 * 1024;
+            if (file.Length > maxFileSize)
+            {
+                return BadRequest("Dung lượng file vượt quá giới hạn 10MB.");
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf", ".doc", ".docx", ".zip", ".rar" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                return BadRequest("Định dạng file không hợp lệ. Chỉ chấp nhận các file ảnh, PDF, DOC, DOCX, ZIP, RAR.");
+            }
+
+            // Phân loại riêng file hồ sơ của dân vào thư mục "uploads/applications"
+            var uploadDir = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "applications");
+            if (!Directory.Exists(uploadDir))
+            {
+                Directory.CreateDirectory(uploadDir);
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+            await using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var relativePath = $"/uploads/applications/{uniqueFileName}";
+
+            return Ok(new
+            {
+                message = "Tải file thành công",
+                url = relativePath,
+                fileName = file.FileName
+            });
         }
 
         [AllowAnonymous]

@@ -193,7 +193,7 @@ export default function RolesPage() {
         open={modalOpen}
         onClose={closeModal}
         title={editingRole ? "Cập nhật vai trò" : "Thêm vai trò mới"}
-        description="Nhập tên vai trò để đồng bộ trực tiếp với backend."
+        description="Nhập thông tin để thêm vai trò mới."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>

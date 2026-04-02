@@ -21,7 +21,7 @@ export default function HeaderSearchForm({ initialValue = "", onSubmit }: Header
     >
       <input
         className="w-[320px] rounded border border-slate-300 bg-white py-1.5 pl-3 pr-10 text-sm outline-none ring-emerald-600 focus:ring-1"
-        placeholder="Nhap tu khoa de tim kiem..."
+        placeholder="Nhập từ khóa để tìm kiếm..."
         type="search"
         value={value}
         onChange={(event) => setValue(event.target.value)}

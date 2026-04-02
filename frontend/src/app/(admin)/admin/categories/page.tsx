@@ -106,7 +106,7 @@ export default function CategoriesPage() {
   // CRUD handlers
   // -----------------------------------------------------------------------
   const handleSave = async () => {
-    if (!formData.name.trim() || !formData.slug.trim()) return;
+    if (!formData.name.trim()) return;
 
     setErrorMessage("");
     setIsSaving(true);
@@ -114,13 +114,13 @@ export default function CategoriesPage() {
       if (editingCategory) {
         await updateCategory(editingCategory.id, {
           name: formData.name.trim(),
-          slug: formData.slug.trim(),
+          slug: formData.slug.trim() || undefined,
           description: formData.description.trim() || "",
         });
       } else {
         await createCategory({
           name: formData.name.trim(),
-          slug: formData.slug.trim(),
+          slug: formData.slug.trim() || undefined,
           description: formData.description.trim() || "",
         });
       }
@@ -286,7 +286,7 @@ export default function CategoriesPage() {
         open={modalOpen}
         onClose={closeModal}
         title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
-        description="Thông tin sẽ đồng bộ trực tiếp với API categories."
+        description="Nhập thông tin để tạo danh mục mới."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -326,7 +326,7 @@ export default function CategoriesPage() {
             onChange={(value) =>
               setFormData((prev) => ({ ...prev, slug: value }))
             }
-            placeholder="Để trống để backend tự sinh"
+            placeholder="Nhập slug (ví dụ: khoa-hoc, van-hoa)"
           />
           <FormField
             type="textarea"

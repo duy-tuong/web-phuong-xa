@@ -55,7 +55,7 @@ function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceC
     profileCode: procedure.id ? `DV-${String(procedure.id).padStart(3, "0")}` : `DV-${String(index + 1).padStart(3, "0")}`,
     level,
     levelClass,
-    field: inferServiceField(procedure.title),
+    field: procedure.field || inferServiceField(procedure.title),
     title: procedure.title,
     description: buildServiceDescription(procedure),
     duration: procedure.processingTime,

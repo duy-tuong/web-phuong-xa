@@ -193,7 +193,7 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await api.post("/media/upload", formData);
+      const res = await api.post("/media/avatar", formData);
       const relativeUrl: string | undefined = res.data?.url;
       if (!relativeUrl) {
         throw new Error("Upload failed");
@@ -351,8 +351,7 @@ export default function ProfilePage() {
               ) : null}
 
               <p className="text-xs text-stone-500">
-                Bạn có thể tải ảnh lên rồi dán đường dẫn vào trường Avatar URL
-                bên phải.
+                Bạn có thể tải avatar.
               </p>
             </div>
           </CardHeader>
@@ -398,7 +397,6 @@ export default function ProfilePage() {
                 Thông tin cơ bản
               </CardTitle>
               <CardDescription className="text-stone-500">
-                Cập nhật thông tin đang đăng nhập trực tiếp từ API auth/me.
               </CardDescription>
             </CardHeader>
 
@@ -466,7 +464,6 @@ export default function ProfilePage() {
                 Đổi mật khẩu
               </CardTitle>
               <CardDescription className="text-stone-500">
-                Nếu đổi mật khẩu, backend sẽ yêu cầu mật khẩu hiện tại.
               </CardDescription>
             </CardHeader>
 

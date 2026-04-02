@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 
-import { createPublicApplication } from "@/services/applicationService";
+import { createPublicContact } from "@/services/contactService";
 import { getProcedures } from "@/services/serviceService";
 
 type ServiceOption = {
@@ -14,7 +14,7 @@ type FormData = {
   fullName: string;
   phone: string;
   email: string;
-  serviceId: string;
+  category: string;
   message: string;
 };
 
@@ -24,7 +24,7 @@ const initialFormData: FormData = {
   fullName: "",
   phone: "",
   email: "",
-  serviceId: "",
+  category: "",
   message: "",
 };
 
@@ -82,8 +82,8 @@ export default function ContactForm() {
     if (!formData.phone.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại.";
     }
-    if (!formData.serviceId.trim()) {
-      newErrors.serviceId = "Vui lòng chọn dịch vụ.";
+    if (!formData.category.trim()) {
+      newErrors.category = "Vui lòng chọn chuyên mục.";
     }
     if (!formData.message.trim()) {
       newErrors.message = "Vui lòng nhập nội dung phản hồi.";
@@ -105,11 +105,12 @@ export default function ContactForm() {
     try {
       setIsSubmitting(true);
 
-      await createPublicApplication({
-        serviceId: Number(formData.serviceId),
-        applicantName: formData.fullName.trim(),
+      await createPublicContact({
+        fullName: formData.fullName.trim(),
         phone: formData.phone.trim(),
         email: formData.email.trim(),
+        category: formData.category.trim(),
+        content: formData.message.trim(),
       });
 
       setSubmitSuccess(true);
@@ -169,25 +170,25 @@ export default function ContactForm() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Dịch vụ cần liên hệ <span className="text-red-500">*</span></label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Chuyên mục liên hệ <span className="text-red-500">*</span></label>
           <select
-            value={formData.serviceId}
-            onChange={(e) => setFormData((prev) => ({ ...prev, serviceId: e.target.value }))}
-            className={inputClass("serviceId")}
+            value={formData.category}
+            onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+            className={inputClass("category")}
             disabled={isLoadingServices || serviceOptions.length === 0}
           >
             <option value="">
-              {isLoadingServices ? "Đang tải danh sách dịch vụ..." : "Chọn dịch vụ"}
+              {isLoadingServices ? "Đang tải danh sách chuyên mục..." : "Chọn chuyên mục"}
             </option>
             {serviceOptions.map((service) => (
-              <option key={service.id} value={String(service.id)}>
+              <option key={service.id} value={service.title}>
                 {service.title}
               </option>
             ))}
           </select>
-          {errors.serviceId ? <p className="mt-1 text-xs text-red-500">{errors.serviceId}</p> : null}
+          {errors.category ? <p className="mt-1 text-xs text-red-500">{errors.category}</p> : null}
           {!isLoadingServices && serviceOptions.length === 0 ? (
-            <p className="mt-1 text-xs text-amber-600">Không tải được danh sách dịch vụ. Vui lòng thử tải lại trang.</p>
+            <p className="mt-1 text-xs text-amber-600">Không tải được danh sách chuyên mục. Vui lòng thử tải lại trang.</p>
           ) : null}
         </div>
 

@@ -88,12 +88,7 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
 
   return (
     <>
-      {isAdminFlow ? (
-        <div className="mb-4 rounded-2xl border border-amber-100 bg-amber-50/80 p-4 text-sm text-amber-900">
-          <p className="font-semibold">Đăng nhập để truy cập khu vực quản trị</p>
-          <p className="mt-1">Chỉ tài khoản có quyền Admin hoặc Editor mới được vào trang quản trị.</p>
-        </div>
-      ) : null}
+
 
       {errorMessage ? (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

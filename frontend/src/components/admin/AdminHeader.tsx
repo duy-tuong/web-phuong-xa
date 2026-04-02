@@ -4,15 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Bell,
-  Search,
-  LogOut,
-  User,
-  Menu,
-  Landmark,
-  X,
-} from "lucide-react";
+import { Bell, Search, LogOut, User, Menu, Landmark, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,7 +40,9 @@ export default function AdminHeader() {
   const logoPath = "/logo-admin.png";
 
   const activeNavItem = adminNavItems.find(
-    (item) => pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
+    (item) =>
+      pathname === item.href ||
+      (item.href !== "/admin" && pathname.startsWith(item.href)),
   );
 
   const isProfileRoute = pathname.startsWith("/admin/profile");
@@ -63,19 +57,33 @@ export default function AdminHeader() {
   useEffect(() => {
     const syncAdminProfile = () => {
       setAvatarSrc(localStorage.getItem("admin_avatar") || "");
-      setDisplayName(localStorage.getItem("admin_display_name") || DEFAULT_ADMIN_NAME);
+      setDisplayName(
+        localStorage.getItem("admin_display_name") || DEFAULT_ADMIN_NAME,
+      );
       setRoleLabel(localStorage.getItem("admin_role") || DEFAULT_ADMIN_ROLE);
     };
 
     syncAdminProfile();
     window.addEventListener("storage", syncAdminProfile);
-    window.addEventListener("admin-avatar-updated", syncAdminProfile as EventListener);
-    window.addEventListener("admin-profile-updated", syncAdminProfile as EventListener);
+    window.addEventListener(
+      "admin-avatar-updated",
+      syncAdminProfile as EventListener,
+    );
+    window.addEventListener(
+      "admin-profile-updated",
+      syncAdminProfile as EventListener,
+    );
 
     return () => {
       window.removeEventListener("storage", syncAdminProfile);
-      window.removeEventListener("admin-avatar-updated", syncAdminProfile as EventListener);
-      window.removeEventListener("admin-profile-updated", syncAdminProfile as EventListener);
+      window.removeEventListener(
+        "admin-avatar-updated",
+        syncAdminProfile as EventListener,
+      );
+      window.removeEventListener(
+        "admin-profile-updated",
+        syncAdminProfile as EventListener,
+      );
     };
   }, []);
 
@@ -120,7 +128,7 @@ export default function AdminHeader() {
                           alt="Logo Phường Cao Lãnh"
                           width={44}
                           height={44}
-                          className="h-full w-full object-contain"
+                          className="h-full w-full object-cover object-center scale-[1.15]"
                           priority
                           onError={() => setMobileLogoUnavailable(true)}
                         />
@@ -136,7 +144,9 @@ export default function AdminHeader() {
                     </div>
                   </div>
                 </SheetTitle>
-                <p className="text-xs text-[hsl(40,30%,78%)] mt-1">Đang mở: {currentSectionLabel}</p>
+                <p className="text-xs text-[hsl(40,30%,78%)] mt-1">
+                  Đang mở: {currentSectionLabel}
+                </p>
               </SheetHeader>
 
               <nav className="px-3 py-3 space-y-1 overflow-y-auto">
@@ -154,10 +164,17 @@ export default function AdminHeader() {
                           "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                           isActive
                             ? "bg-[hsl(154,24%,23%)] text-[hsl(40,68%,78%)] border-l-4 border-[hsl(34,60%,50%)]"
-                            : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+                            : "text-stone-600 hover:bg-stone-100 hover:text-stone-900",
                         )}
                       >
-                        <Icon className={cn("w-4 h-4", isActive ? "text-[hsl(34,72%,50%)]" : "text-current")} />
+                        <Icon
+                          className={cn(
+                            "w-4 h-4",
+                            isActive
+                              ? "text-[hsl(34,72%,50%)]"
+                              : "text-current",
+                          )}
+                        />
                         <span>{item.label}</span>
                       </Link>
                     </SheetClose>
@@ -173,7 +190,7 @@ export default function AdminHeader() {
                 "inline-flex max-w-full items-center gap-2 rounded-md border border-[hsl(156,20%,84%)] bg-[linear-gradient(180deg,hsl(156,22%,96%),hsl(156,18%,93%))] px-2.5 py-1.5 leading-[1.2] text-[hsl(156,34%,27%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
                 isProfileRoute
                   ? "text-[17px] sm:text-[19px] lg:text-[22px] font-bold"
-                  : "text-[15px] sm:text-[16px] lg:text-[18px] font-semibold"
+                  : "text-[15px] sm:text-[16px] lg:text-[18px] font-semibold",
               )}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-[hsl(156,44%,35%)] flex-shrink-0" />
@@ -232,7 +249,9 @@ export default function AdminHeader() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-stone-100 transition-colors">
                 <Avatar className="w-9 h-9 border border-stone-200">
-                  {avatarSrc && <AvatarImage src={avatarSrc} alt={displayName} />}
+                  {avatarSrc && (
+                    <AvatarImage src={avatarSrc} alt={displayName} />
+                  )}
                   <AvatarFallback className="bg-emerald-700 text-white text-xs font-medium">
                     {displayName
                       .split(" ")
@@ -243,7 +262,9 @@ export default function AdminHeader() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-left hidden sm:block">
-                  <p className="text-sm font-medium text-stone-800">{displayName}</p>
+                  <p className="text-sm font-medium text-stone-800">
+                    {displayName}
+                  </p>
                   <p className="text-[11px] text-stone-500">{roleLabel}</p>
                 </div>
               </button>

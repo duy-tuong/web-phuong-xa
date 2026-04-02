@@ -6,6 +6,8 @@ import type { ProcedureDetail } from "@/types/service";
 type ApiService = {
   id: number;
   name: string;
+  category?: string | null;
+  field?: string | null;
   description?: string | null;
   requiredDocuments?: string | null;
   processingTime?: string | null;
@@ -70,6 +72,7 @@ function adaptProcedure(service: ApiService): ProcedureDetail {
     id: service.id,
     slug: slugify(title),
     title,
+    field: service.category?.trim() || service.field?.trim() || undefined,
     requiredDocuments: requirements,
     processingTime,
     fee: formatFee(service.fee),

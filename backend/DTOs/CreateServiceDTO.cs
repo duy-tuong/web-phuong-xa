@@ -7,6 +7,8 @@ namespace backend.DTOs
         [Required]
         public string Name { get; set; }
 
+        public string Category { get; set; } = "Hành chính công";
+
         public string Description { get; set; }
 
         public string RequiredDocuments { get; set; }

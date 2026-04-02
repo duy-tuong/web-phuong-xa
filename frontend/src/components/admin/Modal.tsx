@@ -19,16 +19,20 @@ interface ModalProps {
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
   titleClassName?: string;
   descriptionClassName?: string;
+  disableScroll?: boolean;
+  allowHorizontalScroll?: boolean;
 }
 
 const sizeMap = {
   sm: "max-w-sm",
   md: "max-w-md",
   lg: "max-w-lg",
-  xl: "max-w-2xl",
+  xl: "max-w-4xl",
+  "2xl": "max-w-6xl",
+  full: "max-w-none",
 };
 
 export default function Modal({
@@ -41,17 +45,21 @@ export default function Modal({
   size = "md",
   titleClassName,
   descriptionClassName,
+  disableScroll = false,
+  allowHorizontalScroll = false,
 }: ModalProps) {
+  const isFull = size === "full";
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent
-        className={`${sizeMap[size]} w-[calc(100vw-1rem)] sm:w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-[hsl(120,10%,86%)] bg-white p-4 sm:p-6 shadow-[0_18px_44px_-20px_rgba(0,0,0,0.25)]`}
+        data-lenis-prevent
+        className={`${sizeMap[size]} ${isFull ? "h-[calc(100vh-2rem)] w-[calc(100vw-2rem)]" : "w-[calc(100vw-1rem)] sm:w-full"} ${disableScroll ? "max-h-none overflow-y-visible" : "max-h-[90vh] overflow-y-auto"} ${allowHorizontalScroll ? "overflow-x-auto" : "overflow-x-hidden"} rounded-2xl border border-[hsl(120,10%,86%)] bg-white p-4 sm:p-6 shadow-[0_18px_44px_-20px_rgba(0,0,0,0.25)]`}
       >
         <DialogHeader className="text-left space-y-1.5 pb-1">
           <DialogTitle
             className={cn(
               "text-stone-900 text-lg sm:text-xl font-semibold tracking-tight text-left leading-tight",
-              titleClassName
+              titleClassName,
             )}
           >
             {title}
@@ -60,7 +68,7 @@ export default function Modal({
             <DialogDescription
               className={cn(
                 "text-stone-500 text-sm text-left",
-                descriptionClassName
+                descriptionClassName,
               )}
             >
               {description}
@@ -68,7 +76,9 @@ export default function Modal({
           )}
         </DialogHeader>
         <div className="py-1">{children}</div>
-        {footer && <DialogFooter className="gap-2 sm:justify-end">{footer}</DialogFooter>}
+        {footer && (
+          <DialogFooter className="gap-2 sm:justify-end">{footer}</DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

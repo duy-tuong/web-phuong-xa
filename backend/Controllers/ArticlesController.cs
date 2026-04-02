@@ -184,7 +184,8 @@ namespace backend.Controllers
                 CategoryId = dto.CategoryId,
                 AuthorId = currentUserId,
                 CreatedAt = DateTime.Now,
-                Status = "Draft", //  mặc định draft
+                Status = normalizedStatus,
+                PublishedAt = normalizedStatus == "Published" ? DateTime.Now : null
             };
 
             _context.Articles.Add(article);
@@ -224,6 +225,8 @@ namespace backend.Controllers
             article.Slug = string.IsNullOrWhiteSpace(dto.Slug)
                 ? GenerateSlug(dto.Title)
                 : dto.Slug;
+            article.Status = normalizedStatus;
+            article.PublishedAt = normalizedStatus == "Published" ? (article.PublishedAt ?? DateTime.Now) : null;
 
             await _context.SaveChangesAsync();
 

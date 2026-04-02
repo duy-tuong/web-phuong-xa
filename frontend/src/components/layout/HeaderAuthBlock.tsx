@@ -26,7 +26,7 @@ export default function HeaderAuthBlock({
   if (!session) {
     return (
       <Link href="/login" className="rounded-md bg-emerald-700 px-3 py-1.5 text-white hover:bg-emerald-800">
-        Dang nhap
+        Đăng nhập
       </Link>
     );
   }

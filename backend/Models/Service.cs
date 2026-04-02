@@ -6,6 +6,8 @@
 
         public string Name { get; set; }
 
+        public string Category { get; set; } = "Hành chính công"; // Lĩnh vực: Hộ tịch, Đất đai, Kinh doanh, Hành chính công
+
         public string Description { get; set; }
 
         public string RequiredDocuments { get; set; }

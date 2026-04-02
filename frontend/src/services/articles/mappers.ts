@@ -1,6 +1,6 @@
 ﻿import { resolveApiAssetUrl } from "@/lib/api-base-url";
 import { formatDateVi } from "@/lib/date-format";
-import { stripHtml } from "@/lib/html-utils";
+import { resolveHtmlImageSrc, stripHtml } from "@/lib/html-utils";
 import { slugify } from "@/lib/normalize";
 import type {
   ApiArticleDetail,
@@ -77,6 +77,8 @@ function resolveFeaturedFlag(source: ApiArticleListItem | ApiArticleDetail) {
 }
 
 export function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Article {
+  const rawContent = "content" in source ? source.content ?? "" : "";
+  const contentHtml = resolveHtmlImageSrc(rawContent);
   const paragraphs = buildParagraphs("content" in source ? source.content : undefined, source.excerpt);
   const lead = buildLead("content" in source ? source.content : undefined, source.excerpt);
   const category = source.category?.trim() || "Chưa phân loại";
@@ -87,6 +89,7 @@ export function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Art
     id: source.id,
     isFeatured: resolveFeaturedFlag(source),
     hasRealImage: Boolean(featuredImage),
+    contentHtml: contentHtml || undefined,
     slug: source.slug,
     title: source.title,
     category,

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import NextImage from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Landmark, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { adminNavItems } from "@/components/admin/nav-items";
@@ -20,16 +20,22 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const pathname = usePathname();
   const [logoUnavailable, setLogoUnavailable] = useState(false);
-  const [adminRole, setAdminRole] = useState<string | null>(null);
+  const [adminRole] = useState<string | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
 
-  useEffect(() => {
-    const role =
+    return (
       window.localStorage.getItem("admin_role") ||
-      window.localStorage.getItem("user_role");
-    setAdminRole(role);
-  }, []);
+      window.localStorage.getItem("user_role")
+    );
+  });
   const logoPath = "/logo-admin.png";
-  const hiddenForEditor = new Set(["/admin/users", "/admin/roles", "/admin/logs"]);
+  const hiddenForEditor = new Set([
+    "/admin/users",
+    "/admin/roles",
+    "/admin/logs",
+  ]);
   const filteredNavItems =
     adminRole === "Editor"
       ? adminNavItems.filter((item) => !hiddenForEditor.has(item.href))
@@ -40,33 +46,38 @@ export default function AdminSidebar({
       className={cn(
         "fixed left-0 top-0 z-40 hidden h-screen flex-col border-r lg:flex transition-[width] duration-300",
         isCollapsed ? "w-[84px]" : "w-[240px]",
-        "bg-[hsl(156,38%,22%)] border-[hsl(156,24%,18%)]"
+        "bg-[hsl(156,38%,22%)] border-[hsl(156,24%,18%)]",
       )}
     >
       <div
         className={cn(
           "flex items-center h-16 border-b border-[hsl(156,24%,18%)]",
-          isCollapsed ? "justify-center px-2" : "px-4"
+          isCollapsed ? "justify-center px-2" : "px-4",
         )}
       >
-        <div className={cn("flex items-center min-w-0", isCollapsed ? "justify-center" : "gap-3")}>
+        <div
+          className={cn(
+            "flex items-center min-w-0",
+            isCollapsed ? "justify-center" : "gap-3",
+          )}
+        >
           <div
             className={cn(
               "rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0",
-              isCollapsed ? "w-10 h-10" : "w-11 h-11"
+              isCollapsed ? "w-10 h-10" : "w-11 h-11",
             )}
           >
             {logoUnavailable ? (
               <div
                 className={cn(
                   "rounded-xl bg-[hsl(156,32%,18%)] flex items-center justify-center",
-                  isCollapsed ? "w-10 h-10" : "w-11 h-11"
+                  isCollapsed ? "w-10 h-10" : "w-11 h-11",
                 )}
               >
                 <Landmark
                   className={cn(
                     "text-[hsl(40,33%,88%)]",
-                    isCollapsed ? "w-5 h-5" : "w-6 h-6"
+                    isCollapsed ? "w-5 h-5" : "w-6 h-6",
                   )}
                 />
               </div>
@@ -95,7 +106,12 @@ export default function AdminSidebar({
         </div>
       </div>
 
-      <nav className={cn("flex-1 py-4 space-y-1 overflow-y-auto", isCollapsed ? "px-2" : "px-3")}>
+      <nav
+        className={cn(
+          "flex-1 py-4 space-y-1 overflow-y-auto",
+          isCollapsed ? "px-2" : "px-3",
+        )}
+      >
         {filteredNavItems.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -109,12 +125,14 @@ export default function AdminSidebar({
               title={item.label}
               className={cn(
                 "flex items-center rounded-lg text-sm font-semibold transition-all duration-200 group",
-                isCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
+                isCollapsed
+                  ? "justify-center px-2 py-2.5"
+                  : "gap-3 px-3 py-2.5",
                 isActive
                   ? isCollapsed
                     ? "bg-[hsl(154,24%,23%)] text-[hsl(40,68%,78%)] shadow-sm"
                     : "bg-[hsl(154,24%,23%)] text-[hsl(40,68%,78%)] shadow-sm border-l-4 border-[hsl(34,60%,50%)]"
-                  : "text-[hsl(40,24%,78%)] hover:bg-[hsl(156,26%,20%)] hover:text-[hsl(40,30%,92%)]"
+                  : "text-[hsl(40,24%,78%)] hover:bg-[hsl(156,26%,20%)] hover:text-[hsl(40,30%,92%)]",
               )}
             >
               <Icon
@@ -122,27 +140,38 @@ export default function AdminSidebar({
                   "w-[20px] h-[20px] flex-shrink-0 transition-colors",
                   isActive
                     ? "text-[hsl(34,72%,50%)]"
-                    : "text-[hsl(40,28%,70%)] group-hover:text-[hsl(40,30%,88%)]"
+                    : "text-[hsl(40,28%,70%)] group-hover:text-[hsl(40,30%,88%)]",
                 )}
               />
-              <span className={cn("truncate", isCollapsed && "hidden")}>{item.label}</span>
+              <span className={cn("truncate", isCollapsed && "hidden")}>
+                {item.label}
+              </span>
             </Link>
           );
         })}
       </nav>
 
-      <div className={cn("border-t border-[hsl(156,24%,18%)] py-2", isCollapsed ? "px-2" : "px-3")}>
+      <div
+        className={cn(
+          "border-t border-[hsl(156,24%,18%)] py-2",
+          isCollapsed ? "px-2" : "px-3",
+        )}
+      >
         <Button
           type="button"
           variant="ghost"
           onClick={onToggleCollapse}
           className={cn(
             "h-10 w-full text-[hsl(40,24%,78%)] hover:bg-[hsl(156,26%,20%)] hover:text-[hsl(40,30%,92%)]",
-            isCollapsed ? "justify-center px-0" : "justify-start gap-2.5 px-3"
+            isCollapsed ? "justify-center px-0" : "justify-start gap-2.5 px-3",
           )}
           aria-label={isCollapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
         >
-          {isCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+          {isCollapsed ? (
+            <PanelLeftOpen className="w-4 h-4" />
+          ) : (
+            <PanelLeftClose className="w-4 h-4" />
+          )}
           <span className={cn(isCollapsed && "hidden")}>
             {isCollapsed ? "Mở rộng" : "Thu gọn"}
           </span>

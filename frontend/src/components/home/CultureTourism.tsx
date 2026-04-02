@@ -28,9 +28,9 @@ export default function CultureTourism({ tourismCards }: CultureTourismProps) {
       </div>
 
       <div className="grid auto-rows-[200px] gap-4 md:auto-rows-[300px] md:grid-cols-3 md:gap-6">
-        {tourismCards.map((item) => (
+        {tourismCards.map((item, index) => (
           <Link
-            key={item.title}
+            key={`${item.title}-${item.href}-${index}`}
             href={item.href}
             className={`group relative overflow-hidden rounded-3xl ${item.className}`}
           >

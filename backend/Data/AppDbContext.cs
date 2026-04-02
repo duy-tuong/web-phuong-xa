@@ -76,6 +76,10 @@ namespace backend.Data
                 .WithMany(u => u.MediaUploads)
                 .HasForeignKey(m => m.UploadedBy);
 
+            modelBuilder.Entity<Media>()
+                .Property(m => m.IsPublic)
+                .HasDefaultValue(true);
+
 
             // AuditLog - User
             modelBuilder.Entity<AuditLog>()

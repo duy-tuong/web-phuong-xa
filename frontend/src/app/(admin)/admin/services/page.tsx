@@ -15,6 +15,7 @@ import api from "@/services/api";
 
 interface ServiceFormState {
   name: string;
+  field: string;
   description: string;
   requiredDocuments: string;
   processingTime: string;
@@ -24,12 +25,15 @@ interface ServiceFormState {
 
 const emptyForm: ServiceFormState = {
   name: "",
+  field: "Hành chính công",
   description: "",
   requiredDocuments: "",
   processingTime: "",
   fee: "0",
   templateFile: "",
 };
+
+const SERVICE_FIELDS = ["Hộ tịch", "Đất đai", "Kinh doanh", "Hành chính công"];
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -44,6 +48,10 @@ type ServiceApi = {
   Id?: number | string;
   name?: string;
   Name?: string;
+  category?: string;
+  Category?: string;
+  field?: string;
+  Field?: string;
   description?: string;
   Description?: string;
   requiredDocuments?: string;
@@ -111,6 +119,7 @@ export default function ServicesPage() {
     setEditingService(service);
     setFormData({
       name: service.name,
+      field: service.field || "Hành chính công",
       description: service.description,
       requiredDocuments: service.requiredDocuments,
       processingTime: service.processingTime,
@@ -134,6 +143,12 @@ export default function ServicesPage() {
     const mapped = data.map((service) => ({
       id: String(service.id ?? service.Id ?? ""),
       name: service.name ?? service.Name ?? "",
+      field:
+        service.category ??
+        service.Category ??
+        service.field ??
+        service.Field ??
+        "Hành chính công",
       description: service.description ?? service.Description ?? "",
       requiredDocuments:
         service.requiredDocuments ?? service.RequiredDocuments ?? "",
@@ -185,6 +200,7 @@ export default function ServicesPage() {
     const feeValue = Number(formData.fee);
     if (
       !formData.name.trim() ||
+      !formData.field.trim() ||
       !formData.description.trim() ||
       !formData.requiredDocuments.trim() ||
       !formData.processingTime.trim() ||
@@ -200,6 +216,7 @@ export default function ServicesPage() {
     try {
       const payload = {
         name: formData.name.trim(),
+        category: formData.field.trim(),
         description: formData.description.trim(),
         requiredDocuments: formData.requiredDocuments.trim(),
         processingTime: formData.processingTime.trim(),
@@ -285,6 +302,15 @@ export default function ServicesPage() {
         <span className="block max-w-sm truncate text-stone-600">
           {item.description}
         </span>
+      ),
+    },
+    {
+      key: "field",
+      label: "Lĩnh vực",
+      render: (item) => (
+        <Badge variant="secondary" className="font-normal">
+          {item.field || "Hành chính công"}
+        </Badge>
       ),
     },
     {
@@ -440,7 +466,7 @@ export default function ServicesPage() {
         open={modalOpen}
         onClose={closeModal}
         title={editingService ? "Cập nhật dịch vụ" : "Thêm dịch vụ mới"}
-        description="Dữ liệu được lưu trực tiếp vào API services."
+        description="Nhập thông tin để tạo dịch vụ mới."
         size="lg"
         footer={
           <div className="flex gap-2">
@@ -453,6 +479,7 @@ export default function ServicesPage() {
               disabled={
                 isSaving ||
                 !formData.name.trim() ||
+                !formData.field.trim() ||
                 !formData.description.trim() ||
                 !formData.requiredDocuments.trim() ||
                 !formData.processingTime.trim()
@@ -487,6 +514,20 @@ export default function ServicesPage() {
               setFormData((prev) => ({ ...prev, name: value }))
             }
             placeholder="Nhập tên dịch vụ hành chính"
+          />
+          <FormField
+            type="select"
+            label="Lĩnh vực"
+            name="field"
+            required
+            value={formData.field}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, field: value }))
+            }
+            options={SERVICE_FIELDS.map((field) => ({
+              label: field,
+              value: field,
+            }))}
           />
           <FormField
             type="textarea"

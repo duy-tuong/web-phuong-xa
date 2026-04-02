@@ -147,6 +147,84 @@ namespace backend.Controllers
             return Ok(user);
         }
 
+        [Authorize]
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateProfile(UpdateProfileDTO dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var email = dto.Email.Trim();
+            var fullName = dto.FullName.Trim();
+
+            var emailExists = await _context.Users.AnyAsync(u => u.Email == email && u.Id != userId);
+            if (emailExists)
+            {
+                return BadRequest("Email already in use by another account.");
+            }
+
+            user.Email = email;
+            user.FullName = fullName;
+            user.Phone = NormalizeOptional(dto.Phone);
+            user.AvatarUrl = NormalizeOptional(dto.AvatarUrl);
+
+            if (!string.IsNullOrWhiteSpace(dto.NewPassword) || !string.IsNullOrWhiteSpace(dto.CurrentPassword))
+            {
+                if (string.IsNullOrWhiteSpace(dto.CurrentPassword))
+                {
+                    return BadRequest("Current password is required.");
+                }
+
+                var verified = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+                if (!verified)
+                {
+                    return BadRequest("Current password is incorrect.");
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.NewPassword))
+                {
+                    return BadRequest("New password is required.");
+                }
+
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                user = new
+                {
+                    user.Id,
+                    user.Username,
+                    user.Email,
+                    user.FullName,
+                    user.Phone,
+                    user.AvatarUrl,
+                    user.RoleId,
+                    role = user.Role?.Name,
+                    user.CreatedAt
+                }
+            });
+        }
+
         // CHANGE PASSWORD
         [Authorize]
         [HttpPost("change-password")]

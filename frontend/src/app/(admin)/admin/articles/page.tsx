@@ -661,7 +661,7 @@ export default function ArticlesPage() {
               } • ${format(new Date(previewArticle.createdAt), "dd/MM/yy")}`
             : undefined
         }
-        size="xl"
+        size="full"
         footer={
           <Button variant="outline" onClick={() => setPreviewArticle(null)}>
             Đóng
@@ -677,7 +677,7 @@ export default function ArticlesPage() {
               height={600}
               sizes="100vw"
               unoptimized
-              className="mb-4 h-auto w-full rounded-lg border border-stone-200 object-cover"
+              className="mb-4 h-auto max-h-[360px] w-full rounded-lg border border-stone-200 object-cover"
             />
           ) : null}
           {previewArticle ? (
@@ -688,10 +688,12 @@ export default function ArticlesPage() {
             </div>
           ) : null}
           {previewArticle?.content ? (
-            <div
-              className="text-sm leading-6 text-stone-700 [&_h1]:text-xl [&_h1]:font-semibold [&_h2]:text-lg [&_h2]:font-semibold [&_img]:my-3 [&_img]:rounded-md [&_ol]:mb-3 [&_p]:mb-3 [&_ul]:mb-3"
-              dangerouslySetInnerHTML={{ __html: previewArticle.content }}
-            />
+            <div className="ql-container ql-snow border-0 bg-transparent">
+              <div
+                className="ql-editor text-stone-700 [&_img]:my-3 [&_img]:rounded-md"
+                dangerouslySetInnerHTML={{ __html: previewArticle.content }}
+              />
+            </div>
           ) : (
             <p className="text-sm text-stone-500">Bài viết chưa có nội dung.</p>
           )}
@@ -702,8 +704,9 @@ export default function ArticlesPage() {
         open={modalOpen}
         onClose={closeModal}
         title={editingArticle ? "Cập nhật bài viết" : "Thêm bài viết mới"}
-        description="Dữ liệu được lưu trực tiếp vào API /articles."
+        description="Nhập thông tin để tạo bài viết mới."
         size="xl"
+        allowHorizontalScroll
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -883,7 +886,7 @@ export default function ArticlesPage() {
               />
             </div>
             <p className="text-xs text-stone-500">
-              Tóm tắt sẽ được backend tự tạo từ nội dung nếu để trống.
+              Tóm tắt sẽ được tự tạo từ nội dung nếu để trống.
             </p>
           </div>
 

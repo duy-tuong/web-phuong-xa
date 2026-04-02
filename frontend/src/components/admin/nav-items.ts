@@ -5,6 +5,7 @@ import {
   Image as MediaIcon,
   Landmark,
   LayoutDashboard,
+  Mail,
   MessageSquare,
   ScrollText,
   Shield,
@@ -28,5 +29,6 @@ export const adminNavItems: AdminNavItem[] = [
   { label: "Bình luận", href: "/admin/comments", icon: MessageSquare },
   { label: "Dịch vụ", href: "/admin/services", icon: Landmark },
   { label: "Ứng dụng", href: "/admin/applications", icon: ClipboardList },
+  { label: "Liên hệ", href: "/admin/contacts", icon: Mail },
   { label: "Nhật ký", href: "/admin/logs", icon: ScrollText },
 ];

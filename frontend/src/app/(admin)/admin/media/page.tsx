@@ -36,6 +36,13 @@ function isImageFile(file: MediaFile) {
   );
 }
 
+function isVideoFile(file: MediaFile) {
+  return (
+    file.type.toLowerCase().includes("video") ||
+    (file.fileType || "").toLowerCase().startsWith("video/")
+  );
+}
+
 export default function MediaPage() {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,13 +153,13 @@ export default function MediaPage() {
                 : "Kéo thả tệp vào đây hoặc bấm để chọn tệp"}
             </p>
             <p className="mt-1 text-xs text-stone-500">
-              Ho tro JPG, PNG, GIF, PDF, DOC, DOCX. Gioi han 5MB.
+              Ho tro JPG, PNG, GIF, MP4, MOV, AVI, MKV, WEBM, PDF, DOC, DOCX. Gioi han 100MB.
             </p>
           </div>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx"
+            accept=".jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.mkv,.webm,.pdf,.doc,.docx"
             className="hidden"
             onChange={(event) => void handleUpload(event.target.files?.[0])}
           />
@@ -177,6 +184,13 @@ export default function MediaPage() {
                     src={file.url}
                     alt={file.fileName}
                     className="h-full w-full object-cover"
+                  />
+                ) : isVideoFile(file) && file.url ? (
+                  <video
+                    src={file.url}
+                    className="h-full w-full object-cover"
+                    preload="metadata"
+                    muted
                   />
                 ) : (
                   <FileText className="h-10 w-10 text-stone-300" />

@@ -25,7 +25,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetPublicMedia(string? type = null, int page = 1, int pageSize = 50)
         {
             var normalizedType = string.IsNullOrWhiteSpace(type) ? null : type.Trim().ToLowerInvariant();
-            var query = _context.Media.AsQueryable();
+            var query = _context.Media.Where(m => m.IsPublic).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(normalizedType))
             {
@@ -91,6 +91,7 @@ namespace backend.Controllers
 
         [Authorize(Roles = "Admin,Editor")]
         [HttpPost("upload")]
+        [RequestSizeLimit(104857600)] // 100MB limit
         public async Task<IActionResult> UploadMedia(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -98,18 +99,18 @@ namespace backend.Controllers
                 return BadRequest("No file uploaded.");
             }
 
-            var maxFileSize = 5 * 1024 * 1024;
+            var maxFileSize = 100 * 1024 * 1024; // 100MB
             if (file.Length > maxFileSize)
             {
-                return BadRequest("File size exceeds the 5MB limit.");
+                return BadRequest("File size exceeds the 100MB limit.");
             }
 
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx" };
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx", ".mp4", ".mov", ".avi", ".mkv" };
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
             if (!allowedExtensions.Contains(extension))
             {
-                return BadRequest("Invalid file type. Only JPG, PNG, GIF, PDF, DOC, DOCX are allowed.");
+                return BadRequest("Invalid file type. Only JPG, PNG, GIF, PDF, DOC, DOCX, and Video formats (MP4, MOV, AVI, MKV) are allowed.");
             }
 
             var uploadDir = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
@@ -133,7 +134,10 @@ namespace backend.Controllers
             }
 
             var relativePath = $"/uploads/{uniqueFileName}";
-            var fileType = (extension == ".pdf" || extension.Contains(".doc")) ? "Document" : "Image";
+            
+            var isVideo = new[] { ".mp4", ".mov", ".avi", ".mkv" }.Contains(extension);
+            var isDocument = new[] { ".pdf", ".doc", ".docx" }.Contains(extension);
+            var fileType = isVideo ? "Video" : (isDocument ? "Document" : "Image");
 
             var media = new Media
             {
@@ -143,7 +147,8 @@ namespace backend.Controllers
                 FileType = file.ContentType,
                 FileSize = file.Length,
                 UploadedBy = currentUserId,
-                UploadedAt = DateTime.Now
+                UploadedAt = DateTime.Now,
+                IsPublic = true
             };
 
             _context.Media.Add(media);
@@ -160,6 +165,77 @@ namespace backend.Controllers
             });
         }
 
+        [Authorize]
+        [HttpPost("avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            var maxFileSize = 5 * 1024 * 1024;
+            if (file.Length > maxFileSize)
+            {
+                return BadRequest("File size exceeds the 5MB limit.");
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!allowedExtensions.Contains(extension))
+            {
+                return BadRequest("Invalid file type. Only JPG, PNG, GIF are allowed.");
+            }
+
+            var uploadDir = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+            if (!Directory.Exists(uploadDir))
+            {
+                Directory.CreateDirectory(uploadDir);
+            }
+
+            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+            await using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var currentUserId))
+            {
+                return Unauthorized("User ID not found in token");
+            }
+
+            var relativePath = $"/uploads/{uniqueFileName}";
+
+            var media = new Media
+            {
+                FileName = file.FileName,
+                FilePath = relativePath,
+                Type = "Image",
+                FileType = file.ContentType,
+                FileSize = file.Length,
+                UploadedBy = currentUserId,
+                UploadedAt = DateTime.Now,
+                IsPublic = false
+            };
+
+            _context.Media.Add(media);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Avatar uploaded successfully",
+                media.Id,
+                url = relativePath,
+                type = media.Type,
+                fileType = media.FileType,
+                fileSize = media.FileSize
+            });
+        }
+
         [Authorize(Roles = "Admin,Editor")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteMedia(int id)
@@ -171,7 +247,11 @@ namespace backend.Controllers
                 return NotFound("Media not found.");
             }
 
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out var currentUserId))
+            {
+                return Unauthorized("User ID not found in token");
+            }
             var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
 
             if (currentUserRole != "Admin" && media.UploadedBy != currentUserId)

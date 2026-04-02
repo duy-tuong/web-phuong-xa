@@ -81,6 +81,8 @@ export type ApiMedia = {
 export type ApiService = {
   id: number;
   name: string;
+  category?: string | null;
+  field?: string | null;
   description: string;
   requiredDocuments: string;
   processingTime: string;
@@ -150,6 +152,8 @@ export type CategoryPayload = {
 
 export type ServicePayload = {
   name: string;
+  category?: string;
+  field?: string;
   description: string;
   requiredDocuments: string;
   processingTime: string;

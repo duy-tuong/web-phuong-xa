@@ -112,6 +112,13 @@ html.lenis body {
   font-family: inherit !important;
   min-height: 280px;
   line-height: 1.72;
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-rich-editor .ql-editor {
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 /* .admin-rich-editor .ql-editor {
