@@ -29,7 +29,7 @@ export default async function FeaturedVideoSection() {
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-slate-600">
               <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">Nội dung đa phương tiện</span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">Tự động đồng bộ từ API</span>
+            
             </div>
           </div>
         </div>

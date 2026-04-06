@@ -1,6 +1,7 @@
 export type UserSession = {
   username: string;
   fullName: string;
+  avatarUrl?: string;
   role?: string;
   email?: string;
   phone?: string;

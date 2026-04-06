@@ -63,6 +63,22 @@ export default function LoginPageClient() {
       if (payload.role) {
         document.cookie = `admin_role=${payload.role}; Path=/; Max-Age=86400; SameSite=Lax`;
       }
+      try {
+        const currentUser = await fetchCurrentUser();
+        const nextAvatar = currentUser.avatarUrl?.trim();
+        if (nextAvatar) {
+          window.localStorage.setItem("admin_avatar", nextAvatar);
+        }
+        if (currentUser.fullName?.trim()) {
+          window.localStorage.setItem(
+            "admin_display_name",
+            currentUser.fullName.trim(),
+          );
+        }
+        window.dispatchEvent(new Event("admin-profile-updated"));
+      } catch {
+        // Ignore profile fetch failures for admin login.
+      }
       router.replace(safeAdminRedirect ?? "/admin");
       return;
     }
@@ -74,6 +90,7 @@ export default function LoginPageClient() {
       const session: UserSession = {
         username: currentUser.username,
         fullName: currentUser.fullName || currentUser.username,
+        avatarUrl: currentUser.avatarUrl,
         role: currentUser.role?.name,
         email: currentUser.email,
         phone: currentUser.phone,

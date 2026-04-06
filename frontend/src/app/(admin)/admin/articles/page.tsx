@@ -32,7 +32,6 @@ import { Article, Category } from "@/types";
 
 interface ArticleFormData {
   title: string;
-  slug: string;
   excerpt: string;
   content: string;
   categoryId: string;
@@ -43,7 +42,6 @@ interface ArticleFormData {
 
 const emptyForm: ArticleFormData = {
   title: "",
-  slug: "",
   excerpt: "",
   content: "",
   categoryId: "",
@@ -128,6 +126,9 @@ export default function ArticlesPage() {
   const resolvePublicUrl = (value: string) => {
     if (!value) return "";
     if (value.startsWith("http://") || value.startsWith("https://")) {
+      return value;
+    }
+    if (value.startsWith("/api/proxy/")) {
       return value;
     }
     const base = api.defaults.baseURL ?? "";
@@ -256,7 +257,6 @@ export default function ArticlesPage() {
     setEditingArticle(article);
     setFormData({
       title: article.title,
-      slug: article.slug ?? "",
       excerpt: article.excerpt ?? "",
       content: article.content,
       categoryId: article.categoryId,
@@ -347,7 +347,7 @@ export default function ArticlesPage() {
     try {
       const payload = {
         title: formData.title.trim(),
-        slug: formData.slug.trim() || null,
+        slug: null,
         content: formData.content,
         featuredImage: formData.featuredImage.trim() || null,
         excerpt: formData.excerpt.trim() || buildExcerpt(formData.content),
@@ -662,13 +662,14 @@ export default function ArticlesPage() {
             : undefined
         }
         size="full"
+        allowHorizontalScroll
         footer={
           <Button variant="outline" onClick={() => setPreviewArticle(null)}>
             Đóng
           </Button>
         }
       >
-        <div className="max-h-[60vh] overflow-y-auto rounded-lg border border-stone-200 bg-stone-50 p-4">
+        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto rounded-lg border border-stone-200 bg-stone-50 p-4">
           {previewArticle?.featuredImage ? (
             <Image
               src={resolvePublicUrl(previewArticle.featuredImage)}
@@ -688,9 +689,9 @@ export default function ArticlesPage() {
             </div>
           ) : null}
           {previewArticle?.content ? (
-            <div className="ql-container ql-snow border-0 bg-transparent">
+            <div className="ql-container ql-snow min-w-max border-0 bg-transparent">
               <div
-                className="ql-editor text-stone-700 [&_img]:my-3 [&_img]:rounded-md"
+                className="ql-editor text-stone-700 min-w-full w-max max-w-none overflow-x-auto [&_img]:my-3 [&_img]:rounded-md [&_table]:!table-auto [&_table]:!min-w-max [&_table]:!w-max"
                 dangerouslySetInnerHTML={{ __html: previewArticle.content }}
               />
             </div>
@@ -737,15 +738,6 @@ export default function ArticlesPage() {
               setFormData((prev) => ({ ...prev, title: value }))
             }
             placeholder="Nhập tiêu đề bài viết"
-          />
-
-          <FormField
-            type="text"
-            label="Slug"
-            name="slug"
-            value={formData.slug}
-            onChange={(v) => setFormData((prev) => ({ ...prev, slug: v }))}
-            placeholder="slug-bai-viet"
           />
 
           <FormField

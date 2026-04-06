@@ -349,7 +349,10 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
           </button>
         </div>
 
-        <div className="max-h-[calc(92vh-82px)] overflow-y-auto px-5 py-5 sm:px-6">
+        <div
+          data-lenis-prevent
+          className="max-h-[calc(92vh-82px)] overflow-y-auto px-5 py-5 sm:px-6"
+        >
           <form className="space-y-6" onSubmit={handleSubmit}>
             {formError ? (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{formError}</div>
@@ -522,16 +525,6 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
                   className={getInputClassName(Boolean(fieldErrors.phone))}
                 />
                 {fieldErrors.phone ? <p className="text-sm text-red-600">{fieldErrors.phone}</p> : null}
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">Địa chỉ cư trú</span>
-                <input
-                  type="text"
-                  value="Backend hiện chưa có field lưu địa chỉ"
-                  disabled
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 outline-none"
-                />
               </label>
 
               <label className="space-y-2">

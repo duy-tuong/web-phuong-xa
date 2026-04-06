@@ -222,6 +222,7 @@ namespace backend.Controllers
             article.FeaturedImage = NormalizeOptional(dto.FeaturedImage);
             article.Content = dto.Content;
             article.IsFeatured = dto.IsFeatured;
+            article.CategoryId = dto.CategoryId;
             article.Slug = string.IsNullOrWhiteSpace(dto.Slug)
                 ? GenerateSlug(dto.Title)
                 : dto.Slug;

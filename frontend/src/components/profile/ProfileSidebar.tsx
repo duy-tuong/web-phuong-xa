@@ -58,8 +58,6 @@ export default function ProfileSidebar({
               <span>{user.phone || "Chưa cập nhật số điện thoại"}</span>
             </div>
             <div className="flex items-start gap-3">
-              <MapPin className="mt-0.5 h-4 w-4 text-emerald-600" />
-              <span>Địa chỉ cư trú chưa được hỗ trợ lưu trên hệ thống.</span>
             </div>
           </div>
         </div>

@@ -73,7 +73,17 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
       if (axios.isAxiosError<BackendErrorPayload>(error)) {
         const data = error.response?.data;
         const serverMessage = typeof data === "string" ? data : data?.message || data?.error || data?.title || data?.detail;
-        setErrorMessage(serverMessage || "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.");
+        const normalizedMessage = (serverMessage || "").toLowerCase();
+        if (normalizedMessage.includes("invalid username")) {
+          setErrorMessage("Tên tài khoản không đúng");
+        } else if (normalizedMessage.includes("invalid password")) {
+          setErrorMessage("Mật khẩu không đúng");
+        } else {
+          setErrorMessage(
+            serverMessage ||
+              "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.",
+          );
+        }
       } else {
         setErrorMessage("Đăng nhập thất bại. Vui lòng thử lại.");
       }

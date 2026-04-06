@@ -18,13 +18,11 @@ import {
 
 interface CategoryFormData {
   name: string;
-  slug: string;
   description: string;
 }
 
 const emptyForm: CategoryFormData = {
   name: "",
-  slug: "",
   description: "",
 };
 
@@ -90,7 +88,6 @@ export default function CategoriesPage() {
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      slug: category.slug || "",
       description: category.description || "",
     });
     setModalOpen(true);
@@ -114,13 +111,11 @@ export default function CategoriesPage() {
       if (editingCategory) {
         await updateCategory(editingCategory.id, {
           name: formData.name.trim(),
-          slug: formData.slug.trim() || undefined,
           description: formData.description.trim() || "",
         });
       } else {
         await createCategory({
           name: formData.name.trim(),
-          slug: formData.slug.trim() || undefined,
           description: formData.description.trim() || "",
         });
       }
@@ -317,16 +312,6 @@ export default function CategoriesPage() {
               setFormData((prev) => ({ ...prev, name: value }))
             }
             placeholder="Nhập tên danh mục"
-          />
-          <FormField
-            type="text"
-            label="Slug"
-            name="slug"
-            value={formData.slug}
-            onChange={(value) =>
-              setFormData((prev) => ({ ...prev, slug: value }))
-            }
-            placeholder="Nhập slug (ví dụ: khoa-hoc, van-hoa)"
           />
           <FormField
             type="textarea"

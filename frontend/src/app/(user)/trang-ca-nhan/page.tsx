@@ -49,6 +49,7 @@ export default function TrangCaNhanPage() {
         writeUserSession({
           username: currentUser.username,
           fullName: currentUser.fullName || currentUser.username,
+          avatarUrl: currentUser.avatarUrl,
           email: currentUser.email,
           phone: currentUser.phone,
           role: currentUser.role?.name,
@@ -160,7 +161,7 @@ export default function TrangCaNhanPage() {
                   <div className="max-w-2xl">
                     <h2 className="text-2xl font-bold text-slate-900">Xin chào, {user.fullName || user.username}!</h2>
                     <p className="mt-2 text-slate-600">
-                      Thông tin hồ sơ, trạng thái xử lý và các thông báo mới đã được đồng bộ từ hệ thống.
+                      
                     </p>
                   </div>
                 </div>
@@ -183,6 +184,7 @@ export default function TrangCaNhanPage() {
           writeUserSession({
             username: nextUser.username,
             fullName: nextUser.fullName || nextUser.username,
+            avatarUrl: nextUser.avatarUrl,
             email: nextUser.email,
             phone: nextUser.phone,
             role: nextUser.role?.name,

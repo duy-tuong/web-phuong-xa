@@ -35,19 +35,50 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
     password: "",
     confirmPassword: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const validateForm = () => {
+    const nextErrors: Record<string, string> = {};
+    const fullName = registerForm.fullName.trim();
+    const username = registerForm.username.trim();
+    const email = registerForm.email.trim();
+    const password = registerForm.password;
+    const confirmPassword = registerForm.confirmPassword;
+
+    if (!fullName) {
+      nextErrors.fullName = "Vui lòng nhập họ và tên.";
+    }
+    if (!username) {
+      nextErrors.username = "Vui lòng nhập tên đăng nhập.";
+    }
+    if (!email) {
+      nextErrors.email = "Vui lòng nhập email.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      nextErrors.email = "Email không hợp lệ.";
+    }
+    if (!password) {
+      nextErrors.password = "Vui lòng nhập mật khẩu.";
+    } else if (password.length < 6) {
+      nextErrors.password = "Mật khẩu tối thiểu 6 ký tự.";
+    }
+    if (!confirmPassword) {
+      nextErrors.confirmPassword = "Vui lòng nhập xác nhận mật khẩu.";
+    } else if (password !== confirmPassword) {
+      nextErrors.confirmPassword = "Mật khẩu xác nhận không khớp.";
+    }
+
+    setFieldErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage("");
-
-    if (registerForm.password !== registerForm.confirmPassword) {
-      setErrorMessage("Mật khẩu xác nhận không khớp. Bạn kiểm tra lại giúp mình nhé.");
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
@@ -146,10 +177,13 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
               fullName: event.target.value,
             }))
           }
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
+          className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20 ${fieldErrors.fullName ? "border-red-500" : "border-slate-300"}`}
           placeholder="Nhập họ và tên"
           required
         />
+        {fieldErrors.fullName ? (
+          <p className="mt-1 text-xs text-red-500">{fieldErrors.fullName}</p>
+        ) : null}
 
         <label
           className="block text-sm font-medium text-slate-700"
@@ -168,10 +202,13 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
               username: event.target.value,
             }))
           }
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
+          className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20 ${fieldErrors.username ? "border-red-500" : "border-slate-300"}`}
           placeholder="Nhập tên đăng nhập"
           required
         />
+        {fieldErrors.username ? (
+          <p className="mt-1 text-xs text-red-500">{fieldErrors.username}</p>
+        ) : null}
 
         <label
           className="block text-sm font-medium text-slate-700"
@@ -187,10 +224,13 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
           onChange={(event) =>
             setRegisterForm((prev) => ({ ...prev, email: event.target.value }))
           }
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
+          className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20 ${fieldErrors.email ? "border-red-500" : "border-slate-300"}`}
           placeholder="Nhập email"
           required
         />
+        {fieldErrors.email ? (
+          <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>
+        ) : null}
 
         <label
           className="block text-sm font-medium text-slate-700"
@@ -210,7 +250,7 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
                 password: event.target.value,
               }))
             }
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
+            className={`w-full rounded-lg border bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20 ${fieldErrors.password ? "border-red-500" : "border-slate-300"}`}
             placeholder="Nhập mật khẩu"
             required
           />
@@ -227,6 +267,9 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
             )}
           </button>
         </div>
+        {fieldErrors.password ? (
+          <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
+        ) : null}
 
         <label
           className="block text-sm font-medium text-slate-700"
@@ -246,7 +289,7 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
                 confirmPassword: event.target.value,
               }))
             }
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
+            className={`w-full rounded-lg border bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20 ${fieldErrors.confirmPassword ? "border-red-500" : "border-slate-300"}`}
             placeholder="Nhập lại mật khẩu"
             required
           />
@@ -263,6 +306,9 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
             )}
           </button>
         </div>
+        {fieldErrors.confirmPassword ? (
+          <p className="mt-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
+        ) : null}
 
         <button
           type="submit"

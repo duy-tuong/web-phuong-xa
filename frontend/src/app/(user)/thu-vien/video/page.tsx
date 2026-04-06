@@ -26,7 +26,7 @@ export default async function ThuVienVideoPage({ searchParams }: ThuVienVideoPag
         showPagination
         showViewAllLink={false}
         heading="Danh sách video"
-        subheading="Mỗi trang hiển thị tối đa 4 video để giao diện gọn và đồng đều hơn."
+        subheading=""
       />
     </main>
   );

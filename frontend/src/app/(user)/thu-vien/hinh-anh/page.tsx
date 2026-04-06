@@ -26,7 +26,7 @@ export default async function ThuVienHinhAnhPage({ searchParams }: ThuVienHinhAn
         showPagination
         showViewAllLink={false}
         heading="Bộ sưu tập ảnh"
-        subheading="Mỗi trang hiển thị tối đa 4 hình ảnh để giao diện gọn và đồng đều hơn."
+        subheading=""
       />
     </main>
   );

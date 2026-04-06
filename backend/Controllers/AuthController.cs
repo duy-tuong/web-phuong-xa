@@ -92,13 +92,13 @@ namespace backend.Controllers
 
             if (user == null)
             {
-                return Unauthorized("Invalid username");
+                return Unauthorized("Tên tài khoản không đúng");
             }
 
             var verifyPassword = BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash);
             if (!verifyPassword)
             {
-                return Unauthorized("Invalid password");
+                return Unauthorized("Mật khẩu không đúng");
             }
 
             var token = _jwtService.GenerateToken(user);
