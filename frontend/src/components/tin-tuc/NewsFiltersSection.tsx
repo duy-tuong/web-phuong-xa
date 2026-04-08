@@ -1,9 +1,12 @@
-"use client";
+// Tin tức & Sự kiện Địa phương - Bộ lọc tìm kiếm và phân loại bài viết
+"use client";  // LƯU Ý 1: Bắt buộc phải có dòng này để khai báo đây là Client Component, vì nó có chứa các tương tác trực tiếp với người dùng (nhập phím, click chuột).
 
 const ALL_CATEGORY = "Tất cả";
 
 type SortMode = "newest" | "oldest" | "popular" | "title";
-
+// LƯU Ý 2: ĐỊNH NGHĨA KIỂU DỮ LIỆU CHUẨN MỰC (TypeScript)
+// Việc dùng Type ở đây giúp kiểm soát chặt chẽ những gì Component con này được nhận. 
+// Đáng chú ý là 4 hàm onChange: Nó buộc component cha (TinTucListPage) phải truyền xuống 4 cái "ống dẫn" để hứng dữ liệu.
 type NewsFiltersSectionProps = {
   categories: string[];
   keyword: string;

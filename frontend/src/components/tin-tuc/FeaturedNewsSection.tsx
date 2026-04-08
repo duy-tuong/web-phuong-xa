@@ -1,3 +1,4 @@
+// Tin tức & Sự kiện Địa phương - Phần hiển thị tin nổi bật, tin tiêu điểm, tin đọc nhiều, tin nổi bật trong tuần xử lý thao tác chia sẻ (Facebook/Zalo/copy link) cho bài nổi bật.
 "use client";
 
 import Image from "next/image";
@@ -10,7 +11,7 @@ import type { Article } from "@/types/article";
 type FeaturedNewsSectionProps = {
   articles: Article[];
 };
-
+//* Phần hiển thị tin nổi bật, tin tiêu điểm, tin đọc nhiều, tin nổi bật trong tuần xử lý thao tác chia sẻ (Facebook/Zalo/copy link) cho bài nổi bật. */
 export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionProps) {
   const featuredArticle = articles[0];
   const spotlightItems = articles.slice(1, 4);
@@ -30,7 +31,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
     <section className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-8">
       <div className="flex flex-col gap-6 lg:col-span-2">
         <div className="border-b border-[#1f7a5a]/10 pb-4">
-          <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">Tin tuc noi bat</h2>
+          <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">Tin tức nổi bật</h2>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
@@ -89,13 +90,13 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
                   sizes="(min-width: 640px) 66vw, 100vw"
                 />
                 <div className="absolute left-4 top-4 rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-                  Tin noi bat
+                  Tin nổi bật
                 </div>
               </div>
             ) : (
               <div className="border-b border-[#1f7a5a]/10 px-6 pt-6">
                 <div className="inline-flex rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
-                  Tin noi bat
+                  Tin nổi bật
                 </div>
               </div>
             )}
@@ -135,7 +136,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-4">
           <h3 className="flex items-center border-l-4 border-[#1f7a5a] pl-3 text-xl font-bold text-slate-900">
-            Tieu diem trong tuan
+            Tiêu điểm trong tuần
           </h3>
           <div className="flex flex-col gap-4">
             {spotlightItems.map((item) => (
@@ -171,7 +172,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
           <div className="flex flex-col gap-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
               <span className="material-symbols-outlined text-[20px] text-[#1f7a5a]">trending_up</span>
-              Tin doc nhieu
+              Tin đọc nhiều
             </h3>
             <ul className="flex flex-col gap-4">
               {popularNews.map((item, index) => (
@@ -194,7 +195,7 @@ export default function FeaturedNewsSection({ articles }: FeaturedNewsSectionPro
           <div className="flex flex-col gap-4">
             <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
               <span className="material-symbols-outlined text-[20px] text-[#1f7a5a]">star</span>
-              Tin noi bat tuan
+              Tin nổi bật tuần
             </h3>
             <div className="flex flex-col gap-3">
               {weeklyHighlights.map((item) => (

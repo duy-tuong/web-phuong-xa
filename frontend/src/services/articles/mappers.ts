@@ -1,6 +1,7 @@
-﻿import { resolveApiAssetUrl } from "@/lib/api-base-url";
+﻿//* Máy phiên dịch và Làm sạch dữ liệu" nằm giữa Backend và UI.
+import { resolveApiAssetUrl } from "@/lib/api-base-url";
 import { formatDateVi } from "@/lib/date-format";
-import { stripHtml } from "@/lib/html-utils";
+import { resolveHtmlImageSrc, stripHtml } from "@/lib/html-utils";
 import { slugify } from "@/lib/normalize";
 import type {
   ApiArticleDetail,
@@ -71,22 +72,32 @@ function buildTags(category?: string | null, title?: string | null) {
 
   return Array.from(new Set(tags)).slice(0, 3);
 }
-
+//! bắt lỗi tên biến lộn xộn từ Backend
+//! // Backend nhiều khi code không thống nhất, lúc trả về "isFeatured", lúc lại "IsFeatured", lúc thì "featured". Hàm này gom hết lại thành 1 chuẩn duy nhất cho UI dễ xài.
 function resolveFeaturedFlag(source: ApiArticleListItem | ApiArticleDetail) {
   return source.isFeatured === true || source.IsFeatured === true || source.featured === true;
 }
 
 export function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Article {
+  //!LƯU Ý 2: Dọn rác HTML (Data Cleansing).
+  //!Dữ liệu nội dung từ Backend thường bị dính các thẻ <p>, <b>... Hàm buildParagraphs/buildLead ở trên có xài stripHtml để lột sạch mấy cái tag đó, giúp UI không bị in ra mấy mã code xấu xí.
+  const rawContent = "content" in source ? source.content ?? "" : "";
+  const contentHtml = resolveHtmlImageSrc(rawContent);
   const paragraphs = buildParagraphs("content" in source ? source.content : undefined, source.excerpt);
   const lead = buildLead("content" in source ? source.content : undefined, source.excerpt);
+   //! LƯU Ý 3: Bọc lót dữ liệu trống (Fallback Defaults).
+  //! Nếu Admin quên nhập tác giả hoặc danh mục, thay vì để trống trơn báo lỗi, code sẽ tự động đắp chữ "Chưa phân loại" hoặc "Ban biên tập" vào để giao diện lúc nào cũng đầy đủ, đẹp mắt.
   const category = source.category?.trim() || "Chưa phân loại";
   const author = source.author?.trim() || "Ban biên tập";
+  //! LƯU Ý 4: Chuẩn hóa link ảnh.
+  //! Đôi khi Backend chỉ trả về tên ảnh (VD: "/hinh-1.jpg") chứ không có tên miền (http...). Hàm resolveApiAssetUrl sẽ tự động gắn thêm tên miền gốc vào để UI load được ảnh.
   const featuredImage = resolveApiAssetUrl(source.featuredImage);
 
   return {
     id: source.id,
     isFeatured: resolveFeaturedFlag(source),
     hasRealImage: Boolean(featuredImage),
+    contentHtml: contentHtml || undefined,
     slug: source.slug,
     title: source.title,
     category,

@@ -1,9 +1,8 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { CheckCircle, MessageSquare, Search, Trash2 } from "lucide-react";
-
 import PageHeader from "@/components/admin/PageHeader";
 import DataTable, { Column } from "@/components/admin/DataTable";
 import { ConfirmDeleteModal } from "@/components/admin/Modal";
@@ -17,15 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  deleteCommentAdmin,
-  fetchCommentsAdmin,
-  updateCommentStatus,
-} from "@/services/admin/comments";
-import { getErrorMessage } from "@/services/admin/errors";
 import { Comment } from "@/types";
+import api from "@/services/api";
 
-const statusConfig: Record<Comment["status"], { label: string; className: string }> = {
+const statusConfig: Record<
+  Comment["status"],
+  { label: string; className: string }
+> = {
   pending: {
     label: "Chờ duyệt",
     className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
@@ -41,66 +38,104 @@ const statusConfig: Record<Comment["status"], { label: string; className: string
 };
 
 export default function CommentsPage() {
+  const [adminRole, setAdminRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAdminRole(localStorage.getItem("admin_role"));
+  }, []);
+
+  const isEditor = adminRole === "Editor";
+
   const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteTarget, setDeleteTarget] = useState<Comment | null>(null);
 
-  const loadComments = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      setComments(await fetchCommentsAdmin());
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchComments = async () => {
+    const res = await api.get("/comments");
+    const data = Array.isArray(res.data) ? res.data : [];
+    const mapped = data.map((comment) => ({
+      id: String(comment.id ?? comment.Id ?? ""),
+      articleId: String(comment.articleId ?? comment.ArticleId ?? ""),
+      userName: comment.userName ?? comment.UserName ?? "",
+      content: comment.content ?? comment.Content ?? "",
+      status:
+        (comment.status ?? comment.Status ?? "pending").toLowerCase() ===
+        "approved"
+          ? "approved"
+          : (comment.status ?? comment.Status ?? "pending").toLowerCase() ===
+              "rejected"
+            ? "rejected"
+            : "pending",
+      createdAt:
+        comment.createdAt ?? comment.CreatedAt ?? new Date().toISOString(),
+      articleTitle: comment.articleTitle ?? comment.ArticleTitle ?? undefined,
+    })) as Comment[];
+
+    setComments(mapped);
+  };
 
   useEffect(() => {
-    void loadComments();
-  }, [loadComments]);
+    let mounted = true;
+
+    const load = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        await fetchComments();
+      } catch {
+        if (!mounted) return;
+        setErrorMessage("Không thể tải bình luận.");
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filteredComments = useMemo(() => {
     return comments.filter((comment) => {
-      const keyword = searchQuery.toLowerCase();
       const matchesSearch =
-        keyword === "" ||
-        comment.userName.toLowerCase().includes(keyword) ||
-        comment.content.toLowerCase().includes(keyword) ||
-        (comment.articleTitle || "").toLowerCase().includes(keyword);
+        searchQuery === "" ||
+        comment.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        comment.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (comment.articleTitle || "")
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase());
 
-      const matchesStatus = statusFilter === "all" || comment.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || comment.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [comments, searchQuery, statusFilter]);
 
-  const handleStatusChange = async (id: string, status: Comment["status"]) => {
+  const handleApprove = async (id: string) => {
+    setErrorMessage("");
     try {
-      setError("");
-      await updateCommentStatus(id, status);
-      await loadComments();
-    } catch (statusError) {
-      setError(getErrorMessage(statusError));
+      await api.put(`/comments/${id}`, { status: "Approved" });
+      await fetchComments();
+    } catch {
+      setErrorMessage("Duyệt bình luận thất bại.");
     }
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
+    if (!deleteTarget) return;
 
+    setErrorMessage("");
     try {
-      setError("");
-      await deleteCommentAdmin(deleteTarget.id);
-      await loadComments();
-    } catch (deleteError) {
-      setError(getErrorMessage(deleteError));
-    } finally {
+      await api.delete(`/comments/${deleteTarget.id}`);
+      await fetchComments();
       setDeleteTarget(null);
+    } catch {
+      setErrorMessage("Xóa bình luận thất bại.");
     }
   };
 
@@ -108,17 +143,27 @@ export default function CommentsPage() {
     {
       key: "userName",
       label: "Người dùng",
-      render: (comment) => <span className="font-medium text-stone-800">{comment.userName}</span>,
+      render: (comment) => (
+        <span className="font-medium text-stone-800">{comment.userName}</span>
+      ),
     },
     {
       key: "articleTitle",
       label: "Bài viết",
-      render: (comment) => <span className="block max-w-[220px] truncate text-stone-600">{comment.articleTitle || `#${comment.articleId}`}</span>,
+      render: (comment) => (
+        <span className="text-stone-600 truncate block max-w-[200px]">
+          {comment.articleTitle || `#${comment.articleId}`}
+        </span>
+      ),
     },
     {
       key: "content",
       label: "Nội dung",
-      render: (comment) => <p className="line-clamp-2 max-w-xs text-stone-700">{comment.content}</p>,
+      render: (comment) => (
+        <p className="line-clamp-2 max-w-xs text-stone-700">
+          {comment.content}
+        </p>
+      ),
     },
     {
       key: "status",
@@ -131,62 +176,60 @@ export default function CommentsPage() {
     {
       key: "createdAt",
       label: "Ngày tạo",
-      render: (comment) => <span className="text-sm text-stone-500">{format(new Date(comment.createdAt), "dd/MM/yyyy HH:mm")}</span>,
+      render: (comment) => (
+        <span className="text-sm text-stone-500">
+          {format(new Date(comment.createdAt), "dd/MM/yyyy HH:mm")}
+        </span>
+      ),
     },
     {
       key: "actions",
       label: "Thao tác",
       render: (comment) => (
         <div className="flex items-center gap-1">
-          {comment.status !== "approved" && (
+          {comment.status !== "approved" ? (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleStatusChange(comment.id, "approved")}
+              onClick={() => handleApprove(comment.id)}
               className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 w-8 h-8"
               title="Duyệt bình luận"
             >
               <CheckCircle className="w-4 h-4" />
             </Button>
-          )}
-          {comment.status !== "rejected" && (
+          ) : null}
+          {isEditor ? null : (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => handleStatusChange(comment.id, "rejected")}
-              className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 w-8 h-8"
-              title="Từ chối bình luận"
+              onClick={() => setDeleteTarget(comment)}
+              className="text-red-500 hover:text-red-600 hover:bg-red-50 w-8 h-8"
+              title="Xóa bình luận"
             >
-              <MessageSquare className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDeleteTarget(comment)}
-            className="text-red-500 hover:text-red-600 hover:bg-red-50 w-8 h-8"
-            title="Xóa bình luận"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div>
+      {errorMessage ? (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
       <PageHeader
         icon={MessageSquare}
         title="Quản lý bình luận"
-        description={loading ? "Đang tải bình luận..." : `${comments.length} bình luận đang có trong hệ thống`}
+        description={
+          isLoading
+            ? "Đang tải bình luận..."
+            : `${comments.length} bình luận đang có trong hệ thống`
+        }
       />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -214,14 +257,18 @@ export default function CommentsPage() {
       <DataTable
         columns={columns}
         data={filteredComments}
-        emptyMessage={loading ? "Đang tải dữ liệu..." : "Không có bình luận nào"}
+        emptyMessage={
+          isLoading ? "Đang tải bình luận..." : "Không có bình luận nào"
+        }
       />
 
       <ConfirmDeleteModal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        itemName={deleteTarget ? `bình luận của ${deleteTarget.userName}` : undefined}
+        itemName={
+          deleteTarget ? `bình luận của ${deleteTarget.userName}` : undefined
+        }
       />
     </div>
   );

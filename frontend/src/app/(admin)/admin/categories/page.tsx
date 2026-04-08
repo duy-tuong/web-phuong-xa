@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FolderTree, Pencil, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
@@ -15,46 +15,69 @@ import {
   fetchCategoriesAdmin,
   updateCategory,
 } from "@/services/admin/categories";
-import { getErrorMessage } from "@/services/admin/errors";
 
 interface CategoryFormData {
   name: string;
-  slug: string;
   description: string;
 }
 
 const emptyForm: CategoryFormData = {
   name: "",
-  slug: "",
   description: "",
 };
 
+// ---------------------------------------------------------------------------
+// Page component
+// ---------------------------------------------------------------------------
 export default function CategoriesPage() {
+  const [adminRole, setAdminRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAdminRole(localStorage.getItem("admin_role"));
+  }, []);
+
+  const isEditor = adminRole === "Editor";
+
+  // ----- data state -----
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // ----- modal state -----
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const loadCategories = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      setCategories(await fetchCategoriesAdmin());
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
-    void loadCategories();
-  }, [loadCategories]);
+    let mounted = true;
 
+    const load = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        setCategories(await fetchCategoriesAdmin());
+      } catch {
+        if (!mounted) return;
+        setErrorMessage("Không thể tải danh mục.");
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // -----------------------------------------------------------------------
+  // Modal helpers
+  // -----------------------------------------------------------------------
   const openCreateModal = () => {
     setEditingCategory(null);
     setFormData(emptyForm);
@@ -65,7 +88,6 @@ export default function CategoriesPage() {
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      slug: category.slug || "",
       description: category.description || "",
     });
     setModalOpen(true);
@@ -77,51 +99,75 @@ export default function CategoriesPage() {
     setFormData(emptyForm);
   };
 
+  // -----------------------------------------------------------------------
+  // CRUD handlers
+  // -----------------------------------------------------------------------
   const handleSave = async () => {
-    if (!formData.name.trim()) {
-      return;
-    }
+    if (!formData.name.trim()) return;
 
+    setErrorMessage("");
+    setIsSaving(true);
     try {
-      setSubmitting(true);
-      setError("");
-
       if (editingCategory) {
-        await updateCategory(editingCategory.id, formData);
+        await updateCategory(editingCategory.id, {
+          name: formData.name.trim(),
+          description: formData.description.trim() || "",
+        });
       } else {
-        await createCategory(formData);
+        await createCategory({
+          name: formData.name.trim(),
+          description: formData.description.trim() || "",
+        });
       }
 
-      await loadCategories();
+      setCategories(await fetchCategoriesAdmin());
       closeModal();
-    } catch (saveError) {
-      setError(getErrorMessage(saveError));
+    } catch {
+      setErrorMessage("Lưu danh mục thất bại.");
     } finally {
-      setSubmitting(false);
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
+    if (!deleteTarget) return;
 
+    setErrorMessage("");
+    setIsSaving(true);
     try {
-      setError("");
       await deleteCategory(deleteTarget.id);
-      await loadCategories();
-    } catch (deleteError) {
-      setError(getErrorMessage(deleteError));
-    } finally {
+      setCategories(await fetchCategoriesAdmin());
       setDeleteTarget(null);
+    } catch {
+      setErrorMessage("Xóa danh mục thất bại.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(categories.length / pageSize));
+
+  const pagedCategories = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return categories.slice(start, start + pageSize);
+  }, [categories, page, pageSize]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  // -----------------------------------------------------------------------
+  // Table columns
+  // -----------------------------------------------------------------------
   const columns: Column<Category>[] = [
     {
       key: "name",
       label: "Tên danh mục",
-      render: (category) => <span className="font-semibold text-stone-900">{category.name}</span>,
+      render: (category) => (
+        <span className="font-semibold text-stone-900">{category.name}</span>
+      ),
     },
     {
       key: "slug",
@@ -135,7 +181,9 @@ export default function CategoriesPage() {
     {
       key: "description",
       label: "Mô tả",
-      render: (category) => <span className="text-stone-500">{category.description || "--"}</span>,
+      render: (category) => (
+        <span className="text-stone-500">{category.description || "--"}</span>
+      ),
     },
     {
       key: "actions",
@@ -151,14 +199,16 @@ export default function CategoriesPage() {
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-stone-500 hover:text-red-600"
-            onClick={() => setDeleteTarget(category)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {!isEditor ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-stone-500 hover:text-red-600"
+              onClick={() => setDeleteTarget(category)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          ) : null}
         </div>
       ),
     },
@@ -166,30 +216,72 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      {errorMessage ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
+
       <PageHeader
         icon={FolderTree}
         title="Danh mục"
-        description={loading ? "Đang tải danh mục..." : `${categories.length} danh mục bài viết`}
-        action={{ label: "Thêm danh mục", onClick: openCreateModal }}
+        description="Quản lý danh mục bài viết và nội dung"
+        action={
+          isLoading
+            ? undefined
+            : { label: "Thêm danh mục", onClick: openCreateModal }
+        }
       />
-
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
 
       <DataTable
         columns={columns}
-        data={categories}
-        emptyMessage={loading ? "Đang tải dữ liệu..." : "Chưa có danh mục nào"}
+        data={pagedCategories}
+        emptyMessage="Chưa có danh mục nào"
       />
 
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="text-sm text-stone-500">
+          Trang {page} / {totalPages} • {categories.length} kết quả
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            className="h-9 rounded-md border border-stone-200 bg-white px-2 text-sm"
+            value={pageSize}
+            onChange={(event) => {
+              setPageSize(Number(event.target.value));
+              setPage(1);
+            }}
+          >
+            {[5, 10, 20, 50].map((size) => (
+              <option key={size} value={size}>
+                {size} / trang
+              </option>
+            ))}
+          </select>
+          <Button
+            variant="outline"
+            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+            disabled={page <= 1}
+          >
+            Trước
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+            disabled={page >= totalPages}
+          >
+            Sau
+          </Button>
+        </div>
+      </div>
+
+      {/* Create / Edit modal */}
       <Modal
         open={modalOpen}
         onClose={closeModal}
         title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
-        description="Thông tin sẽ đồng bộ trực tiếp với API categories."
+        description="Nhập thông tin để tạo danh mục mới."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -198,9 +290,13 @@ export default function CategoriesPage() {
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSave}
-              disabled={submitting || !formData.name.trim()}
+              disabled={isSaving}
             >
-              {editingCategory ? "Cập nhật" : "Tạo mới"}
+              {isSaving
+                ? "Đang lưu..."
+                : editingCategory
+                  ? "Cập nhật"
+                  : "Tạo mới"}
             </Button>
           </div>
         }
@@ -212,23 +308,19 @@ export default function CategoriesPage() {
             name="name"
             required
             value={formData.name}
-            onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, name: value }))
+            }
             placeholder="Nhập tên danh mục"
-          />
-          <FormField
-            type="text"
-            label="Slug"
-            name="slug"
-            value={formData.slug}
-            onChange={(value) => setFormData((prev) => ({ ...prev, slug: value }))}
-            placeholder="Để trống để backend tự sinh"
           />
           <FormField
             type="textarea"
             label="Mô tả"
             name="description"
             value={formData.description}
-            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, description: value }))
+            }
             placeholder="Mô tả ngắn về danh mục"
             rows={3}
           />

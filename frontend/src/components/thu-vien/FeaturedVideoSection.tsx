@@ -1,5 +1,5 @@
 import { fetchLibraryVideoPage } from "@/services/mediaLibraryService";
-
+//*Hệ thống gọi hàm fetchLibraryVideoPage(1, 1) để kéo về đúng 1 video mới nhất 
 export default async function FeaturedVideoSection() {
   const response = await fetchLibraryVideoPage(1, 1);
   const featuredVideo = response.items[0];
@@ -29,13 +29,14 @@ export default async function FeaturedVideoSection() {
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-slate-600">
               <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">Nội dung đa phương tiện</span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2">Tự động đồng bộ từ API</span>
+            
             </div>
           </div>
         </div>
 
         <div className="bg-slate-950 p-4 sm:p-6">
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl shadow-slate-950/40">
+          //* •	Nếu có video, nó sẽ gắn vào trình phát (player) để hiển thị trực tiếp 
             {featuredVideo ? (
               <video
                 src={featuredVideo.sourceUrl}
@@ -45,13 +46,14 @@ export default async function FeaturedVideoSection() {
               >
                 Trình duyệt của bạn không hỗ trợ phát video.
               </video>
-            ) : (
+         //* nếu chưa có dữ liệu, hệ thống sẽ hiển thị một giao diện chờ dự phòng  
+          ) : (
               <div className="flex aspect-video flex-col items-center justify-center gap-4 bg-[radial-gradient(circle_at_top,_rgba(31,122,90,0.35),_transparent_45%),linear-gradient(180deg,#0f172a,#111827)] px-6 text-center">
                 <span className="material-symbols-outlined text-6xl text-white/90">movie</span>
                 <div>
                   <p className="text-lg font-semibold text-white">Chưa có video nổi bật</p>
                   <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                    Khi kho video có dữ liệu thật từ API, khu vực này sẽ hiển thị trình phát video ở ngay bên phải.
+                    Khi nào thêm video mới vào thư viện công khai, video đó sẽ tự động xuất hiện tại đây.
                   </p>
                 </div>
               </div>

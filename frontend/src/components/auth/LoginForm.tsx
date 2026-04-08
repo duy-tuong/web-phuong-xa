@@ -1,4 +1,5 @@
-﻿"use client";
+﻿// ! Đăng nhập: Quản lý form, gửi request, xử lý phản hồi, hiển thị lỗi, và báo lên component cha khi thành công để lưu token và chuyển hướng.
+"use client";
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
@@ -6,14 +7,14 @@ import axios from "axios";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import api from "@/services/api";
-
+// Định nghĩa kiểu dữ liệu trả về khi login thành công 
 type LoginSuccessPayload = {
   token: string;
   username: string;
   fullName?: string;
   role?: string;
 };
-
+// Định nghĩa kiểu dữ liệu lỗi từ Backend trả về
 type BackendErrorPayload =
   | string
   | {
@@ -24,51 +25,68 @@ type BackendErrorPayload =
     };
 
 type LoginFormProps = {
-  onSuccess: (payload: LoginSuccessPayload) => void;
+  onSuccessAction: (payload: LoginSuccessPayload) => void;
   adminRedirectPath?: string | null;
 };
 
-export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormProps) {
+export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginFormProps) {
   const [loginForm, setLoginForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
+// Kiểm tra xem người dùng có đang cố đăng nhập vào khu vực Admin hay không
   const isAdminFlow = Boolean(adminRedirectPath?.startsWith("/admin"));
-
+//* Hàm xử lý chính khi người dùng bấm nút "Đăng nhập"
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setErrorMessage("");
+    event.preventDefault(); // Ngăn chặn hành vi reload trang mặc định của form
+    setErrorMessage(""); // Xóa lỗi cũ trước khi thử lại
+
+    const username = loginForm.identifier.trim();
+    const password = loginForm.password;
+
+    if (!username || !password) {
+      setErrorMessage("Vui lòng nhập tên đăng nhập và mật khẩu.");
+      return;
+    }
+
     setIsLoading(true);
-
     try {
-      const response = await api.post("/auth/login", {
-        username: loginForm.identifier.trim(),
-        password: loginForm.password,
-      });
-
+      //* GỌI API Ở ĐÂY: Gửi thông tin đăng nhập (username, password) lên endpoint /auth/login của backend.
+      const response = await api.post("/auth/login", { username, password });
+    // Lấy dữ liệu cần dùng từ phản hồi của backend.
       const token: string | undefined = response.data?.token;
-      const username: string | undefined = response.data?.username;
+      const returnedUsername: string | undefined = response.data?.username;
       const role: string | undefined = response.data?.role;
       const fullName: string | undefined = response.data?.fullName;
-
-      if (!token || !username) {
+    // Nếu thiếu token hoặc username thì coi như đăng nhập chưa thành công.
+      if (!token || !returnedUsername) {
         setErrorMessage("Đăng nhập thất bại. Không nhận được dữ liệu người dùng từ máy chủ.");
         return;
       }
-
+  // Chỉ tài khoản Admin hoặc Editor mới được vào luồng quản trị.
       const isAdminRole = role ? ["Admin", "Editor"].includes(role) : false;
       if (isAdminFlow && !isAdminRole) {
         setErrorMessage("Tài khoản không có quyền truy cập khu vực quản trị.");
         return;
       }
-
-      onSuccess({ token, username, fullName, role });
+  //* Báo lên component cha để lưu token và chuyển hướng.
+      onSuccessAction({ token, username: returnedUsername, fullName, role });
     } catch (error: unknown) {
       if (axios.isAxiosError<BackendErrorPayload>(error)) {
+          // Ưu tiên hiện lỗi backend trả về để người dùng dễ hiểu nguyên nhân.
         const data = error.response?.data;
         const serverMessage = typeof data === "string" ? data : data?.message || data?.error || data?.title || data?.detail;
-        setErrorMessage(serverMessage || "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.");
+        const normalizedMessage = (serverMessage || "").toLowerCase();
+        if (normalizedMessage.includes("invalid username")) {
+          setErrorMessage("Tên tài khoản không đúng");
+        } else if (normalizedMessage.includes("invalid password")) {
+          setErrorMessage("Mật khẩu không đúng");
+        } else {
+          setErrorMessage(
+            serverMessage ||
+              "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản hoặc mật khẩu.",
+          );
+        }
       } else {
         setErrorMessage("Đăng nhập thất bại. Vui lòng thử lại.");
       }
@@ -83,15 +101,12 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
 
   return (
     <>
-      {isAdminFlow ? (
-        <div className="mb-4 rounded-2xl border border-amber-100 bg-amber-50/80 p-4 text-sm text-amber-900">
-          <p className="font-semibold">Đăng nhập để truy cập khu vực quản trị</p>
-          <p className="mt-1">Chỉ tài khoản có quyền Admin hoặc Editor mới được vào trang quản trị.</p>
-        </div>
-      ) : null}
+
 
       {errorMessage ? (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</div>
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
       ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -103,13 +118,21 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
           name="identifier"
           type="text"
           value={loginForm.identifier}
-          onChange={(event) => setLoginForm((prev) => ({ ...prev, identifier: event.target.value }))}
+          onChange={(event) =>
+            setLoginForm((prev) => ({
+              ...prev,
+              identifier: event.target.value,
+            }))
+          }
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
           placeholder="Nhập tên đăng nhập"
           required
         />
 
-        <label className="block text-sm font-medium text-slate-700" htmlFor="loginPassword">
+        <label
+          className="block text-sm font-medium text-slate-700"
+          htmlFor="loginPassword"
+        >
           Mật khẩu
         </label>
         <div className="relative">
@@ -118,7 +141,12 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
             name="password"
             type={showPassword ? "text" : "password"}
             value={loginForm.password}
-            onChange={(event) => setLoginForm((prev) => ({ ...prev, password: event.target.value }))}
+            onChange={(event) =>
+              setLoginForm((prev) => ({
+                ...prev,
+                password: event.target.value,
+              }))
+            }
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-11 text-sm text-slate-900 outline-none transition focus:border-[#8b1d1d] focus:ring-2 focus:ring-[#8b1d1d]/20"
             placeholder="Nhập mật khẩu"
             required
@@ -129,7 +157,11 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
             className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition hover:text-slate-800"
             aria-label="Ẩn hoặc hiện mật khẩu"
           >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
           </button>
         </div>
 
@@ -139,7 +171,11 @@ export default function LoginForm({ onSuccess, adminRedirectPath }: LoginFormPro
           </Link>
         </div>
 
-        <button type="submit" disabled={isLoading} className={submitButtonClassName}>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={submitButtonClassName}
+        >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />

@@ -33,3 +33,7 @@ export async function updateApplicationStatus(id: string, status: Application["s
     status: toBackendApplicationStatus(status),
   });
 }
+
+export async function deleteApplication(id: string): Promise<void> {
+  await api.delete(`/applications/${id}`);
+}

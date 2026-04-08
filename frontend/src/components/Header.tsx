@@ -320,7 +320,7 @@ export default function Header() {
 
         {!isLoggedIn ? (
           <Link href="/login" onClick={() => setShowDrawer(false)} className="mt-6 block rounded-lg bg-red-700 py-2.5 text-center font-semibold text-white">
-            Dang nhap
+            Đăng nhập
           </Link>
         ) : (
           <button type="button" onClick={handleLogout} className="mt-6 rounded-lg bg-white py-2.5 text-center font-semibold text-emerald-800">
@@ -344,4 +344,3 @@ export default function Header() {
     </>
   );
 }
-

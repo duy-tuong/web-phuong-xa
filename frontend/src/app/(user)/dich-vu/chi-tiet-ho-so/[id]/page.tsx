@@ -1,4 +1,5 @@
-﻿"use client";
+﻿//* trang nộp hồ sơ cho 1 dịch vụ công cụ thể, hiển thị biểu mẫu và thông tin chi tiết về thủ tục hành chính đó
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -10,13 +11,14 @@ import { getProcedures } from "@/services/serviceService";
 import type { ProcedureDetail } from "@/types/service";
 
 export default function DichVuDetailPage() {
+  // 1. LẤY MÃ HỒ SƠ TỪ URL: Bắt lấy cái chữ trên thanh địa chỉ (ví dụ: /nop-ho-so/dang-ky-ket-hon)
   const params = useParams<{ id: string }>();
   const routeId = typeof params?.id === "string" ? params.id : "";
   const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+// 2. GỌI API: Tự động chạy ngầm tải toàn bộ danh sách thủ tục về khi vừa mở trang
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true; // Cờ chống lỗi rò rỉ bộ nhớ nếu người dùng chuyển trang quá nhanh
 
     const loadProcedures = async () => {
       try {
@@ -39,14 +41,14 @@ export default function DichVuDetailPage() {
       isMounted = false;
     };
   }, []);
-
+// 3. TÌM ĐÚNG THỦ TỤC: Lục trong danh sách API vừa trả về để rút ra đúng cái thủ tục khớp với mã URL
   const selectedProcedure = useMemo(
     () => procedures.find((item) => item.slug === routeId),
     [procedures, routeId],
   );
 
   const selectedProcedureTitle = selectedProcedure?.title ?? "Thủ tục đang chọn";
-
+// 4. MÀN HÌNH CHỜ: Nếu đang lấy dữ liệu thì hiện vòng xoay quay quay
   if (isLoading) {
     return (
       <main className="mx-auto max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
@@ -57,7 +59,7 @@ export default function DichVuDetailPage() {
       </main>
     );
   }
-
+// 5. HIỂN THỊ GIAO DIỆN CHÍNH: Vẽ bố cục trang nộp hồ sơ
   return (
     <main className="flex-1">
       <section className="border-b border-slate-200 bg-gradient-to-br from-[#1f7a5a]/5 to-[#db2777]/5 py-8 lg:py-12">

@@ -10,6 +10,12 @@ type TopHeaderWidgetProps = {
   showWeather?: boolean;
 };
 
+const DEFAULT_LOCATION = "Cao L\u00e3nh";
+const DEGREE_C = "\u00b0C";
+const WEATHER_LOADING_LABEL = "\u0110ang c\u1eadp nh\u1eadt...";
+const OPEN_METEO_URL =
+  "https://api.open-meteo.com/v1/forecast?latitude=10.46&longitude=105.63&current=temperature_2m&current_weather=true&timezone=auto";
+
 type OpenMeteoResponse = {
   current?: {
     temperature_2m?: number | null;
@@ -19,6 +25,18 @@ type OpenMeteoResponse = {
   };
 };
 
+function getTemperatureFromOpenMeteo(data: OpenMeteoResponse) {
+  if (typeof data.current?.temperature_2m === "number") {
+    return Math.round(data.current.temperature_2m);
+  }
+
+  if (typeof data.current_weather?.temperature === "number") {
+    return Math.round(data.current_weather.temperature);
+  }
+
+  return null;
+}
+
 export default function TopHeaderWidget({
   textColor = "text-slate-600",
   iconColor = "text-[#1f7a5a]",
@@ -27,6 +45,7 @@ export default function TopHeaderWidget({
 }: TopHeaderWidgetProps) {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [temp, setTemp] = useState<number | null>(null);
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -45,29 +64,27 @@ export default function TopHeaderWidget({
     }
 
     const fetchWeather = async () => {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 5000);
+
       try {
         setIsLoading(true);
-        const res = await fetch(
-          "https://api.open-meteo.com/v1/forecast?latitude=10.46&longitude=105.63&current=temperature_2m&current_weather=true&timezone=auto",
-        );
-
+        const res = await fetch(OPEN_METEO_URL, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         if (!res.ok) {
           throw new Error(`Weather request failed with status ${res.status}`);
         }
 
-        const data = (await res.json()) as OpenMeteoResponse;
-        const temperature =
-          typeof data.current?.temperature_2m === "number"
-            ? data.current.temperature_2m
-            : typeof data.current_weather?.temperature === "number"
-              ? data.current_weather.temperature
-              : null;
-
-        setTemp(temperature !== null ? Math.round(temperature) : null);
+        const fallbackData = (await res.json()) as OpenMeteoResponse;
+        setLocation(DEFAULT_LOCATION);
+        setTemp(getTemperatureFromOpenMeteo(fallbackData));
       } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu thời tiết:", error);
+        console.error("Failed to load weather data:", error);
         setTemp(null);
       } finally {
+        window.clearTimeout(timeoutId);
         setIsLoading(false);
       }
     };
@@ -95,10 +112,13 @@ export default function TopHeaderWidget({
           {isLoading ? (
             <div className="flex items-center gap-1">
               <Loader2 className="h-3.5 w-3.5 animate-spin opacity-50" />
-              <span className="text-xs opacity-70">Đang cập nhật...</span>
+              <span className="text-xs opacity-70">{WEATHER_LOADING_LABEL}</span>
             </div>
           ) : temp !== null ? (
-            <span>Cao Lãnh {temp}°C</span>
+            <span>
+              {location} {temp}
+              {DEGREE_C}
+            </span>
           ) : (
             <span className="text-xs opacity-50">N/A</span>
           )}

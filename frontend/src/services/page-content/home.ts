@@ -1,3 +1,4 @@
+//! nội dung tỉnh trang chủ
 export function getHomePageContent() {
   const highlightStats = [
     { value: "137.387", label: "Dân số (người)" },

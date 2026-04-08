@@ -1,4 +1,6 @@
-﻿"use client";
+﻿//! trang tin tức, hiển thị danh sách bài viết được đồng bộ từ backend
+"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -15,6 +17,8 @@ import {
   setOptionalQueryParam,
   setPageQueryParam,
 } from "@/lib/query-params";
+//  import hàm getArticles để lấy danh sách bài viết từ backend, hiển thị trên trang tin tức
+//  import hàm getCategories để lấy danh sách danh mục bài viết từ backend, hiển thị bộ lọc danh mục trên trang tin tức
 import { getArticles, getCategories } from "@/services/articleService";
 import type { Article } from "@/types/article";
 
@@ -22,7 +26,7 @@ type SortMode = "newest" | "oldest" | "popular" | "title";
 
 const ALL_CATEGORY = "Tất cả";
 const DEFAULT_PAGE_SIZE = 6;
-
+// Logic tính toán ngày tháng để sắp xếp bài viết theo ngày xuất bản, hỗ trợ cả định dạng ISO và định dạng "dd/MM/yyyy" phổ biến ở Việt Nam.
 function parseArticleDate(value: string) {
   const isoTimestamp = Date.parse(value);
   if (!Number.isNaN(isoTimestamp)) {
@@ -37,7 +41,7 @@ function parseArticleDate(value: string) {
   const [, day, month, year] = match;
   return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
 }
-
+// Logic sắp xếp mảng bài viết theo các tiêu chí khác nhau, được gọi sau khi đã lọc theo từ khóa và danh mục để đảm bảo thứ tự đúng với mong muốn của người dùng.
 function sortArticles(articles: Article[], sortMode: SortMode) {
   if (sortMode === "popular") {
     return [...articles].sort((left, right) => parseViews(right.views) - parseViews(left.views));
@@ -68,7 +72,7 @@ export default function TinTucListPage() {
   const [keyword, setKeyword] = useState(searchParams.get("q") ?? "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") ?? ALL_CATEGORY);
   const [sortMode, setSortMode] = useState<SortMode>((searchParams.get("sort") as SortMode) || "newest");
-
+// Đồng bộ State với URL mỗi khi URL thay đổi (Back/Forward trình duyệt)
   useEffect(() => {
     setKeyword(searchParams.get("q") ?? "");
     setSelectedCategory(searchParams.get("category") ?? ALL_CATEGORY);
@@ -85,7 +89,8 @@ export default function TinTucListPage() {
         if (!isMounted) {
           return;
         }
-
+  // Lưu dữ liệu vào state để render bộ lọc và danh sách bài viết.
+        setArticles(nextArticles);
         setArticles(nextArticles);
         setCategories(nextCategories.length > 0 ? nextCategories : [ALL_CATEGORY]);
       } finally {
@@ -101,7 +106,7 @@ export default function TinTucListPage() {
       isMounted = false;
     };
   }, []);
-
+// LƯU Ý 2: Ghi trạng thái lên thanh địa chỉ 
   const applyFilters = (overrides?: {
     keyword?: string;
     selectedCategory?: string;
@@ -116,13 +121,15 @@ export default function TinTucListPage() {
     setOptionalQueryParam(params, "category", nextCategory !== ALL_CATEGORY ? nextCategory : null);
     setOptionalQueryParam(params, "sort", nextSortMode !== "newest" ? nextSortMode : null);
     setPageQueryParam(params, 1);
-
+  // LOGIC SÂU: Không gọi API ở đây! Chỉ thay đổi đường link (VD: /tin-tuc?q=abc). 
+    // Việc này giúp user có thể copy link gửi bạn bè, bạn bè mở lên vẫn giữ nguyên trạng thái đang lọc.
     router.push(buildPathWithSearchParams(pathname, params));
   };
-
+// Lọc bài viết theo từ khóa và danh mục ngay trên frontend, không cần gọi API lại.
   const filteredArticles = useMemo(() => {
     const normalizedKeyword = keyword.trim().toLowerCase();
-
+// LOGIC SÂU: Lọc trực tiếp trên mảng 'articles' đã tải sẵn ở Client  
+    // Dùng useMemo để máy tính 'nhớ' kết quả. Nếu user gõ tìm kiếm, nó lục ngay trong RAM thay vì gọi API chọc xuống Server
     const nextArticles = articles.filter((article) => {
       const matchesCategory = selectedCategory === ALL_CATEGORY || !selectedCategory || article.category === selectedCategory;
       const haystack = [article.title, article.bodyLead, article.category, article.author, article.tags.join(" ")]
@@ -135,7 +142,7 @@ export default function TinTucListPage() {
 
     return sortArticles(nextArticles, sortMode);
   }, [articles, keyword, selectedCategory, sortMode]);
-
+// Tách riêng tin nổi bật và tin thường để render theo hai khối khác nhau.
   const featuredArticles = useMemo(
     () => filteredArticles.filter((article) => article.isFeatured === true),
     [filteredArticles],
@@ -145,7 +152,7 @@ export default function TinTucListPage() {
     () => filteredArticles.filter((article) => article.isFeatured !== true),
     [filteredArticles],
   );
-
+ // Tính phân trang và chỉ cắt ra số bài cần hiển thị ở trang hiện tại.
   const totalPages = Math.max(1, Math.ceil(regularArticles.length / DEFAULT_PAGE_SIZE));
   const requestedPage = parsePositivePageParam(searchParams.get("page"));
   const currentPage = Math.min(requestedPage, totalPages);
@@ -171,9 +178,10 @@ export default function TinTucListPage() {
       </main>
     );
   }
-
+//! Mảng bài viết đã được lọc và sắp xếp, giờ chỉ việc render ra giao diện. Nếu có tin nổi bật thì hiển thị ở khối riêng, phần còn lại hiển thị theo phân trang bên dưới.
   return (
     <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-10 px-4 py-8 sm:px-6 lg:px-8">
+      {/* Khối 1: thanh tìm kiếm và bộ lọc danh mục. */}
       <NewsFiltersSection
         categories={categories}
         keyword={keyword}
@@ -199,11 +207,12 @@ export default function TinTucListPage() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Không tìm thấy bài viết phù hợp</h1>
           <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-            Thử đổi từ khóa hoặc bộ lọc danh mục để xem thêm bài viết được đồng bộ từ backend.
+            
           </p>
         </section>
       ) : (
         <>
+         {/* Khối 2: nếu có tin nổi bật thì hiển thị trước, phần còn lại đi theo phân trang. */}
           {featuredArticles.length > 0 ? <FeaturedNewsSection articles={featuredArticles} /> : null}
 
           <NewsArchiveSection articles={pagedRegularArticles} />

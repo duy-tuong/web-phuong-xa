@@ -106,6 +106,7 @@ export function toService(service: ApiService): Service {
   return {
     id: String(service.id),
     name: service.name,
+    field: service.category ?? service.field ?? undefined,
     description: service.description,
     requiredDocuments: service.requiredDocuments,
     processingTime: service.processingTime,

@@ -7,6 +7,8 @@ export type ApiApplication = {
   applicantName: string;
   phone: string;
   email: string;
+  attachedFiles?: string | null;
+  AttachedFiles?: string | null;
   status: string;
   createdAt: string;
 };
@@ -26,6 +28,7 @@ export function toApplication(application: ApiApplication): Application {
     applicantName: application.applicantName,
     phone: application.phone,
     email: application.email,
+    attachedFiles: application.attachedFiles ?? application.AttachedFiles ?? undefined,
     status: normalizeApplicationStatus(application.status),
     createdAt: application.createdAt,
     serviceName: application.serviceName ?? undefined,

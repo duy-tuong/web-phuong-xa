@@ -1,4 +1,5 @@
-﻿"use client";
+﻿//!  hiển thị cột phụ bên trái (tra cứu, biểu mẫu tải, thủ tục quan tâm, hỗ trợ).
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -14,24 +15,29 @@ import { fetchPublicMedia } from "@/services/mediaLibraryService";
 import { getProcedures } from "@/services/serviceService";
 import type { MediaFile } from "@/types";
 import type { ProcedureDetail } from "@/types/service";
-
+// Định nghĩa số lượng biểu mẫu hiển thị mặc định (3) và số biểu mẫu load thêm mỗi lần bấm "Xem thêm" (8)
 const DEFAULT_TEMPLATE_LIMIT = 3;
 const EXPANDED_TEMPLATE_STEP = 8;
 
 export default function ServiceSidebar() {
+// Lấy các tham số trên thanh địa chỉ URL 
   const searchParams = useSearchParams();
-  const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
-  const [documentFiles, setDocumentFiles] = useState<MediaFile[]>([]);
-  const [templateKeyword, setTemplateKeyword] = useState("");
-  const [templatePage, setTemplatePage] = useState(1);
+  // Nơi lưu trữ dữ liệu và trạng thái của component:
+  const [procedures, setProcedures] = useState<ProcedureDetail[]>([]); // Lưu mảng danh sách thủ tục
+  const [documentFiles, setDocumentFiles] = useState<MediaFile[]>([]); // Lưu mảng danh sách file biểu mẫu
+  const [templateKeyword, setTemplateKeyword] = useState("");         // Lưu chữ khách hàng gõ vào ô tìm kiếm biểu mẫu
+  const [templatePage, setTemplatePage] = useState(1);                // Lưu số trang hiện tại của danh sách biểu mẫu
 
   const showAllTemplates = searchParams.get("templates") === "all";
   const visibleTemplateCount = showAllTemplates ? EXPANDED_TEMPLATE_STEP * templatePage : DEFAULT_TEMPLATE_LIMIT;
 
+  // Gọi các APi khi mở trang để tải về danh sách thủ tục và biểu mẫu. 
   useEffect(() => {
     let isMounted = true;
 
     const loadSidebarData = async () => {
+      //* Dùng Promise.allSettled gọi song song 2 API (Thủ tục và Biểu mẫu). 
+      // Lợi ích: Lỡ 1 API bị lỗi mạng, API kia vẫn trả về dữ liệu bình thường, không làm sập web.
       const [proceduresResult, documentsResult] = await Promise.allSettled([
         getProcedures(),
         fetchPublicMedia("document", 100),
@@ -40,7 +46,7 @@ export default function ServiceSidebar() {
       if (!isMounted) {
         return;
       }
-
+    // Kiểm tra API nào thành công ('fulfilled') thì lưu dữ liệu vào State, lỗi thì gán mảng rỗng []
       setProcedures(proceduresResult.status === "fulfilled" ? proceduresResult.value : []);
       setDocumentFiles(documentsResult.status === "fulfilled" ? documentsResult.value : []);
     };
@@ -53,17 +59,18 @@ export default function ServiceSidebar() {
   }, []);
 
   const featuredProcedures = procedures.slice(0, 3);
+  // 3. TRỘN DỮ LIỆU: Ghép thông tin thủ tục và file word đính kèm lại với nhau
   const allDownloadableTemplates = useMemo(
     () => buildDownloadableTemplates(procedures, documentFiles),
     [documentFiles, procedures],
   );
-
+//* 4. LUỒNG TÌM KIẾM TẠI CHỖ 
   const filteredTemplates = useMemo(() => {
     const normalizedKeyword = normalizeKeyword(templateKeyword);
     if (!normalizedKeyword) {
       return allDownloadableTemplates;
     }
-
+//gõ chữ tới đâu, code tự động quét cái mảng đã tải sẵn để giữ lại biểu mẫu khớp tên tới đó (Không gọi lại API).
     return allDownloadableTemplates.filter((template) =>
       normalizeKeyword(template.title).includes(normalizedKeyword),
     );

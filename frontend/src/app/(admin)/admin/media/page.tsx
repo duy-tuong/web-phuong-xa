@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Calendar, FileText, Image as ImageIcon, Trash2, Upload } from "lucide-react";
+import {
+  Calendar,
+  FileText,
+  Image as ImageIcon,
+  Trash2,
+  Upload,
+} from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
 import { ConfirmDeleteModal } from "@/components/admin/Modal";
@@ -24,28 +30,38 @@ function formatFileSize(size: number) {
 }
 
 function isImageFile(file: MediaFile) {
-  return file.type.toLowerCase().includes("image") || (file.fileType || "").toLowerCase().startsWith("image/");
+  return (
+    file.type.toLowerCase().includes("image") ||
+    (file.fileType || "").toLowerCase().startsWith("image/")
+  );
+}
+
+function isVideoFile(file: MediaFile) {
+  return (
+    file.type.toLowerCase().includes("video") ||
+    (file.fileType || "").toLowerCase().startsWith("video/")
+  );
 }
 
 export default function MediaPage() {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<MediaFile | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadMedia = useCallback(async () => {
     try {
-      setLoading(true);
-      setError("");
+      setIsLoading(true);
+      setErrorMessage("");
       const response = await fetchMediaAdmin({ page: 1, pageSize: 200 });
       setMediaFiles(response.data);
     } catch (loadError) {
-      setError(getErrorMessage(loadError));
+      setErrorMessage(getErrorMessage(loadError));
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, []);
 
@@ -59,14 +75,14 @@ export default function MediaPage() {
     }
 
     try {
-      setUploading(true);
-      setError("");
+      setIsUploading(true);
+      setErrorMessage("");
       await uploadMedia(file);
       await loadMedia();
     } catch (uploadError) {
-      setError(getErrorMessage(uploadError));
+      setErrorMessage(getErrorMessage(uploadError));
     } finally {
-      setUploading(false);
+      setIsUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -79,11 +95,11 @@ export default function MediaPage() {
     }
 
     try {
-      setError("");
+      setErrorMessage("");
       await deleteMediaAdmin(deleteTarget.id);
       await loadMedia();
     } catch (deleteError) {
-      setError(getErrorMessage(deleteError));
+      setErrorMessage(getErrorMessage(deleteError));
     } finally {
       setDeleteTarget(null);
     }
@@ -94,14 +110,18 @@ export default function MediaPage() {
       <PageHeader
         icon={ImageIcon}
         title="Thư viện media"
-        description={loading ? "Đang tải tệp media..." : `${mediaFiles.length} tệp đã đồng bộ với backend`}
+        description={
+          isLoading
+            ? "Đang tải tệp media..."
+            : `${mediaFiles.length} tệp đã đồng bộ với backend`
+        }
       />
 
-      {error && (
+      {errorMessage ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
+          {errorMessage}
         </div>
-      )}
+      ) : null}
 
       <div
         onClick={() => fileInputRef.current?.click()}
@@ -119,21 +139,27 @@ export default function MediaPage() {
           void handleUpload(event.dataTransfer.files?.[0]);
         }}
         className={`cursor-pointer rounded-xl border-2 border-dashed p-8 transition-colors ${
-          isDragOver ? "border-emerald-400 bg-emerald-50" : "border-stone-300 bg-white hover:border-emerald-400"
+          isDragOver
+            ? "border-emerald-400 bg-emerald-50"
+            : "border-stone-300 bg-white hover:border-emerald-400"
         }`}
       >
         <div className="flex flex-col items-center gap-3 text-center">
           <Upload className="h-10 w-10 text-stone-400" />
           <div>
             <p className="text-sm font-medium text-stone-700">
-              {uploading ? "Đang tải tệp lên..." : "Kéo thả tệp vào đây hoặc bấm để chọn tệp"}
+              {isUploading
+                ? "Đang tải tệp lên..."
+                : "Kéo thả tệp vào đây hoặc bấm để chọn tệp"}
             </p>
-            <p className="mt-1 text-xs text-stone-500">Ho tro JPG, PNG, GIF, PDF, DOC, DOCX. Gioi han 5MB.</p>
+            <p className="mt-1 text-xs text-stone-500">
+              Ho tro JPG, PNG, GIF, MP4, MOV, AVI, MKV, WEBM, PDF, DOC, DOCX. Gioi han 100MB.
+            </p>
           </div>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx"
+            accept=".jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.mkv,.webm,.pdf,.doc,.docx"
             className="hidden"
             onChange={(event) => void handleUpload(event.target.files?.[0])}
           />
@@ -142,16 +168,30 @@ export default function MediaPage() {
 
       {mediaFiles.length === 0 ? (
         <div className="rounded-xl border border-stone-200 bg-white py-12 text-center text-stone-400">
-          {loading ? "Đang tải dữ liệu..." : "Chưa có tệp nào"}
+          {isLoading ? "Đang tải dữ liệu..." : "Chưa có tệp nào"}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {mediaFiles.map((file) => (
-            <div key={file.id} className="group relative overflow-hidden rounded-xl border border-stone-200 bg-white">
+            <div
+              key={file.id}
+              className="group relative overflow-hidden rounded-xl border border-stone-200 bg-white"
+            >
               <div className="flex h-40 items-center justify-center bg-stone-100">
                 {isImageFile(file) && file.url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={file.url} alt={file.fileName} className="h-full w-full object-cover" />
+                  <img
+                    src={file.url}
+                    alt={file.fileName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : isVideoFile(file) && file.url ? (
+                  <video
+                    src={file.url}
+                    className="h-full w-full object-cover"
+                    preload="metadata"
+                    muted
+                  />
                 ) : (
                   <FileText className="h-10 w-10 text-stone-300" />
                 )}
@@ -167,13 +207,24 @@ export default function MediaPage() {
               </Button>
 
               <div className="space-y-1.5 p-3">
-                <p className="truncate text-sm font-medium text-stone-800">{file.fileName}</p>
-                <p className="truncate text-[11px] text-stone-500">Nguoi tai: {file.uploadedBy}</p>
+                <p className="truncate text-sm font-medium text-stone-800">
+                  {file.fileName}
+                </p>
+                <p className="truncate text-[11px] text-stone-500">
+                  Nguoi tai: {file.uploadedBy}
+                </p>
                 <div className="flex items-center justify-between gap-2 text-xs text-stone-500">
                   <span>{formatFileSize(file.fileSize || 0)}</span>
                   <span className="inline-flex items-center gap-1 text-stone-400">
                     <Calendar className="h-3 w-3" />
-                    {format(new Date(file.uploadedAt || file.createdAt || new Date().toISOString()), "dd/MM/yyyy")}
+                    {format(
+                      new Date(
+                        file.uploadedAt ||
+                          file.createdAt ||
+                          new Date().toISOString(),
+                      ),
+                      "dd/MM/yyyy",
+                    )}
                   </span>
                 </div>
               </div>

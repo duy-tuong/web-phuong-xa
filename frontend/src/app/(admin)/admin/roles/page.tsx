@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Shield, Pencil, Trash2 } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
@@ -8,7 +8,6 @@ import DataTable, { Column } from "@/components/admin/DataTable";
 import FormField from "@/components/admin/FormField";
 import Modal, { ConfirmDeleteModal } from "@/components/admin/Modal";
 import { Button } from "@/components/ui/button";
-import { getErrorMessage } from "@/services/admin/errors";
 import { Role } from "@/types";
 import {
   createRole,
@@ -17,108 +16,123 @@ import {
   updateRole,
 } from "@/services/admin/roles";
 
+// ---------- Form state type ----------
+interface RoleFormData {
+  name: string;
+}
+
+const emptyForm: RoleFormData = {
+  name: "",
+};
+
+// ---------- Component ----------
 export default function RolesPage() {
+  // --- data state ---
   const [roles, setRoles] = useState<Role[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // --- modal state ---
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [roleName, setRoleName] = useState("");
+  const [formData, setFormData] = useState<RoleFormData>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const loadRoles = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      setRoles(await fetchRoles());
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
-    void loadRoles();
-  }, [loadRoles]);
+    let mounted = true;
 
+    const load = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        setRoles(await fetchRoles());
+      } catch {
+        if (!mounted) return;
+        setErrorMessage("Không thể tải danh sách vai trò.");
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // ---------- Modal handlers ----------
   const openCreateModal = () => {
     setEditingRole(null);
-    setRoleName("");
+    setFormData(emptyForm);
     setModalOpen(true);
   };
 
   const openEditModal = (role: Role) => {
     setEditingRole(role);
-    setRoleName(role.name);
+    setFormData({
+      name: role.name,
+    });
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
     setEditingRole(null);
-    setRoleName("");
+    setFormData(emptyForm);
   };
 
+  const isFormValid = useMemo(() => formData.name.trim().length > 0, [formData.name]);
+
   const handleSubmit = async () => {
-    if (!roleName.trim()) {
-      return;
-    }
+    if (!isFormValid) return;
+    setIsSaving(true);
+    setErrorMessage("");
 
     try {
-      setSubmitting(true);
-      setError("");
-
       if (editingRole) {
-        await updateRole(editingRole.id, roleName);
+        await updateRole(editingRole.id, formData.name.trim());
       } else {
-        await createRole(roleName);
+        await createRole(formData.name.trim());
       }
 
-      await loadRoles();
+      setRoles(await fetchRoles());
       closeModal();
-    } catch (submitError) {
-      setError(getErrorMessage(submitError));
+    } catch {
+      setErrorMessage("Lưu vai trò thất bại.");
     } finally {
-      setSubmitting(false);
+      setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!deleteTarget) {
-      return;
-    }
+    if (!deleteTarget) return;
 
+    setErrorMessage("");
+    setIsSaving(true);
     try {
-      setError("");
       await deleteRole(deleteTarget.id);
-      await loadRoles();
-    } catch (deleteError) {
-      setError(getErrorMessage(deleteError));
-    } finally {
+      setRoles(await fetchRoles());
       setDeleteTarget(null);
+    } catch {
+      setErrorMessage("Xóa vai trò thất bại.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  // ---------- Form field updater ----------
+  const updateField = (field: keyof RoleFormData) => (value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // ---------- Table columns ----------
   const columns: Column<Role>[] = [
     {
       key: "name",
       label: "Tên vai trò",
       render: (role) => <span className="font-medium text-stone-900">{role.name}</span>,
-    },
-    {
-      key: "description",
-      label: "Mô tả",
-      render: (role) => (
-        <span className="text-stone-600">
-          {role.name === "Admin"
-            ? "Vai trò quản trị hệ thống"
-            : role.name === "Editor"
-              ? "Vai trò quản lý nội dung"
-              : "Vai trò tùy chỉnh"}
-        </span>
-      ),
     },
     {
       key: "actions",
@@ -152,30 +166,34 @@ export default function RolesPage() {
       <PageHeader
         icon={Shield}
         title="Quản lý vai trò"
-        description={loading ? "Đang tải vai trò..." : `${roles.length} vai trò đang có trong hệ thống`}
-        action={{
-          label: "Thêm vai trò",
-          onClick: openCreateModal,
-        }}
+        description="Quản lý các vai trò và phân quyền trong hệ thống"
+        action={
+          isLoading
+            ? undefined
+            : {
+                label: "Thêm vai trò",
+                onClick: openCreateModal,
+              }
+        }
       />
 
-      {error && (
+      {errorMessage ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
+          {errorMessage}
         </div>
-      )}
+      ) : null}
 
       <DataTable
         columns={columns}
         data={roles}
-        emptyMessage={loading ? "Đang tải dữ liệu..." : "Chưa có vai trò nào"}
+        emptyMessage={isLoading ? "Đang tải dữ liệu..." : "Chưa có vai trò nào"}
       />
 
       <Modal
         open={modalOpen}
         onClose={closeModal}
         title={editingRole ? "Cập nhật vai trò" : "Thêm vai trò mới"}
-        description="Nhập tên vai trò để đồng bộ trực tiếp với backend."
+        description="Nhập thông tin để thêm vai trò mới."
         footer={
           <div className="flex gap-2">
             <Button variant="outline" onClick={closeModal}>
@@ -184,22 +202,33 @@ export default function RolesPage() {
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSubmit}
-              disabled={submitting || !roleName.trim()}
+              disabled={!isFormValid || isSaving}
             >
-              {editingRole ? "Cập nhật" : "Tạo mới"}
+              {isSaving ? "Đang lưu..." : editingRole ? "Cập nhật" : "Tạo mới"}
             </Button>
           </div>
         }
       >
-        <FormField
-          type="text"
-          label="Tên vai trò"
-          name="roleName"
-          required
-          value={roleName}
-          onChange={setRoleName}
-          placeholder="Nhập tên vai trò"
-        />
+        <div className="space-y-4 rounded-xl border border-[hsl(120,10%,88%)] bg-[linear-gradient(180deg,hsl(45,30%,99%),hsl(45,24%,97%))] p-4 sm:p-5">
+          <div className="pb-1">
+            <p className="text-sm font-semibold text-stone-900">
+              Thông tin vai trò
+            </p>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Các trường có dấu * là bắt buộc.
+            </p>
+          </div>
+
+          <FormField
+            type="text"
+            label="Tên vai trò"
+            name="name"
+            required
+            value={formData.name}
+            onChange={updateField("name")}
+            placeholder="Nhập tên vai trò"
+          />
+        </div>
       </Modal>
 
       <ConfirmDeleteModal
@@ -208,6 +237,7 @@ export default function RolesPage() {
         onConfirm={handleDelete}
         itemName={deleteTarget?.name}
       />
+
     </div>
   );
 }

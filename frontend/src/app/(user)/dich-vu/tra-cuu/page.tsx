@@ -1,4 +1,5 @@
-﻿"use client";
+﻿//* trang tra cứu hồ sơ đã nộp, cho phép người dùng nhập số điện thoại và email để xem trạng thái xử lý của các hồ sơ đã nộp trước đó
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -75,12 +76,13 @@ export default function TraCuuPage() {
     setPhone(searchParams.get("phone") ?? "");
     setEmail(searchParams.get("email") ?? "");
   }, [searchParams]);
-
+// 4. LUỒNG TRA CỨU NGẦM (CHẠY KHI VỪA MỞ TRANG)
+  // Nếu người dùng vào thẳng link có sẵn tham số (VD: /tra-cuu?phone=0909), hệ thống tự động đi tìm dữ liệu mà không cần khách phải bấm nút.
   useEffect(() => {
     const initialPhone = searchParams.get("phone") ?? "";
     const initialEmail = searchParams.get("email") ?? "";
 
-    if (!initialPhone && !initialEmail) {
+    if (!initialPhone && !initialEmail) { // Nếu URL trống trơn thì thôi, không tra cứu ngầm
       return;
     }
 
@@ -90,6 +92,7 @@ export default function TraCuuPage() {
       setIsSearching(true);
       setErrorMessage("");
       try {
+        // Gửi số điện thoại / email xuống Backend để lục hồ sơ
         const data = await searchPublicApplications({
           phone: initialPhone || undefined,
           email: initialEmail || undefined,
@@ -120,9 +123,9 @@ export default function TraCuuPage() {
       isMounted = false;
     };
   }, [searchParams]);
-
+// 5. HÀNH ĐỘNG KHI NGƯỜI DÙNG BẤM NÚT "TRA CỨU"
   const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault(); // Chặn hành vi load lại trang mặc định của Form html
 
     const trimmedPhone = phone.trim();
     const trimmedEmail = email.trim();
@@ -133,7 +136,9 @@ export default function TraCuuPage() {
       setHasSearched(false);
       return;
     }
-
+// ĐIỂM QUAN TRỌNG: Thay vì tự gọi API, nó đẩy thông tin người dùng nhập LÊN THANH ĐỊA CHỈ URL.
+    // Việc đẩy lên URL này sẽ tự động kích hoạt cái [LUỒNG TRA CỨU NGẦM (Bước 4)] chạy. 
+    // Thiết kế kiểu này giúp Share Link dễ dàng!
     const params = cloneSearchParams("");
     setOptionalQueryParam(params, "phone", trimmedPhone);
     setOptionalQueryParam(params, "email", trimmedEmail);

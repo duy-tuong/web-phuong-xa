@@ -23,7 +23,7 @@ export default function ArticleCard({
           </div>
         ) : null}
         <div className="flex flex-col justify-between py-0.5">
-          <h4 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
+          <h4 className="break-normal whitespace-normal text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
             {title}
           </h4>
           <span className="flex items-center gap-1 text-xs text-slate-500">
@@ -63,10 +63,10 @@ export default function ArticleCard({
             {category}
           </div>
         ) : null}
-        <h3 className="line-clamp-2 text-lg font-bold leading-tight text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
+        <h3 className="break-normal whitespace-normal text-lg font-bold leading-tight text-slate-900 transition-colors group-hover:text-[#1f7a5a]">
           {title}
         </h3>
-        <p className="mb-2 line-clamp-3 text-sm leading-relaxed text-slate-600">{summary}</p>
+        <p className="mb-2 break-normal whitespace-normal text-sm leading-relaxed text-slate-600">{summary}</p>
         <div className="mt-auto flex items-center justify-between border-t border-[#1f7a5a]/10 pt-3 text-xs text-slate-500">
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px]">calendar_today</span>

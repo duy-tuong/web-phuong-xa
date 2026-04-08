@@ -1,3 +1,4 @@
+// Tin tức & Sự kiện Địa phương - Phần hiển thị kho tin tức, danh sách bài viết cũ hơn, có phân trang nếu cần thiết.
 import ArticleCard from "@/components/ArticleCard";
 import type { Article } from "@/types/article";
 

@@ -1,4 +1,6 @@
-﻿"use client";
+﻿//* khung của trang dịch vụ hành chính công, hiển thị danh sách dịch vụ và thanh tìm kiếm
+// trang này chỉ lắp 3 khối chính: ServiceSearchBar Thanh tìm kiếm, ServiceSidebar hỗ trợ + biểu mẫu, ServiceList Danh sách thủ tục
+"use client";
 
 import ServiceSearchBar from "@/components/services/ServiceSearchBar";
 import ServiceSidebar from "@/components/services/ServiceSidebar";
@@ -19,12 +21,15 @@ export default function DichVuHanhChinhPage() {
 
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:gap-10">
           <div className="order-2 lg:order-1 lg:col-span-4 xl:col-span-3">
+          {/* LƯU Ý 3: GỌI COMPONENT CON (Giao khoán việc) */}
+            {/* Component này tự động gọi API lấy Top thủ tục và Biểu mẫu tải nhiều */}
             <ServiceSidebar />
           </div>
 
           <div className="order-1 flex flex-col lg:order-2 lg:col-span-8 xl:col-span-9">
             <ServiceSearchBar />
-            <ServiceList />
+           {/* Component ServiceList tự thực hiện việc gọi API lấy danh sách toàn bộ thủ tục và in ra màn hình */}
+            <ServiceList /> 
           </div>
         </div>
       </section>

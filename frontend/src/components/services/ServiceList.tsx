@@ -1,4 +1,5 @@
-﻿"use client";
+﻿//!  hiển thị danh sách thủ tục ở cột phải.
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -46,7 +47,8 @@ function buildServiceDescription(procedure: ProcedureDetail) {
 
   return `Hồ sơ cần chuẩn bị: ${topRequirements.join("; ")}.`;
 }
-
+// LƯU Ý 1: KỸ THUẬT ADAPTER (Bộ chuyển đổi dữ liệu) 
+// chỉ lấy đúng những thông tin cần thiết (như Mức độ 3/4, tên thủ tục, thời gian) để nhét vừa vào cái thẻ ServiceCard.
 function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceCardData {
   const { level, levelClass } = getLevelData(procedure);
 
@@ -55,7 +57,7 @@ function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceC
     profileCode: procedure.id ? `DV-${String(procedure.id).padStart(3, "0")}` : `DV-${String(index + 1).padStart(3, "0")}`,
     level,
     levelClass,
-    field: inferServiceField(procedure.title),
+    field: procedure.field || inferServiceField(procedure.title),
     title: procedure.title,
     description: buildServiceDescription(procedure),
     duration: procedure.processingTime,
@@ -65,7 +67,7 @@ function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceC
 
 type SortMode = "default" | "name" | "duration";
 const ITEMS_PER_PAGE = 4;
-
+//* Component chính của khối danh sách thủ tục, chịu trách nhiệm gọi API lấy dữ liệu, xử lý lọc/sắp xếp/phân trang và in ra HTML
 export default function ServiceList() {
   const router = useRouter();
   const pathname = usePathname();
@@ -73,21 +75,23 @@ export default function ServiceList() {
   const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>("default");
-
+// LƯU Ý 2: CHỖ GỌI API (Tải dữ liệu phía Client)
+  // Hook useEffect này chạy ĐÚNG 1 LẦN ngay khi Component vừa được gắn lên màn hình (Mount).
   useEffect(() => {
     let isMounted = true;
 
     const loadProcedures = async () => {
       try {
+      //*Hàm getProcedures() chạy xuống Tầng Service vào API Backend để lấy mảng thủ tục về.
         const nextProcedures = await getProcedures();
         if (!isMounted) {
           return;
         }
-
+// Lấy về xong thì cất vào kho (State)
         setProcedures(nextProcedures);
       } finally {
         if (isMounted) {
-          setIsLoading(false);
+          setIsLoading(false);// Tắt hiệu ứng Loading
         }
       }
     };
@@ -103,7 +107,7 @@ export default function ServiceList() {
   const keyword = (searchParams.get("q") ?? "").trim().toLowerCase();
   const field = searchParams.get("field") ?? "";
   const currentPage = parsePositivePageParam(searchParams.get("page"));
-
+//* LƯU Ý 3: THUẬT TOÁN LỌC VÀ SẮP XẾP (Filtering & Sorting) - Dựa trên keyword và field lấy từ URL Parameters, lọc ra những thủ tục phù hợp để hiện thị
   const filteredServices = useMemo(() => {
     const nextServices = services.filter((service) => {
       const matchesKeyword =
@@ -127,9 +131,10 @@ export default function ServiceList() {
 
     return nextServices;
   }, [field, keyword, services, sortMode]);
-
+//* LƯU Ý 4: THUẬT TOÁN PHÂN TRANG (Pagination)
   const totalPages = Math.max(1, Math.ceil(filteredServices.length / ITEMS_PER_PAGE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
+  // Chỉ cắt ra đúng 4 bài (ITEMS_PER_PAGE) ở trang hiện tại để đem đi in ra HTML
   const pagedServices = useMemo(() => {
     const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
     return filteredServices.slice(start, start + ITEMS_PER_PAGE);
@@ -146,14 +151,14 @@ export default function ServiceList() {
   }, [currentPage, pathname, router, safeCurrentPage, searchParams]);
 
   const visiblePages = useMemo(() => buildCompactPagination(safeCurrentPage, totalPages), [safeCurrentPage, totalPages]);
-
+//* Hàm xử lý khi người dùng bấm vào nút chuyển trang (trước/sau hoặc số trang cụ thể)
   const handlePageChange = (page: number) => {
     const nextPage = Math.max(1, Math.min(page, totalPages));
     const params = cloneSearchParams(searchParams);
     setPageQueryParam(params, nextPage);
     router.push(buildPathWithSearchParams(pathname, params));
   };
-
+//* Render trạng thái
   if (isLoading) {
     return (
       <div className="flex w-full flex-col space-y-4">
@@ -164,7 +169,7 @@ export default function ServiceList() {
       </div>
     );
   }
-
+//* không có thủ tục nào cả thì hiển thị thông báo trống
   if (services.length === 0) {
     return (
       <div className="flex w-full flex-col space-y-4">

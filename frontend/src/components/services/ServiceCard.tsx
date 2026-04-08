@@ -16,6 +16,7 @@ export type ServiceCardData = {
 export default function ServiceCard({ service }: { service: ServiceCardData }) {
   return (
     <Link
+   //* mỗi card là một Link dẫn đến trang chi tiết của thủ tục tương ứng, URL dựa trên slug của thủ tục đó
       href={`/dich-vu/${service.slug}`}
       className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#1f7a5a]/30 hover:shadow-md sm:p-6"
     >

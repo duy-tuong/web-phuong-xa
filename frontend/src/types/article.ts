@@ -7,6 +7,7 @@ export interface Article {
   id?: number;
   isFeatured?: boolean;
   hasRealImage?: boolean;
+  contentHtml?: string;
   slug: string;
   title: string;
   category: string;

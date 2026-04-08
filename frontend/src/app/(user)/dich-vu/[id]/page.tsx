@@ -1,25 +1,28 @@
-// trang  chi tiết 1 dịch vụ công cụ thể
+//* trang  chi tiết 1 dịch vụ công cụ thể
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { getProcedures } from "@/services/serviceService";
+import { getProcedures } from "@/services/serviceService"; 
 import type { ProcedureDetail } from "@/types/service";
 
 export default function DichVuCongDetailPage() {
+  //! 1 LƯU Ý 1: BẮT VÀ GIẢI MÃ URL
+  //! Dùng useParams để lấy ID.  bọc qua hàm `decodeURIComponent`. Vì tiếng Việt có dấu hoặc khoảng trắng trên URL thường bị biến thành các ký tự lạ. Lệnh này giúp dịch nó về lại chữ bình thường.
   const params = useParams<{ id: string }>();
   const routeId = typeof params?.id === "string" ? decodeURIComponent(params.id) : "";
   const [procedures, setProcedures] = useState<ProcedureDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+// 2. GỌI API LẤY DỮ LIỆU
+  // Tự động xuống Backend lấy "toàn bộ" danh sách thủ tục về khi vừa mở trang.
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true; // Biến cờ giúp chống lỗi sập web nếu người dùng lỡ bấm quay lại (Back) khi mạng đang tải.
 
     const loadProcedures = async () => {
       try {
-        const nextProcedures = await getProcedures();
+        const nextProcedures = await getProcedures(); 
         if (!isMounted) {
           return;
         }
@@ -27,7 +30,7 @@ export default function DichVuCongDetailPage() {
         setProcedures(nextProcedures);
       } finally {
         if (isMounted) {
-          setIsLoading(false);
+          setIsLoading(false); // Tải xong thì tắt vòng xoay loading
         }
       }
     };
@@ -38,12 +41,14 @@ export default function DichVuCongDetailPage() {
       isMounted = false;
     };
   }, []);
-
+// 3. TÌM CHÍNH XÁC THỦ TỤC CẦN XEM
+  // Lấy cuốn sổ danh sách vừa tải về ở Bước 2, lục tìm đúng cái trang có tên khớp với cái mã ở Bước 1.
   const detail = useMemo(
     () => procedures.find((item) => item.slug === routeId),
     [procedures, routeId],
   );
-
+//! LƯU Ý 4: PHÂN LỒNG TRẠNG THÁI (UI STATES)
+  // Trường hợp 1: API chưa tải xong -> Hiện vòng xoay quay quay.
   if (isLoading) {
     return (
       <main className="mx-auto w-full max-w-[1000px] px-4 py-10 sm:px-6 lg:px-8">
@@ -54,7 +59,7 @@ export default function DichVuCongDetailPage() {
       </main>
     );
   }
-
+// Trường hợp 2: Khách hàng gõ bậy bạ trên URL (Không tìm thấy ID) -> Báo lỗi nhẹ nhàng.
   if (!detail) {
     return (
       <main className="mx-auto w-full max-w-[1000px] px-4 py-10 sm:px-6 lg:px-8">
@@ -83,7 +88,7 @@ export default function DichVuCongDetailPage() {
       </main>
     );
   }
-
+// Trường hợp 3: Tìm thấy thành công -> In toàn bộ thông tin (Tên, thời gian, lệ phí, hồ sơ...) ra màn hình.
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
       <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">

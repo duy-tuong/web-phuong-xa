@@ -5,6 +5,7 @@ import { ImagePlus, Loader2, RotateCcw, Trash2, Upload, X } from "lucide-react";
 
 import { getErrorMessage } from "@/services/admin/errors";
 import { updateCurrentUser } from "@/services/admin/profile";
+import api from "@/services/api";
 import type { User } from "@/types";
 
 type ProfileUpdateModalProps = {
@@ -76,6 +77,20 @@ async function renderAvatarDataUrl(input: {
   context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
 
   return canvas.toDataURL("image/jpeg", 0.92);
+}
+
+function dataUrlToFile(dataUrl: string, fileName: string) {
+  const [header, data] = dataUrl.split(",");
+  const mimeMatch = header.match(/data:(.*?);/);
+  const mimeType = mimeMatch ? mimeMatch[1] : "image/jpeg";
+  const binary = atob(data);
+  const buffer = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i += 1) {
+    buffer[i] = binary.charCodeAt(i);
+  }
+
+  return new File([buffer], fileName, { type: mimeType });
 }
 
 function validateForm(input: {
@@ -266,14 +281,25 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
       let nextAvatarUrl = user.avatarUrl || "";
 
       if (avatarWasEdited) {
-        nextAvatarUrl = avatarSource
-          ? await renderAvatarDataUrl({
-              src: avatarSource,
-              scale: avatarScale,
-              offsetX: avatarOffsetX,
-              offsetY: avatarOffsetY,
-            })
-          : "";
+        if (!avatarSource) {
+          nextAvatarUrl = "";
+        } else {
+          const renderedDataUrl = await renderAvatarDataUrl({
+            src: avatarSource,
+            scale: avatarScale,
+            offsetX: avatarOffsetX,
+            offsetY: avatarOffsetY,
+          });
+          if (renderedDataUrl.startsWith("data:")) {
+            const avatarFile = dataUrlToFile(renderedDataUrl, `avatar-${user.id}.jpg`);
+            const uploadData = new FormData();
+            uploadData.append("file", avatarFile);
+            const uploadResponse = await api.post("/media/avatar", uploadData);
+            nextAvatarUrl = uploadResponse.data?.url || "";
+          } else {
+            nextAvatarUrl = renderedDataUrl;
+          }
+        }
       }
 
       const updatedUser = await updateCurrentUser({
@@ -323,7 +349,10 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
           </button>
         </div>
 
-        <div className="max-h-[calc(92vh-82px)] overflow-y-auto px-5 py-5 sm:px-6">
+        <div
+          data-lenis-prevent
+          className="max-h-[calc(92vh-82px)] overflow-y-auto px-5 py-5 sm:px-6"
+        >
           <form className="space-y-6" onSubmit={handleSubmit}>
             {formError ? (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{formError}</div>
@@ -496,16 +525,6 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
                   className={getInputClassName(Boolean(fieldErrors.phone))}
                 />
                 {fieldErrors.phone ? <p className="text-sm text-red-600">{fieldErrors.phone}</p> : null}
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">Địa chỉ cư trú</span>
-                <input
-                  type="text"
-                  value="Backend hiện chưa có field lưu địa chỉ"
-                  disabled
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 outline-none"
-                />
               </label>
 
               <label className="space-y-2">

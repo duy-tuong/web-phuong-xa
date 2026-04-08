@@ -1,19 +1,21 @@
 import api from "@/services/api";
+import { REMOTE_API_BASE_URL } from "@/lib/api-base-url";
 import { toMedia } from "@/services/admin/contentMappers";
-import type {
-  ApiMedia,
-  PaginatedResponse,
-} from "@/services/admin/types";
+import type { ApiMedia, PaginatedResponse } from "@/services/admin/types";
 import type { MediaFile } from "@/types";
 
 export async function fetchMediaAdmin(params?: {
   page?: number;
   pageSize?: number;
 }): Promise<PaginatedResponse<MediaFile>> {
-  const response = await api.get<PaginatedResponse<ApiMedia>>("/media", { params });
+  const response = await api.get<PaginatedResponse<ApiMedia>>("/media", {
+    params,
+  });
   return {
     ...response.data,
-    data: Array.isArray(response.data?.data) ? response.data.data.map(toMedia) : [],
+    data: Array.isArray(response.data?.data)
+      ? response.data.data.map(toMedia)
+      : [],
   };
 }
 
@@ -21,11 +23,24 @@ export async function uploadMedia(file: File): Promise<void> {
   const formData = new FormData();
   formData.append("file", file);
 
-  await api.post("/media/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+  const headers: HeadersInit = {};
+  if (typeof window !== "undefined") {
+    const token =
+      localStorage.getItem("admin_token") || localStorage.getItem("user_token");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  const response = await fetch(`${REMOTE_API_BASE_URL}/media/upload`, {
+    method: "POST",
+    headers,
+    body: formData,
   });
+
+  if (!response.ok) {
+    throw new Error(`Upload failed with status ${response.status}`);
+  }
 }
 
 export async function deleteMediaAdmin(id: string): Promise<void> {

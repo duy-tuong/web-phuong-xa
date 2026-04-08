@@ -4,6 +4,8 @@ import LibraryPagination from "@/components/thu-vien/LibraryPagination";
 import VideoItem from "@/components/thu-vien/VideoItem";
 import { fetchLibraryVideoPage } from "@/services/mediaLibraryService";
 
+//! LƯU Ý 1: KHAI BÁO PROPS LÀM COMPONENT ĐA HÌNH
+// Khai báo các "công tắc" để tái sử dụng code. Tuỳ vào trang gọi nó mà ta truyền true/false để ẩn hiện Phân trang hoặc link Xem tất cả.
 type VideoLibrarySectionProps = {
   page?: number;
   pageSize?: number;
@@ -12,7 +14,8 @@ type VideoLibrarySectionProps = {
   heading?: string;
   subheading?: string;
 };
-
+//! LƯU Ý 2: REACT SERVER COMPONENT (Đỉnh cao tối ưu SEO)
+// Chữ "async" ở đây cho biết đây là Server Component. Nó không dùng useEffect() mà chạy gọi API trực tiếp ngay trên server. Tốc độ render cực nhanh và Google quét (SEO) rất dễ.
 export default async function VideoLibrarySection({
   page = 1,
   pageSize = 4,
@@ -21,6 +24,9 @@ export default async function VideoLibrarySection({
   heading = "Kho video",
   subheading,
 }: VideoLibrarySectionProps) {
+  //! LƯU Ý 3: CHỖ GỌI API ĐỂ LẤY DỮ LIỆU
+  // Dòng này gián tiếp gọi API "GET /media/public?type=video". 
+  // Hàm fetchLibraryVideoPage ở tầng Service sẽ lo liệu việc nối link và bắt lỗi, trả về danh sách video sạch sẽ.
   const videos = await fetchLibraryVideoPage(page, pageSize);
 
   return (
@@ -33,6 +39,7 @@ export default async function VideoLibrarySection({
           </h2>
           {subheading ? <p className="mt-2 text-sm text-slate-600">{subheading}</p> : null}
         </div>
+        {/* Nút "Xem tất cả" sẽ hiện ra nếu Props showViewAllLink = true */}
         {showViewAllLink ? (
           <Link
             href="/thu-vien/video"
@@ -43,7 +50,8 @@ export default async function VideoLibrarySection({
           </Link>
         ) : null}
       </div>
-
+  {/* LƯU Ý 4: LẬP TRÌNH PHÒNG THỦ (Bắt trường hợp không có dữ liệu) */}
+      {/* Phải luôn kiểm tra length === 0 để hiện thông báo lịch sự, không để màn hình trống trơn hay bị lỗi đỏ (crash web) khi Backend chưa có dữ liệu. */}
       {videos.items.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-10 text-center text-slate-600">
           Hiện chưa có video nào được đăng trong thư viện media.
@@ -51,11 +59,13 @@ export default async function VideoLibrarySection({
       ) : (
         <>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+           {/* LƯU Ý 5: MAP DỮ LIỆU VÀO COMPONENT CON */}
+            {/* Dùng vòng lặp .map() để duyệt qua mảng video, mỗi phần tử sẽ được đưa cho component <VideoItem /> để vẽ cái khung hình chữ nhật và nút Play ra màn hình. */}
             {videos.items.map((video) => (
               <VideoItem key={video.id} video={video} />
             ))}
           </div>
-
+ {/* Thanh phân trang sẽ hiện ra nếu Props showPagination = true */}
           {showPagination ? (
             <LibraryPagination
               basePath="/thu-vien/video"

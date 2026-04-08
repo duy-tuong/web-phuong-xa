@@ -17,17 +17,20 @@ const PAGE_SIZE = 8;
 const ALL_FIELDS_LABEL = "Tất cả";
 
 export default function KhoBieuMauHanhChinhPage() {
+// 1. TẠO BỘ NHỚ LƯU TRỮ (STATE)
+  // Quản lý danh sách gốc, trạng thái xoay vòng (loading), chữ khách gõ, lĩnh vực khách chọn và số trang.
   const [templates, setTemplates] = useState<DownloadableTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [keyword, setKeyword] = useState("");
   const [selectedField, setSelectedField] = useState(ALL_FIELDS_LABEL);
   const [currentPage, setCurrentPage] = useState(1);
-
+// 2. TẢI VÀ GHÉP DỮ LIỆU KHI VỪA MỞ TRANG
   useEffect(() => {
     let isMounted = true;
 
     const loadTemplates = async () => {
       try {
+      // Gọi song song 2 API: Lấy file PDF/Word và Lấy thông tin thủ tục
         const [documentsResult, proceduresResult] = await Promise.allSettled([
           fetchPublicMedia("document", 500),
           getProcedures(),
@@ -39,7 +42,7 @@ export default function KhoBieuMauHanhChinhPage() {
 
         const documents = documentsResult.status === "fulfilled" ? documentsResult.value : [];
         const procedures = proceduresResult.status === "fulfilled" ? proceduresResult.value : [];
-
+// Ghép file và thủ tục lại với nhau để tạo thành cái link tải hoàn chỉnh, cất vào State.
         setTemplates(buildDownloadableTemplates(procedures, documents));
       } finally {
         if (isMounted) {
@@ -54,24 +57,27 @@ export default function KhoBieuMauHanhChinhPage() {
       isMounted = false;
     };
   }, []);
-
+// 3. TẠO MENU CHỌN LĨNH VỰC
+  // Tự động quét trong mảng dữ liệu, nhặt ra các "Lĩnh vực" không trùng lặp (Set) để làm menu thả xuống (VD: Đất đai, Hộ tịch...).
   const allFields = useMemo(() => {
     const fields = Array.from(new Set(templates.map((template) => template.field))).sort((a, b) => a.localeCompare(b, "vi"));
     return [ALL_FIELDS_LABEL, ...fields];
   }, [templates]);
-
+// 4. BỘ LỌC KÉP: TÌM KIẾM CHỮ + LỌC LĨNH VỰC
+  // Quét qua danh sách gốc: Bài nào vừa đúng "Lĩnh vực" khách chọn, vừa chứa "Từ khóa" khách gõ thì mới giữ lại.
   const filteredTemplates = useMemo(() => {
     const normalizedKeyword = normalizeKeyword(keyword);
 
     return templates.filter((template) => {
       const matchesField = selectedField === ALL_FIELDS_LABEL || template.field === selectedField;
       const matchesKeyword = !normalizedKeyword || normalizeKeyword(template.title).includes(normalizedKeyword);
-      return matchesField && matchesKeyword;
+      return matchesField && matchesKeyword; // Phải thỏa mãn cả 2 điều kiện
     });
   }, [keyword, selectedField, templates]);
-
+// 5. CHIA TRANG CHO BẢNG HIỂN THỊ (PAGINATION)
   const totalPages = Math.max(1, Math.ceil(filteredTemplates.length / PAGE_SIZE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
+  // Cắt cái mảng đã lọc ra lấy đúng 8 bài (PAGE_SIZE) của trang hiện tại để đem đi vẽ cái Bảng.
   const pageItems = filteredTemplates.slice((safeCurrentPage - 1) * PAGE_SIZE, safeCurrentPage * PAGE_SIZE);
   const paginationPages = buildCompactPagination(safeCurrentPage, totalPages);
 
@@ -111,7 +117,7 @@ export default function KhoBieuMauHanhChinhPage() {
 
           <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-4xl">Kho biểu mẫu hành chính</h1>
           <p className="max-w-3xl text-slate-600">
-            Tra cứu và tải về biểu mẫu theo lĩnh vực được đồng bộ trực tiếp từ API.
+            Tải về miễn phí các biểu mẫu, tài liệu hướng dẫn và hồ sơ mẫu cho hơn 100 thủ tục hành chính phổ biến tại Phường Cao Lãnh.
           </p>
         </div>
 

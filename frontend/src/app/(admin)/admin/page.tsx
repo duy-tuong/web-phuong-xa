@@ -34,9 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  fetchAdminArticles,
-} from "@/services/admin/articles";
+import { fetchAdminArticles } from "@/services/admin/articles";
 import { fetchApplicationsAdmin } from "@/services/admin/applications";
 import { fetchCommentsAdmin } from "@/services/admin/comments";
 import { fetchDashboardSummary } from "@/services/admin/dashboard";
@@ -55,16 +53,30 @@ type DashboardState = {
   applications: Application[];
 };
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+);
 
 const statusColorMap: Record<string, string> = {
-  published: "border-[hsl(151,28%,74%)] text-[hsl(151,44%,33%)] bg-[linear-gradient(180deg,hsl(151,46%,95%),hsl(151,34%,90%))]",
-  draft: "border-[hsl(210,10%,82%)] text-[hsl(210,9%,47%)] bg-[linear-gradient(180deg,hsl(210,22%,97%),hsl(210,18%,93%))]",
-  pending: "border-[hsl(34,62%,76%)] text-[hsl(34,62%,46%)] bg-[linear-gradient(180deg,hsl(34,78%,96%),hsl(34,68%,91%))]",
-  processing: "border-[hsl(146,28%,73%)] text-[hsl(146,44%,33%)] bg-[linear-gradient(180deg,hsl(146,38%,95%),hsl(146,28%,90%))]",
+  published:
+    "border-[hsl(151,28%,74%)] text-[hsl(151,44%,33%)] bg-[linear-gradient(180deg,hsl(151,46%,95%),hsl(151,34%,90%))]",
+  draft:
+    "border-[hsl(210,10%,82%)] text-[hsl(210,9%,47%)] bg-[linear-gradient(180deg,hsl(210,22%,97%),hsl(210,18%,93%))]",
+  pending:
+    "border-[hsl(34,62%,76%)] text-[hsl(34,62%,46%)] bg-[linear-gradient(180deg,hsl(34,78%,96%),hsl(34,68%,91%))]",
+  processing:
+    "border-[hsl(146,28%,73%)] text-[hsl(146,44%,33%)] bg-[linear-gradient(180deg,hsl(146,38%,95%),hsl(146,28%,90%))]",
   done: "border-[hsl(209,50%,76%)] text-[hsl(210,56%,42%)] bg-[linear-gradient(180deg,hsl(210,76%,96%),hsl(210,64%,91%))]",
-  rejected: "border-[hsl(0,70%,82%)] text-[hsl(0,68%,48%)] bg-[linear-gradient(180deg,hsl(0,88%,97%),hsl(0,76%,93%))]",
-  approved: "border-[hsl(209,50%,76%)] text-[hsl(210,56%,42%)] bg-[linear-gradient(180deg,hsl(210,76%,96%),hsl(210,64%,91%))]",
+  rejected:
+    "border-[hsl(0,70%,82%)] text-[hsl(0,68%,48%)] bg-[linear-gradient(180deg,hsl(0,88%,97%),hsl(0,76%,93%))]",
+  approved:
+    "border-[hsl(209,50%,76%)] text-[hsl(210,56%,42%)] bg-[linear-gradient(180deg,hsl(210,76%,96%),hsl(210,64%,91%))]",
 };
 
 const statusLabelMap: Record<string, string> = {
@@ -110,29 +122,20 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [articleRange, setArticleRange] = useState<ArticleRange>("6");
-  const [displayName] = useState(() => {
-    if (typeof window === "undefined") {
-      return "Người dùng";
-    }
-
-    return (
-      localStorage.getItem("admin_display_name") ||
-      localStorage.getItem("admin_name") ||
-      localStorage.getItem("admin_username") ||
-      "Người dùng"
-    );
-  });
+  const [displayName, setDisplayName] = useState("Người dùng");
+  const [todayLabel, setTodayLabel] = useState("...");
 
   const loadDashboard = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const [summary, articleRows, commentRows, applicationRows] = await Promise.all([
-        fetchDashboardSummary(),
-        fetchAdminArticles(),
-        fetchCommentsAdmin(),
-        fetchApplicationsAdmin({ page: 1, pageSize: 200 }),
-      ]);
+      const [summary, articleRows, commentRows, applicationRows] =
+        await Promise.all([
+          fetchDashboardSummary(),
+          fetchAdminArticles(),
+          fetchCommentsAdmin(),
+          fetchApplicationsAdmin({ page: 1, pageSize: 200 }),
+        ]);
 
       setDashboard({
         totalUsers: summary.totalUsers,
@@ -154,9 +157,23 @@ export default function DashboardPage() {
     void loadDashboard();
   }, [loadDashboard]);
 
-  const todayLabel = format(new Date(), "dd/MM/yyyy");
-  const monthSeries = useMemo(() => buildMonthSeries(dashboard?.articles || []), [dashboard?.articles]);
-  const visibleSeries = useMemo(() => monthSeries.slice(-Number(articleRange)), [articleRange, monthSeries]);
+  useEffect(() => {
+    setDisplayName(
+      localStorage.getItem("admin_display_name") ||
+        localStorage.getItem("admin_name") ||
+        localStorage.getItem("admin_username") ||
+        "Người dùng",
+    );
+    setTodayLabel(format(new Date(), "dd/MM/yyyy"));
+  }, []);
+  const monthSeries = useMemo(
+    () => buildMonthSeries(dashboard?.articles || []),
+    [dashboard?.articles],
+  );
+  const visibleSeries = useMemo(
+    () => monthSeries.slice(-Number(articleRange)),
+    [articleRange, monthSeries],
+  );
 
   const applicationCounts = useMemo(() => {
     const counts = { pending: 0, processing: 0, done: 0, rejected: 0 };
@@ -204,8 +221,10 @@ export default function DashboardPage() {
     ],
   };
 
-  const badgeBaseClass = "text-[10px] font-semibold leading-none px-2.5 py-0.5 rounded-full whitespace-nowrap border shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]";
-  const viewAllLinkClass = "inline-flex items-center rounded-md border border-transparent px-2 py-1 text-[12px] font-semibold italic tracking-[0.01em] text-[hsl(209,54%,38%)] underline decoration-[hsl(209,45%,58%)] underline-offset-4 transition-all duration-200 hover:border-[hsl(209,44%,78%)] hover:bg-[hsl(209,78%,96%)] hover:text-[hsl(209,62%,30%)] hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(209,54%,45%)]";
+  const badgeBaseClass =
+    "text-[10px] font-semibold leading-none px-2.5 py-0.5 rounded-full whitespace-nowrap border shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]";
+  const viewAllLinkClass =
+    "inline-flex items-center rounded-md border border-transparent px-2 py-1 text-[12px] font-semibold italic tracking-[0.01em] text-[hsl(209,54%,38%)] underline decoration-[hsl(209,45%,58%)] underline-offset-4 transition-all duration-200 hover:border-[hsl(209,44%,78%)] hover:bg-[hsl(209,78%,96%)] hover:text-[hsl(209,62%,30%)] hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(209,54%,45%)]";
 
   return (
     <div className="space-y-6">
@@ -220,7 +239,9 @@ export default function DashboardPage() {
         <div className="relative flex flex-col gap-1">
           <div className="inline-flex items-center gap-2 text-[24px] sm:text-[30px] lg:text-[35px] font-semibold leading-[1.35] text-[hsl(42,76%,96%)]">
             <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(38,80%,56%)]" />
-            <span>Xin chào, <span className="text-white">{displayName}</span></span>
+            <span>
+              Xin chào, <span className="text-white">{displayName}</span>
+            </span>
           </div>
           <p className="text-[13px] sm:text-[16px] lg:text-[22px] text-[hsl(44,44%,82%)]">
             Tổng quan dữ liệu thật từ hệ thống quản trị. Hôm nay, {todayLabel}
@@ -229,19 +250,40 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard title="Tổng người dùng" value={dashboard?.totalUsers || 0} icon={Users} />
-        <StatCard title="Bài viết" value={dashboard?.totalArticles || 0} icon={FileText} />
-        <StatCard title="Dịch vụ công" value={dashboard?.totalServices || 0} icon={Landmark} />
-        <StatCard title="Hồ sơ tiếp nhận" value={dashboard?.totalApplications || 0} icon={ClipboardList} />
+        <StatCard
+          title="Tổng người dùng"
+          value={dashboard?.totalUsers || 0}
+          icon={Users}
+        />
+        <StatCard
+          title="Bài viết"
+          value={dashboard?.totalArticles || 0}
+          icon={FileText}
+        />
+        <StatCard
+          title="Dịch vụ công"
+          value={dashboard?.totalServices || 0}
+          icon={Landmark}
+        />
+        <StatCard
+          title="Hồ sơ tiếp nhận"
+          value={dashboard?.totalApplications || 0}
+          icon={ClipboardList}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">
           <ChartCard
             title="Bài viết theo tháng"
-            description="Thống kê số bài viết tạo mới từ API admin articles"
+            description="Thống kê số bài viết theo biểu đồ cột."
             action={
-              <Select value={articleRange} onValueChange={(value) => setArticleRange(value as ArticleRange)}>
+              <Select
+                value={articleRange}
+                onValueChange={(value) =>
+                  setArticleRange(value as ArticleRange)
+                }
+              >
                 <SelectTrigger className="h-8 w-[126px] border-stone-200 bg-white text-xs">
                   <SelectValue />
                 </SelectTrigger>
@@ -253,12 +295,46 @@ export default function DashboardPage() {
               </Select>
             }
           >
-            <div className="h-[280px]">{loading ? <div className="pt-20 text-center text-sm text-stone-400">Đang tải biểu đồ...</div> : <Bar data={barData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />}</div>
+            <div className="h-[280px]">
+              {loading ? (
+                <div className="pt-20 text-center text-sm text-stone-400">
+                  Đang tải biểu đồ...
+                </div>
+              ) : (
+                <Bar
+                  data={barData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                  }}
+                />
+              )}
+            </div>
           </ChartCard>
         </div>
-        <ChartCard title="Trạng thái hồ sơ" description="Phân bố trạng thái hồ sơ từ API applications">
+        <ChartCard
+          title="Trạng thái hồ sơ"
+          description="Phân bố trạng thái hồ sơ theo biểu đồ tròn."
+        >
           <div className="h-[280px] flex flex-col items-center justify-center">
-            <div className="h-[220px] w-full max-w-[260px]">{loading ? <div className="pt-20 text-center text-sm text-stone-400">Đang tải biểu đồ...</div> : <Doughnut data={doughnutData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: "65%" }} />}</div>
+            <div className="h-[220px] w-full max-w-[260px]">
+              {loading ? (
+                <div className="pt-20 text-center text-sm text-stone-400">
+                  Đang tải biểu đồ...
+                </div>
+              ) : (
+                <Doughnut
+                  data={doughnutData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    cutout: "65%",
+                  }}
+                />
+              )}
+            </div>
           </div>
         </ChartCard>
       </div>
@@ -268,16 +344,28 @@ export default function DashboardPage() {
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <FileText className="h-3.5 w-3.5 text-[hsl(146,32%,38%)]" />
-              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Bài viết gần đây</h3>
+              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">
+                Bài viết gần đây
+              </h3>
             </div>
-            <Link href="/admin/articles" className={viewAllLinkClass}>Xem tất cả</Link>
+            <Link href="/admin/articles" className={viewAllLinkClass}>
+              Xem tất cả
+            </Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
             {(dashboard?.articles || []).slice(0, 5).map((article) => (
-              <div key={article.id} className="rounded-lg px-1 py-2.5 first:pt-1 last:pb-1 hover:bg-[hsl(45,24%,95%)] transition-colors">
+              <div
+                key={article.id}
+                className="rounded-lg px-1 py-2.5 first:pt-1 last:pb-1 hover:bg-[hsl(45,24%,95%)] transition-colors"
+              >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="truncate text-[13px] font-semibold text-[hsl(165,16%,12%)]">{article.title}</p>
-                  <Badge variant="secondary" className={`${badgeBaseClass} ${statusColorMap[article.status]}`}>
+                  <p className="truncate text-[13px] font-semibold text-[hsl(165,16%,12%)]">
+                    {article.title}
+                  </p>
+                  <Badge
+                    variant="secondary"
+                    className={`${badgeBaseClass} ${statusColorMap[article.status]}`}
+                  >
                     {statusLabelMap[article.status]}
                   </Badge>
                 </div>
@@ -294,20 +382,34 @@ export default function DashboardPage() {
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <ClipboardList className="h-3.5 w-3.5 text-[hsl(34,58%,50%)]" />
-              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Hồ sơ gần đây</h3>
+              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">
+                Hồ sơ gần đây
+              </h3>
             </div>
-            <Link href="/admin/applications" className={viewAllLinkClass}>Xem tất cả</Link>
+            <Link href="/admin/applications" className={viewAllLinkClass}>
+              Xem tất cả
+            </Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
             {(dashboard?.applications || []).slice(0, 5).map((app) => (
-              <div key={app.id} className="rounded-lg px-1 py-2.5 first:pt-1 last:pb-1 hover:bg-[hsl(45,24%,95%)] transition-colors">
+              <div
+                key={app.id}
+                className="rounded-lg px-1 py-2.5 first:pt-1 last:pb-1 hover:bg-[hsl(45,24%,95%)] transition-colors"
+              >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="truncate text-[13px] font-semibold text-[hsl(165,16%,12%)]">{app.applicantName}</p>
-                  <Badge variant="secondary" className={`${badgeBaseClass} ${statusColorMap[app.status]}`}>
+                  <p className="truncate text-[13px] font-semibold text-[hsl(165,16%,12%)]">
+                    {app.applicantName}
+                  </p>
+                  <Badge
+                    variant="secondary"
+                    className={`${badgeBaseClass} ${statusColorMap[app.status]}`}
+                  >
                     {statusLabelMap[app.status]}
                   </Badge>
                 </div>
-                <p className="truncate text-[12px] text-[hsl(150,8%,44%)]">{app.serviceName || app.serviceId}</p>
+                <p className="truncate text-[12px] text-[hsl(150,8%,44%)]">
+                  {app.serviceName || app.serviceId}
+                </p>
               </div>
             ))}
           </div>
@@ -317,21 +419,37 @@ export default function DashboardPage() {
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-3.5 w-3.5 text-[hsl(22,36%,52%)]" />
-              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">Bình luận gần đây</h3>
+              <h3 className="text-[14px] font-semibold text-[hsl(165,16%,12%)]">
+                Bình luận gần đây
+              </h3>
             </div>
-            <Link href="/admin/comments" className={viewAllLinkClass}>Xem tất cả</Link>
+            <Link href="/admin/comments" className={viewAllLinkClass}>
+              Xem tất cả
+            </Link>
           </div>
           <div className="divide-y divide-[hsl(120,10%,90%)]">
             {(dashboard?.comments || []).slice(0, 5).map((comment) => (
-              <div key={comment.id} className="rounded-lg px-1 py-2.5 first:pt-1 last:pb-1 hover:bg-[hsl(45,24%,95%)] transition-colors">
+              <div
+                key={comment.id}
+                className="rounded-lg px-1 py-2.5 first:pt-1 last:pb-1 hover:bg-[hsl(45,24%,95%)] transition-colors"
+              >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[13px] font-semibold text-[hsl(165,16%,12%)]">{comment.userName}</span>
-                  <Badge variant="secondary" className={`${badgeBaseClass} ${statusColorMap[comment.status]}`}>
+                  <span className="text-[13px] font-semibold text-[hsl(165,16%,12%)]">
+                    {comment.userName}
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className={`${badgeBaseClass} ${statusColorMap[comment.status]}`}
+                  >
                     {statusLabelMap[comment.status]}
                   </Badge>
                 </div>
-                <p className="mt-0.5 line-clamp-2 text-[12px] text-[hsl(150,8%,44%)]">{comment.content}</p>
-                <p className="mt-0.5 line-clamp-1 text-[11px] text-[hsl(150,8%,64%)]">{comment.articleTitle || "Bình luận bài viết"}</p>
+                <p className="mt-0.5 line-clamp-2 text-[12px] text-[hsl(150,8%,44%)]">
+                  {comment.content}
+                </p>
+                <p className="mt-0.5 line-clamp-1 text-[11px] text-[hsl(150,8%,64%)]">
+                  {comment.articleTitle || "Bình luận bài viết"}
+                </p>
               </div>
             ))}
           </div>

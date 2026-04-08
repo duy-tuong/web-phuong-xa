@@ -14,6 +14,7 @@ export async function fetchServicesAdmin(): Promise<Service[]> {
 export async function createService(payload: ServicePayload): Promise<void> {
   await api.post("/services", {
     name: payload.name.trim(),
+    category: payload.category?.trim() || payload.field?.trim() || null,
     description: payload.description.trim(),
     requiredDocuments: payload.requiredDocuments.trim(),
     processingTime: payload.processingTime.trim(),
@@ -25,6 +26,7 @@ export async function createService(payload: ServicePayload): Promise<void> {
 export async function updateService(id: string, payload: ServicePayload): Promise<void> {
   await api.put(`/services/${id}`, {
     name: payload.name.trim(),
+    category: payload.category?.trim() || payload.field?.trim() || null,
     description: payload.description.trim(),
     requiredDocuments: payload.requiredDocuments.trim(),
     processingTime: payload.processingTime.trim(),

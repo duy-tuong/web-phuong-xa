@@ -2,6 +2,7 @@ import { type RefObject } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
+import { resolveApiAssetUrl } from "@/lib/api-base-url";
 import type { UserSession } from "@/lib/user-session";
 
 type HeaderAuthBlockProps = {
@@ -26,10 +27,12 @@ export default function HeaderAuthBlock({
   if (!session) {
     return (
       <Link href="/login" className="rounded-md bg-emerald-700 px-3 py-1.5 text-white hover:bg-emerald-800">
-        Dang nhap
+        Đăng nhập
       </Link>
     );
   }
+
+  const avatarSrc = session.avatarUrl ? resolveApiAssetUrl(session.avatarUrl) : "";
 
   return (
     <div ref={userMenuRef} className="relative">
@@ -38,9 +41,18 @@ export default function HeaderAuthBlock({
         onClick={onToggleUserMenu}
         className="flex items-center gap-3 rounded-full border border-emerald-200 bg-white/95 px-2 py-1.5 text-slate-700 shadow-sm transition hover:border-emerald-300"
       >
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-700 text-sm font-semibold text-white">
-          {initials}
-        </span>
+        {avatarSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={avatarSrc}
+            alt={session.fullName}
+            className="h-9 w-9 rounded-full object-cover"
+          />
+        ) : (
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-700 text-sm font-semibold text-white">
+            {initials}
+          </span>
+        )}
         <span className="hidden text-sm font-medium lg:block">{session.fullName}</span>
         <ChevronDown className={`hidden h-4 w-4 text-slate-500 transition lg:block ${showUserMenu ? "rotate-180" : ""}`} />
       </button>
@@ -55,14 +67,14 @@ export default function HeaderAuthBlock({
           className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-emerald-700"
           onClick={onCloseMenus}
         >
-          Tai khoan cua toi
+          Tài khoản của tôi
         </Link>
         <button
           type="button"
           onClick={onLogout}
           className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-700 transition hover:bg-red-50"
         >
-          Dang xuat
+          Đăng xuất
         </button>
       </div>
     </div>

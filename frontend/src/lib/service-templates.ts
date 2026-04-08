@@ -62,7 +62,7 @@ export function buildDownloadableTemplates(procedures: ProcedureDetail[], docume
     .map((procedure) => ({
       id: `procedure-${procedure.slug}`,
       title: procedure.title,
-      field: inferServiceField(procedure.title),
+      field: procedure.field || inferServiceField(procedure.title),
       href: procedure.wordTemplateHref,
     }));
 
