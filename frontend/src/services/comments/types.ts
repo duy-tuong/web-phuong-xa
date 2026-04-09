@@ -1,6 +1,7 @@
 export type ApiComment = {
   id: number;
   userName: string;
+  avatarUrl?: string | null;
   content: string;
   createdAt: string;
 };

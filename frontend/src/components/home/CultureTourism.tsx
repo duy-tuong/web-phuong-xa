@@ -30,22 +30,27 @@ export default function CultureTourism({ tourismCards }: CultureTourismProps) {
       <div className="grid auto-rows-[200px] gap-4 md:auto-rows-[300px] md:grid-cols-3 md:gap-6">
         {tourismCards.map((item, index) => (
           <Link
-            key={`${item.title}-${item.href}-${index}`}
+            key={`${item.href}-${index}`}
             href={item.href}
             className={`group relative overflow-hidden rounded-3xl ${item.className}`}
           >
             <Image
               src={item.image}
-              alt={item.title}
+              alt={item.title || item.desc || "Media"}
               fill
               unoptimized
               className="object-cover transition duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
-              <span className="mb-3 w-max rounded-full bg-pink-600 px-3 py-1 text-xs font-bold text-white">{item.tag}</span>
-              <h3 className="text-xl font-bold text-white md:text-2xl">{item.title}</h3>
-              <p className="mt-2 line-clamp-2 text-sm text-white/85">{item.desc}</p>
+              {item.title ? (
+                <h3 className="text-xl font-bold text-white md:text-2xl">
+                  {item.title}
+                </h3>
+              ) : null}
+              <p className={item.title ? "mt-2 line-clamp-2 text-sm text-white/85" : "text-sm text-white/85"}>
+                {item.desc}
+              </p>
             </div>
           </Link>
         ))}

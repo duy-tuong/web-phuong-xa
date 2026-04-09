@@ -243,8 +243,12 @@ export default function ProfilePage() {
         return;
       }
 
-      if (form.newPassword.length < 6) {
-        setErrorMessage("Mật khẩu mới phải có ít nhất 6 ký tự.");
+      if (
+        form.newPassword.length < 6 ||
+        !/[A-Z]/.test(form.newPassword) ||
+        !/\d/.test(form.newPassword)
+      ) {
+        setErrorMessage("Mật khẩu mới phải ít nhất 6 ký tự, có chữ hoa và số.");
         return;
       }
 
@@ -350,9 +354,7 @@ export default function ProfilePage() {
                 </p>
               ) : null}
 
-              <p className="text-xs text-stone-500">
-                Bạn có thể tải avatar.
-              </p>
+              <p className="text-xs text-stone-500">Bạn có thể tải avatar.</p>
             </div>
           </CardHeader>
 
@@ -396,8 +398,7 @@ export default function ProfilePage() {
               <CardTitle className="text-xl font-bold text-stone-900">
                 Thông tin cơ bản
               </CardTitle>
-              <CardDescription className="text-stone-500">
-              </CardDescription>
+              <CardDescription className="text-stone-500"></CardDescription>
             </CardHeader>
 
             {errorMessage ? (
@@ -463,8 +464,7 @@ export default function ProfilePage() {
               <CardTitle className="text-xl font-bold text-stone-900">
                 Đổi mật khẩu
               </CardTitle>
-              <CardDescription className="text-stone-500">
-              </CardDescription>
+              <CardDescription className="text-stone-500"></CardDescription>
             </CardHeader>
 
             <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-5">

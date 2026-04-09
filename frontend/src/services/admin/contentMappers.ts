@@ -69,7 +69,10 @@ export function toArticle(article: ApiArticle): Article {
     createdAt: article.createdAt,
     publishedAt: article.publishedAt ?? null,
     excerpt: article.excerpt ?? undefined,
-    featuredImage: resolveApiAssetUrl(article.featuredImage) || article.featuredImage || undefined,
+    featuredImage:
+      resolveApiAssetUrl(article.featuredImage) ||
+      article.featuredImage ||
+      undefined,
     category: buildArticleCategory(article),
     author: buildArticleAuthor(article),
   };
@@ -98,6 +101,8 @@ export function toMedia(file: ApiMedia): MediaFile {
     url: resolveApiAssetUrl(file.filePath) || file.filePath,
     fileType: file.fileType ?? undefined,
     fileSize: file.fileSize ?? undefined,
+    description: file.description ?? undefined,
+    isPublic: Boolean(file.isPublic),
     createdAt: file.uploadedAt,
   };
 }
@@ -111,7 +116,10 @@ export function toService(service: ApiService): Service {
     requiredDocuments: service.requiredDocuments,
     processingTime: service.processingTime,
     fee: Number(service.fee || 0),
-    templateFile: resolveApiAssetUrl(service.templateFile) || service.templateFile || undefined,
+    templateFile:
+      resolveApiAssetUrl(service.templateFile) ||
+      service.templateFile ||
+      undefined,
     createdAt: service.createdAt ?? undefined,
     updatedAt: service.updatedAt ?? undefined,
   };

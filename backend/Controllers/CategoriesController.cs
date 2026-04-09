@@ -4,9 +4,11 @@ using System.Text.RegularExpressions;
 using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Text;
 
@@ -17,10 +19,12 @@ namespace backend.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IAuditLogService _auditLogService;
 
-        public CategoriesController(AppDbContext context)
+        public CategoriesController(AppDbContext context, IAuditLogService auditLogService)
         {
             _context = context;
+            _auditLogService = auditLogService;
         }
 
         [AllowAnonymous]
@@ -75,6 +79,17 @@ namespace backend.Controllers
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Create",
+                    "Categories",
+                    $"Category {category.Id}: {category.Name}"
+                );
+            }
+
             return Ok(category);
         }
 
@@ -106,6 +121,17 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Update",
+                    "Categories",
+                    $"Category {category.Id}: {category.Name}"
+                );
+            }
+
             return Ok(category);
         }
 
@@ -127,6 +153,17 @@ namespace backend.Controllers
 
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Delete",
+                    "Categories",
+                    $"Category {category.Id}: {category.Name}"
+                );
+            }
 
             return Ok("Category deleted");
         }

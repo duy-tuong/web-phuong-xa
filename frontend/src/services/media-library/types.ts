@@ -10,6 +10,8 @@ export type PublicMediaResponse = {
     type: string;
     fileType?: string | null;
     fileSize?: number | null;
+    description?: string | null;
+    isPublic?: boolean | null;
     uploadedAt: string;
   }>;
 };
@@ -33,6 +35,7 @@ export type LibraryPhotoItem = {
   desc: string;
   image: string;
   theme: string;
+  downloadUrl: string;
 };
 
 export type LibraryVideoItem = {
@@ -41,4 +44,6 @@ export type LibraryVideoItem = {
   date: string;
   image: string;
   sourceUrl: string;
+  description: string;
+  downloadUrl: string;
 };

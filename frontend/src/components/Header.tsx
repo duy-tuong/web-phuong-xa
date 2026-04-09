@@ -192,7 +192,7 @@ export default function Header() {
         Biểu mẫu
       </Link>
       <span className="h-4 w-px shrink-0 bg-slate-300" />
-      <span className="whitespace-nowrap font-medium text-pink-600">Đường dây nóng: 1900 xxxx</span>
+      <span className="whitespace-nowrap font-medium text-pink-600">Đường dây nóng: 1900 1234</span>
     </>
   );
 
@@ -310,9 +310,9 @@ export default function Header() {
             <Image src={logoImage} alt="Logo Phuong Cao Lanh" className="h-full w-full object-cover" />
           </div>
           <div className="rounded-lg bg-white/95 px-3 py-2 shadow-sm">
-            <p className="text-xs font-bold tracking-wide text-red-600">CONG THONG TIN DIEN TU</p>
-            <p className="text-xl font-black text-emerald-700">PHUONG CAO LANH</p>
-            <p className="whitespace-nowrap text-[12px] leading-tight text-slate-600">Thanh pho Cao Lanh - Tinh Dong Thap</p>
+            <p className="text-xs font-bold tracking-wide text-red-600">CỔNG THÔNG TIN ĐIỆN TỬ</p>
+            <p className="text-xl font-black text-emerald-700">PHƯỜNG CAO LÃNH</p>
+            <p className="whitespace-nowrap text-[12px] leading-tight text-slate-600">Thành phố Cao Lãnh - Tỉnh Đồng Tháp</p>
           </div>
         </div>
 

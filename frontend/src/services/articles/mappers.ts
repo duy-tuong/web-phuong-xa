@@ -6,10 +6,7 @@ import type {
   ApiArticleDetail,
   ApiArticleListItem,
 } from "@/services/articles/types";
-import type {
-  Article,
-  ArticleSectionBullet,
-} from "@/types/article";
+import type { Article, ArticleSectionBullet } from "@/types/article";
 
 const defaultSectionBullets: ArticleSectionBullet[] = [
   {
@@ -73,17 +70,30 @@ function buildTags(category?: string | null, title?: string | null) {
 }
 
 function resolveFeaturedFlag(source: ApiArticleListItem | ApiArticleDetail) {
-  return source.isFeatured === true || source.IsFeatured === true || source.featured === true;
+  return (
+    source.isFeatured === true ||
+    source.IsFeatured === true ||
+    source.featured === true
+  );
 }
 
-export function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Article {
-  const rawContent = "content" in source ? source.content ?? "" : "";
+export function adaptArticle(
+  source: ApiArticleListItem | ApiArticleDetail,
+): Article {
+  const rawContent = "content" in source ? (source.content ?? "") : "";
   const contentHtml = resolveHtmlImageSrc(rawContent);
-  const paragraphs = buildParagraphs("content" in source ? source.content : undefined, source.excerpt);
-  const lead = buildLead("content" in source ? source.content : undefined, source.excerpt);
+  const paragraphs = buildParagraphs(
+    "content" in source ? source.content : undefined,
+    source.excerpt,
+  );
+  const lead = buildLead(
+    "content" in source ? source.content : undefined,
+    source.excerpt,
+  );
   const category = source.category?.trim() || "Chưa phân loại";
   const author = source.author?.trim() || "Ban biên tập";
   const featuredImage = resolveApiAssetUrl(source.featuredImage);
+  const authorAvatar = resolveApiAssetUrl(source.authorAvatar);
 
   return {
     id: source.id,
@@ -97,19 +107,23 @@ export function adaptArticle(source: ApiArticleListItem | ApiArticleDetail): Art
     date: formatDateVi(source.createdAt),
     author,
     authorId: slugify(author),
+    authorAvatar: authorAvatar || undefined,
     status: "published",
     publishedAt: formatDateVi(source.createdAt),
     views: "Đang cập nhật",
     heroImage: featuredImage || undefined,
-    heroCaption: source.excerpt?.trim() || "Nội dung hình ảnh đang được cập nhật từ hệ thống.",
+    heroCaption:
+      source.excerpt?.trim() ||
+      "Nội dung hình ảnh đang được cập nhật từ hệ thống.",
     bodyLead: lead,
     bodyParagraphs: paragraphs,
     sectionTitle: "Mục tiêu triển khai",
-    sectionIntro: "Các nội dung trọng tâm đang được địa phương tiếp tục triển khai và hoàn thiện:",
+    sectionIntro:
+      "Các nội dung trọng tâm đang được địa phương tiếp tục triển khai và hoàn thiện:",
     sectionBullets: [...defaultSectionBullets],
     subImage: featuredImage || undefined,
-    subCaption: "Thông tin, hình ảnh và tiến độ thực hiện đang được cập nhật từ hệ thống dữ liệu công.",
+    subCaption:
+      "Thông tin, hình ảnh và tiến độ thực hiện đang được cập nhật từ hệ thống dữ liệu công.",
     tags: buildTags(category, source.title),
   };
 }
-

@@ -1,5 +1,6 @@
 ﻿using backend.Data;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,18 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IAuditLogService _auditLogService;
 
-        public MediaController(AppDbContext context, IWebHostEnvironment env)
+        public class UpdateMediaDescriptionRequest
+        {
+            public string? Description { get; set; }
+        }
+
+        public MediaController(AppDbContext context, IWebHostEnvironment env, IAuditLogService auditLogService)
         {
             _context = context;
             _env = env;
+            _auditLogService = auditLogService;
         }
 
         [AllowAnonymous]
@@ -53,6 +61,8 @@ namespace backend.Controllers
                     m.Type,
                     m.FileType,
                     m.FileSize,
+                    m.Description,
+                    m.IsPublic,
                     m.UploadedAt
                 })
                 .ToListAsync();
@@ -81,6 +91,8 @@ namespace backend.Controllers
                     m.Type,
                     m.FileType,
                     m.FileSize,
+                    m.Description,
+                    m.IsPublic,
                     UploadedBy = m.User.Username,
                     m.UploadedAt
                 })
@@ -92,7 +104,7 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin,Editor")]
         [HttpPost("upload")]
         [RequestSizeLimit(104857600)] // 100MB limit
-        public async Task<IActionResult> UploadMedia(IFormFile file)
+        public async Task<IActionResult> UploadMedia(IFormFile file, [FromForm] string? description)
         {
             if (file == null || file.Length == 0)
             {
@@ -134,7 +146,7 @@ namespace backend.Controllers
             }
 
             var relativePath = $"/uploads/{uniqueFileName}";
-            
+
             var isVideo = new[] { ".mp4", ".mov", ".avi", ".mkv" }.Contains(extension);
             var isDocument = new[] { ".pdf", ".doc", ".docx" }.Contains(extension);
             var fileType = isVideo ? "Video" : (isDocument ? "Document" : "Image");
@@ -146,13 +158,21 @@ namespace backend.Controllers
                 Type = fileType,
                 FileType = file.ContentType,
                 FileSize = file.Length,
+                Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
                 UploadedBy = currentUserId,
                 UploadedAt = DateTime.Now,
-                IsPublic = true
+                IsPublic = false
             };
 
             _context.Media.Add(media);
             await _context.SaveChangesAsync();
+
+            await _auditLogService.LogActionAsync(
+                currentUserId,
+                "Upload",
+                "Media",
+                $"Media {media.Id}: {media.FileName}"
+            );
 
             return Ok(new
             {
@@ -161,7 +181,73 @@ namespace backend.Controllers
                 url = relativePath,
                 type = fileType,
                 fileType = media.FileType,
-                fileSize = media.FileSize
+                fileSize = media.FileSize,
+                description = media.Description,
+                isPublic = media.IsPublic
+            });
+        }
+
+        [Authorize(Roles = "Admin,Editor")]
+        [HttpPut("{id:int}/visibility")]
+        public async Task<IActionResult> UpdateVisibility(int id, [FromBody] bool isPublic)
+        {
+            var media = await _context.Media.FindAsync(id);
+            if (media == null)
+            {
+                return NotFound("Media not found.");
+            }
+
+            media.IsPublic = isPublic;
+            await _context.SaveChangesAsync();
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    isPublic ? "Publish" : "Unpublish",
+                    "Media",
+                    $"Media {media.Id}: {media.FileName}"
+                );
+            }
+
+            return Ok(new
+            {
+                media.Id,
+                media.IsPublic
+            });
+        }
+
+        [Authorize(Roles = "Admin,Editor")]
+        [HttpPut("{id:int}/description")]
+        public async Task<IActionResult> UpdateDescription(int id, [FromBody] UpdateMediaDescriptionRequest payload)
+        {
+            var media = await _context.Media.FindAsync(id);
+            if (media == null)
+            {
+                return NotFound("Media not found.");
+            }
+
+            media.Description = string.IsNullOrWhiteSpace(payload?.Description)
+                ? null
+                : payload.Description.Trim();
+            await _context.SaveChangesAsync();
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "UpdateDescription",
+                    "Media",
+                    $"Media {media.Id}: {media.FileName}"
+                );
+            }
+
+            return Ok(new
+            {
+                media.Id,
+                media.Description
             });
         }
 
@@ -269,6 +355,13 @@ namespace backend.Controllers
 
             _context.Media.Remove(media);
             await _context.SaveChangesAsync();
+
+            await _auditLogService.LogActionAsync(
+                currentUserId,
+                "Delete",
+                "Media",
+                $"Media {media.Id}: {media.FileName}"
+            );
 
             return Ok(new { message = "Media deleted successfully." });
         }

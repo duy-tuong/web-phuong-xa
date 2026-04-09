@@ -1,9 +1,11 @@
 using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace backend.Controllers
 {
@@ -12,13 +14,15 @@ namespace backend.Controllers
     public class ContactsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IAuditLogService _auditLogService;
 
-        public ContactsController(AppDbContext context)
+        public ContactsController(AppDbContext context, IAuditLogService auditLogService)
         {
             _context = context;
+            _auditLogService = auditLogService;
         }
 
-        // ?? NG??I DÂN TRUY C?P (KHÔNG C?N ??NG NH?P): G?I LIÊN H? GÓP Ý
+        // ?? NG??I Dï¿½N TRUY C?P (KHï¿½NG C?N ??NG NH?P): G?I LIï¿½N H? Gï¿½P ï¿½
         [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> CreateContact(CreateContactDTO dto)
@@ -35,20 +39,31 @@ namespace backend.Controllers
                 Email = dto.Email,
                 Category = dto.Category,
                 Content = dto.Content,
-                Status = "Pending", // M?c ??nh là ch? x? lý
+                Status = "Pending", // M?c ??nh lï¿½ ch? x? lï¿½
                 CreatedAt = DateTime.Now
             };
 
             _context.Contacts.Add(contact);
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Create",
+                    "Contacts",
+                    $"Contact {contact.Id}: {contact.FullName}"
+                );
+            }
+
             return Ok(new
             {
-                message = "Góp ý / Liên h? c?a b?n ?ã ???c g?i thành công. Chân thành c?m ?n!"
+                message = "Gï¿½p ï¿½ / Liï¿½n h? c?a b?n ?ï¿½ ???c g?i thï¿½nh cï¿½ng. Chï¿½n thï¿½nh c?m ?n!"
             });
         }
 
-        // ?? ADMIN/EDITOR TRUY C?P: L?Y DANH SÁCH CÁC LIÊN H? ?? X? LÝ
+        // ?? ADMIN/EDITOR TRUY C?P: L?Y DANH Sï¿½CH Cï¿½C LIï¿½N H? ?? X? Lï¿½
         [Authorize(Roles = "Admin,Editor")]
         [HttpGet]
         public async Task<IActionResult> GetContacts(string? status, int page = 1, int pageSize = 10)
@@ -83,7 +98,7 @@ namespace backend.Controllers
             return Ok(new { total, page, pageSize, totalPages, data = contacts });
         }
         
-        // ?? ADMIN/EDITOR TRUY C?P: L?Y CHI TI?T 1 CÁI ?? ??C
+        // ?? ADMIN/EDITOR TRUY C?P: L?Y CHI TI?T 1 Cï¿½I ?? ??C
         [Authorize(Roles = "Admin,Editor")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetContact(int id)
@@ -98,7 +113,7 @@ namespace backend.Controllers
             return Ok(contact);
         }
 
-        // ?? ADMIN/EDITOR TRUY C?P: C?P NH?T TR?NG THÁI (?Ã ??C / ?Ã GI?I QUY?T)
+        // ?? ADMIN/EDITOR TRUY C?P: C?P NH?T TR?NG THï¿½I (?ï¿½ ??C / ?ï¿½ GI?I QUY?T)
         [Authorize(Roles = "Admin,Editor")]
         [HttpPut("{id}/status")]
         public async Task<IActionResult> UpdateContactStatus(int id, [FromBody] string newStatus)
@@ -106,7 +121,7 @@ namespace backend.Controllers
             var allowedStatuses = new[] { "Pending", "Processed", "Resolved" };
             if (!allowedStatuses.Contains(newStatus))
             {
-                return BadRequest("Tr?ng thái không h?p l?. Ch? ch?p nh?n: Pending, Processed, Resolved.");
+                return BadRequest("Tr?ng thï¿½i khï¿½ng h?p l?. Ch? ch?p nh?n: Pending, Processed, Resolved.");
             }
 
             var contact = await _context.Contacts.FindAsync(id);
@@ -118,10 +133,21 @@ namespace backend.Controllers
             contact.Status = newStatus;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "C?p nh?t tr?ng thái thành công.", status = contact.Status });
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "UpdateStatus",
+                    "Contacts",
+                    $"Contact {contact.Id} status {contact.Status}"
+                );
+            }
+
+            return Ok(new { message = "C?p nh?t tr?ng thï¿½i thï¿½nh cï¿½ng.", status = contact.Status });
         }
 
-        // ?? ADMIN: XÓA LIÊN H? RÁC
+        // ?? ADMIN: Xï¿½A LIï¿½N H? Rï¿½C
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContact(int id)
@@ -135,7 +161,18 @@ namespace backend.Controllers
             _context.Contacts.Remove(contact);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Xóa liên h? thành công." });
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Delete",
+                    "Contacts",
+                    $"Contact {contact.Id}: {contact.FullName}"
+                );
+            }
+
+            return Ok(new { message = "Xï¿½a liï¿½n h? thï¿½nh cï¿½ng." });
         }
     }
 }

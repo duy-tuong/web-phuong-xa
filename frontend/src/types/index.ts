@@ -76,6 +76,8 @@ export interface MediaFile {
   type: string;
   uploadedBy: string;
   uploadedAt: string;
+  description?: string;
+  isPublic?: boolean;
 
   // UI compatibility fields.
   url?: string;

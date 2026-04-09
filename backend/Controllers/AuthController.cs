@@ -1,7 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using backend.Data;
+﻿using backend.Data;
 using backend.DTOs;
 using backend.Models;
 using backend.Services;
@@ -21,11 +18,13 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly JwtService _jwtService;
+        private readonly IAuditLogService _auditLogService;
 
-        public AuthController(AppDbContext context, JwtService jwtService)
+        public AuthController(AppDbContext context, JwtService jwtService, IAuditLogService auditLogService)
         {
             _context = context;
             _jwtService = jwtService;
+            _auditLogService = auditLogService;
         }
 
         [HttpPost("register")]
@@ -77,6 +76,13 @@ namespace backend.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
+            await _auditLogService.LogActionAsync(
+                user.Id,
+                "Register",
+                "Auth",
+                $"User {user.Username} registered"
+            );
+
             return Ok(new
             {
                 message = "User registered successfully"
@@ -102,6 +108,13 @@ namespace backend.Controllers
             }
 
             var token = _jwtService.GenerateToken(user);
+
+            await _auditLogService.LogActionAsync(
+                user.Id,
+                "Login",
+                "Auth",
+                $"User {user.Username} logged in"
+            );
 
             return Ok(new
             {
@@ -207,6 +220,13 @@ namespace backend.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            await _auditLogService.LogActionAsync(
+                user.Id,
+                "UpdateProfile",
+                "Auth",
+                $"User {user.Username} updated profile"
+            );
 
             return Ok(new
             {

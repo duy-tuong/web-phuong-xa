@@ -5,6 +5,7 @@ export type GalleryItemData = {
   desc: string;
   image: string;
   theme?: string;
+  downloadUrl: string;
 };
 
 type GalleryItemProps = {
@@ -26,8 +27,14 @@ export default function GalleryItem({ photo }: GalleryItemProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
       </div>
       <div className="space-y-2 p-5">
-        <h3 className="line-clamp-2 text-base font-bold text-slate-900">{photo.title}</h3>
         <p className="text-sm leading-relaxed text-slate-600">{photo.desc}</p>
+        <a
+          href={photo.downloadUrl}
+          download
+          className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Tải ảnh
+        </a>
       </div>
     </article>
   );

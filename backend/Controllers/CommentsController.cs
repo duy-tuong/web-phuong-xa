@@ -29,6 +29,10 @@ namespace backend.Controllers
                 {
                     c.Id,
                     c.UserName,
+                    AvatarUrl = _context.Users
+                        .Where(u => u.Username == c.UserName || u.FullName == c.UserName)
+                        .Select(u => u.AvatarUrl)
+                        .FirstOrDefault(),
                     c.Content,
                     c.CreatedAt
                 })

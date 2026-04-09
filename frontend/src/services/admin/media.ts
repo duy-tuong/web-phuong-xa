@@ -19,9 +19,15 @@ export async function fetchMediaAdmin(params?: {
   };
 }
 
-export async function uploadMedia(file: File): Promise<void> {
+export async function uploadMedia(
+  file: File,
+  description?: string,
+): Promise<void> {
   const formData = new FormData();
   formData.append("file", file);
+  if (description && description.trim()) {
+    formData.append("description", description.trim());
+  }
 
   const headers: HeadersInit = {};
   if (typeof window !== "undefined") {
@@ -45,4 +51,18 @@ export async function uploadMedia(file: File): Promise<void> {
 
 export async function deleteMediaAdmin(id: string): Promise<void> {
   await api.delete(`/media/${id}`);
+}
+
+export async function updateMediaVisibility(
+  id: string,
+  isPublic: boolean,
+): Promise<void> {
+  await api.put(`/media/${id}/visibility`, isPublic);
+}
+
+export async function updateMediaDescription(
+  id: string,
+  description: string,
+): Promise<void> {
+  await api.put(`/media/${id}/description`, { description });
 }
