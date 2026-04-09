@@ -104,7 +104,11 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin,Editor")]
         [HttpPost("upload")]
         [RequestSizeLimit(104857600)] // 100MB limit
-        public async Task<IActionResult> UploadMedia(IFormFile file, [FromForm] string? description)
+        public async Task<IActionResult> UploadMedia(
+            IFormFile file,
+            [FromForm] string? description,
+            [FromForm] bool? isPublic
+        )
         {
             if (file == null || file.Length == 0)
             {
@@ -161,7 +165,7 @@ namespace backend.Controllers
                 Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim(),
                 UploadedBy = currentUserId,
                 UploadedAt = DateTime.Now,
-                IsPublic = false
+                IsPublic = isPublic ?? false
             };
 
             _context.Media.Add(media);

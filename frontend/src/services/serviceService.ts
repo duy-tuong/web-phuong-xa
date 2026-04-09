@@ -82,12 +82,24 @@ function adaptProcedure(service: ApiService): ProcedureDetail {
   };
 }
 
-export async function getProcedures(): Promise<ProcedureDetail[]> {
+export async function getProcedures(category?: string): Promise<ProcedureDetail[]> {
   try {
-    const response = await api.get<ApiService[]>("/services");
+    const response = await api.get<ApiService[]>("/services", {
+      params: category ? { category } : undefined,
+    });
     return Array.isArray(response.data) ? response.data.map(adaptProcedure) : [];
   } catch (error) {
     console.error("Không thể tải danh sách dịch vụ công:", error);
+    return [];
+  }
+}
+
+export async function getServiceCategories(): Promise<string[]> {
+  try {
+    const response = await api.get<string[]>("/services/categories");
+    return Array.isArray(response.data) ? response.data.filter(Boolean) : [];
+  } catch (error) {
+    console.error("Không thể tải danh sách lĩnh vực dịch vụ:", error);
     return [];
   }
 }

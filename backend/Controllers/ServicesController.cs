@@ -22,6 +22,15 @@ namespace backend.Controllers
             _auditLogService = auditLogService;
         }
 
+        // 🔹 GET ALL CATEGORIES (Danh sách lĩnh vực dành cho Frontend làm Menu/Tab)
+        [AllowAnonymous]
+        [HttpGet("categories")]
+        public IActionResult GetServiceCategories()
+        {
+            var categories = new[] { "Hộ tịch", "Đất đai", "Kinh doanh", "Hành chính công" };
+            return Ok(categories);
+        }
+
         // 🔹 GET ALL
         [AllowAnonymous]
         [HttpGet]

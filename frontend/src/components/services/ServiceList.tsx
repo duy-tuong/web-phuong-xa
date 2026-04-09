@@ -47,15 +47,25 @@ function buildServiceDescription(procedure: ProcedureDetail) {
   return `Hồ sơ cần chuẩn bị: ${topRequirements.join("; ")}.`;
 }
 
-function mapProcedureToCard(procedure: ProcedureDetail, index: number): ServiceCardData {
+function mapProcedureToCard(
+  procedure: ProcedureDetail,
+  index: number,
+): ServiceCardData {
   const { level, levelClass } = getLevelData(procedure);
+  const normalizedField = procedure.field ? toFieldValue(procedure.field) : "";
+  const resolvedField =
+    !normalizedField || normalizedField === "hanh-chinh-cong"
+      ? inferServiceField(procedure.title)
+      : procedure.field || inferServiceField(procedure.title);
 
   return {
     slug: procedure.slug,
-    profileCode: procedure.id ? `DV-${String(procedure.id).padStart(3, "0")}` : `DV-${String(index + 1).padStart(3, "0")}`,
+    profileCode: procedure.id
+      ? `DV-${String(procedure.id).padStart(3, "0")}`
+      : `DV-${String(index + 1).padStart(3, "0")}`,
     level,
     levelClass,
-    field: procedure.field || inferServiceField(procedure.title),
+    field: resolvedField,
     title: procedure.title,
     description: buildServiceDescription(procedure),
     duration: procedure.processingTime,
@@ -99,9 +109,11 @@ export default function ServiceList() {
     };
   }, []);
 
-  const services = useMemo(() => procedures.map(mapProcedureToCard), [procedures]);
+  const services = useMemo(
+    () => procedures.map(mapProcedureToCard),
+    [procedures],
+  );
   const keyword = (searchParams.get("q") ?? "").trim().toLowerCase();
-  const field = searchParams.get("field") ?? "";
   const currentPage = parsePositivePageParam(searchParams.get("page"));
 
   const filteredServices = useMemo(() => {
@@ -112,23 +124,28 @@ export default function ServiceList() {
         service.description.toLowerCase().includes(keyword) ||
         service.field.toLowerCase().includes(keyword);
 
-      const matchesField = !field || toFieldValue(service.field) === field;
-
-      return matchesKeyword && matchesField;
+      return matchesKeyword;
     });
 
     if (sortMode === "name") {
-      return [...nextServices].sort((left, right) => left.title.localeCompare(right.title, "vi"));
+      return [...nextServices].sort((left, right) =>
+        left.title.localeCompare(right.title, "vi"),
+      );
     }
 
     if (sortMode === "duration") {
-      return [...nextServices].sort((left, right) => left.duration.localeCompare(right.duration, "vi"));
+      return [...nextServices].sort((left, right) =>
+        left.duration.localeCompare(right.duration, "vi"),
+      );
     }
 
     return nextServices;
-  }, [field, keyword, services, sortMode]);
+  }, [keyword, services, sortMode]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredServices.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredServices.length / ITEMS_PER_PAGE),
+  );
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const pagedServices = useMemo(() => {
     const start = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
@@ -145,7 +162,10 @@ export default function ServiceList() {
     router.replace(buildPathWithSearchParams(pathname, params));
   }, [currentPage, pathname, router, safeCurrentPage, searchParams]);
 
-  const visiblePages = useMemo(() => buildCompactPagination(safeCurrentPage, totalPages), [safeCurrentPage, totalPages]);
+  const visiblePages = useMemo(
+    () => buildCompactPagination(safeCurrentPage, totalPages),
+    [safeCurrentPage, totalPages],
+  );
 
   const handlePageChange = (page: number) => {
     const nextPage = Math.max(1, Math.min(page, totalPages));
@@ -159,7 +179,9 @@ export default function ServiceList() {
       <div className="flex w-full flex-col space-y-4">
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-700" />
-          <p className="mt-4 text-sm font-medium text-slate-600">Đang tải danh sách thủ tục...</p>
+          <p className="mt-4 text-sm font-medium text-slate-600">
+            Đang tải danh sách thủ tục...
+          </p>
         </div>
       </div>
     );
@@ -169,9 +191,12 @@ export default function ServiceList() {
     return (
       <div className="flex w-full flex-col space-y-4">
         <div className="rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <h2 className="text-xl font-bold text-slate-900">Chưa có dịch vụ công nào</h2>
+          <h2 className="text-xl font-bold text-slate-900">
+            Chưa có dịch vụ công nào
+          </h2>
           <p className="mt-3 text-sm text-slate-600">
-            Hệ thống chưa có dữ liệu thủ tục hành chính để hiển thị. Khi backend có dữ liệu, danh sách sẽ tự động cập nhật.
+            Hệ thống chưa có dữ liệu thủ tục hành chính để hiển thị. Khi backend
+            có dữ liệu, danh sách sẽ tự động cập nhật.
           </p>
         </div>
       </div>
@@ -188,7 +213,7 @@ export default function ServiceList() {
               {filteredServices.length}
             </span>
           </h2>
-          {(keyword || field) && (
+          {keyword && (
             <p className="mt-2 text-sm text-slate-500">
               Đang hiển thị kết quả phù hợp với bộ lọc bạn đã chọn.
             </p>
@@ -211,7 +236,9 @@ export default function ServiceList() {
 
       {filteredServices.length === 0 ? (
         <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900">Không có thủ tục phù hợp</h3>
+          <h3 className="text-lg font-bold text-slate-900">
+            Không có thủ tục phù hợp
+          </h3>
           <p className="mt-2 text-sm text-slate-600">
             Thử thu hẹp bộ lọc hoặc đổi từ khóa tìm kiếm để xem thêm kết quả.
           </p>

@@ -9,41 +9,30 @@ import {
   setOptionalQueryParam,
   setPageQueryParam,
 } from "@/lib/query-params";
-
-const FIELD_OPTIONS = [
-  { value: "", label: "Tất cả lĩnh vực" },
-  { value: "ho-tich", label: "Hộ tịch" },
-  { value: "dat-dai", label: "Đất đai" },
-  { value: "kinh-doanh", label: "Kinh doanh" },
-  { value: "hanh-chinh-cong", label: "Hành chính công" },
-];
-
 type ServiceSearchFormProps = {
-  initialField: string;
   initialKeyword: string;
   pathname: string;
   searchParamsString: string;
 };
 
 function ServiceSearchForm({
-  initialField,
   initialKeyword,
   pathname,
   searchParamsString,
 }: ServiceSearchFormProps) {
   const router = useRouter();
   const [keyword, setKeyword] = useState(initialKeyword);
-  const [field, setField] = useState(initialField);
+
+  const applyFilters = (nextKeyword: string) => {
+    const params = cloneSearchParams(searchParamsString);
+    setOptionalQueryParam(params, "q", nextKeyword);
+    setPageQueryParam(params, 1);
+    router.push(buildPathWithSearchParams(pathname, params));
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const params = cloneSearchParams(searchParamsString);
-    setOptionalQueryParam(params, "q", keyword);
-    setOptionalQueryParam(params, "field", field);
-    setPageQueryParam(params, 1);
-
-    router.push(buildPathWithSearchParams(pathname, params));
+    applyFilters(keyword);
   };
 
   return (
@@ -52,8 +41,11 @@ function ServiceSearchForm({
       className="mb-8 w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6 lg:mb-10"
     >
       <div className="grid grid-cols-1 gap-5 md:grid-cols-12 md:items-end">
-        <div className="md:col-span-5 lg:col-span-5">
-          <label className="mb-2 block text-sm font-bold text-slate-800" htmlFor="keyword">
+        <div className="md:col-span-9 lg:col-span-9">
+          <label
+            className="mb-2 block text-sm font-bold text-slate-800"
+            htmlFor="keyword"
+          >
             Từ khóa tìm kiếm
           </label>
           <div className="relative">
@@ -71,35 +63,14 @@ function ServiceSearchForm({
           </div>
         </div>
 
-        <div className="md:col-span-4 lg:col-span-4">
-          <label className="mb-2 block text-sm font-bold text-slate-800" htmlFor="category">
-            Lĩnh vực
-          </label>
-          <div className="relative">
-            <select
-              id="category"
-              value={field}
-              onChange={(event) => setField(event.target.value)}
-              className="w-full appearance-none rounded-xl border border-slate-300 bg-white py-3.5 pl-4 pr-10 text-sm font-medium outline-none transition-all focus:border-[#1f7a5a] focus:ring-4 focus:ring-[#1f7a5a]/10"
-            >
-              {FIELD_OPTIONS.map((option) => (
-                <option key={option.value || "all"} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-              expand_more
-            </span>
-          </div>
-        </div>
-
         <div className="flex shrink-0 items-center justify-end gap-3 pt-2 md:col-span-3 md:pt-0 lg:col-span-3">
           <button
             type="submit"
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1f7a5a] py-3.5 text-sm font-black tracking-wide text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#186248] focus:ring-4 focus:ring-[#1f7a5a]/30"
           >
-            <span className="material-symbols-outlined text-[18px]">search</span>
+            <span className="material-symbols-outlined text-[18px]">
+              search
+            </span>
             TÌM KIẾM
           </button>
         </div>
@@ -116,7 +87,6 @@ export default function ServiceSearchBar() {
   return (
     <ServiceSearchForm
       key={searchParamsString}
-      initialField={searchParams.get("field") ?? ""}
       initialKeyword={searchParams.get("q") ?? ""}
       pathname={pathname}
       searchParamsString={searchParamsString}

@@ -374,7 +374,7 @@ export default function UsersPage() {
     },
     {
       key: "fullName",
-      label: "Ho ten",
+      label: "Họ tên",
       render: (user) => (
         <span className="text-stone-600">{user.fullName || "--"}</span>
       ),
