@@ -28,7 +28,7 @@ const emptyForm: ServiceFormState = {
   field: "Hành chính công",
   description: "",
   requiredDocuments: "",
-  processingTime: "",
+  processingTime: "0",
   fee: "0",
   templateFile: "",
 };
@@ -79,6 +79,17 @@ const getTemplateLabel = (value: string) => {
   const clean = value.split("?")[0];
   const parts = clean.split("/");
   return parts[parts.length - 1] || value;
+};
+
+const normalizeProcessingTime = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  if (/^\d+$/.test(trimmed)) {
+    return `${trimmed} ngày`;
+  }
+
+  return trimmed;
 };
 
 export default function ServicesPage() {
@@ -198,12 +209,15 @@ export default function ServicesPage() {
 
   const handleSave = async () => {
     const feeValue = Number(formData.fee);
+    const normalizedProcessingTime = normalizeProcessingTime(
+      formData.processingTime,
+    );
     if (
       !formData.name.trim() ||
       !formData.field.trim() ||
       !formData.description.trim() ||
       !formData.requiredDocuments.trim() ||
-      !formData.processingTime.trim() ||
+      !normalizedProcessingTime ||
       Number.isNaN(feeValue) ||
       feeValue < 0
     ) {
@@ -219,7 +233,7 @@ export default function ServicesPage() {
         category: formData.field.trim(),
         description: formData.description.trim(),
         requiredDocuments: formData.requiredDocuments.trim(),
-        processingTime: formData.processingTime.trim(),
+        processingTime: normalizedProcessingTime,
         fee: feeValue,
         templateFile: formData.templateFile.trim() || null,
       };
@@ -245,6 +259,7 @@ export default function ServicesPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("isPublic", "true");
       const res = await api.post("/media/upload", formData);
       const url = res.data?.url as string | undefined;
       if (!url) {
@@ -554,20 +569,23 @@ export default function ServicesPage() {
             rows={3}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              type="text"
-              label="Thời gian xử lý"
-              name="processingTime"
-              required
-              value={formData.processingTime}
-              onChange={(value) =>
-                setFormData((prev) => ({ ...prev, processingTime: value }))
-              }
-              placeholder="VD: 03 ngày làm việc"
-            />
+            <div className="space-y-1.5">
+              <FormField
+                type="number"
+                label="Thời gian xử lý (ngày)"
+                name="processingTime"
+                required
+                value={formData.processingTime}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, processingTime: value }))
+                }
+                placeholder="4"
+              />
+              <p className="text-xs text-stone-500"></p>
+            </div>
             <FormField
               type="number"
-              label="Lệ phí"
+              label="Lệ phí (VND)"
               name="fee"
               required
               value={formData.fee}

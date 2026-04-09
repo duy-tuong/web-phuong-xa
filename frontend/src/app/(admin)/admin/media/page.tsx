@@ -266,7 +266,7 @@ export default function MediaPage() {
           </Button>
         ))}
         <span className="text-xs text-stone-500">
-          {filteredMediaFiles.length} / {mediaFiles.length} tep
+          {filteredMediaFiles.length} / {mediaFiles.length} tệp
         </span>
       </div>
 

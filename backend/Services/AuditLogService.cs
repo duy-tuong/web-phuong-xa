@@ -30,11 +30,46 @@ namespace backend.Services
                 Action = action,
                 Entity = entity,
                 Detail = detail,
-                CreatedAt = DateTime.Now
+                CreatedAt = GetVietnamNow()
             };
 
             await context.AuditLogs.AddAsync(log);
             await context.SaveChangesAsync();
+        }
+
+        private static DateTime GetVietnamNow()
+        {
+            var utcNow = DateTime.UtcNow;
+            TimeZoneInfo? timeZone = null;
+
+            try
+            {
+                timeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+            }
+            catch (InvalidTimeZoneException)
+            {
+            }
+
+            if (timeZone == null)
+            {
+                try
+                {
+                    timeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                }
+                catch (InvalidTimeZoneException)
+                {
+                }
+            }
+
+            return timeZone == null
+                ? utcNow.AddHours(7)
+                : TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { format } from "date-fns";
 import { ScrollText, Search } from "lucide-react";
 
 import PageHeader from "@/components/admin/PageHeader";
@@ -27,6 +26,37 @@ const moduleBadgeClass: Record<string, string> = {
   Comments: "bg-rose-100 text-rose-800 hover:bg-rose-100",
   Users: "bg-violet-100 text-violet-800 hover:bg-violet-100",
   Applications: "bg-cyan-100 text-cyan-800 hover:bg-cyan-100",
+};
+
+const VIETNAM_TIME_FORMATTER = new Intl.DateTimeFormat("vi-VN", {
+  timeZone: "Asia/Ho_Chi_Minh",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+const formatVietnamTime = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+
+  const parts = VIETNAM_TIME_FORMATTER.formatToParts(date);
+  const lookup: Record<string, string> = {};
+  parts.forEach((part) => {
+    if (part.type !== "literal") {
+      lookup[part.type] = part.value;
+    }
+  });
+
+  const day = lookup.day ?? "";
+  const month = lookup.month ?? "";
+  const year = lookup.year ?? "";
+  const hour = lookup.hour ?? "";
+  const minute = lookup.minute ?? "";
+
+  return `${day}/${month}/${year} ${hour}:${minute}`.trim();
 };
 
 export default function LogsPage() {
@@ -124,7 +154,7 @@ export default function LogsPage() {
       label: "Thời gian",
       render: (log) => (
         <span className="text-sm text-stone-600">
-          {format(new Date(log.createdAt), "dd/MM/yyyy HH:mm")}
+          {formatVietnamTime(log.createdAt)}
         </span>
       ),
     },

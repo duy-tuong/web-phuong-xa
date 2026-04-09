@@ -7,7 +7,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")] // Ch?c n?ng ki?m toán ch? dành riêng cho Admin
+    [Authorize(Roles = "Admin")] // Ch?c n?ng ki?m toï¿½n ch? dï¿½nh riï¿½ng cho Admin
     public class AuditLogsController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -17,7 +17,7 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // ?? XEM L?CH S? HO?T ??NG (CÓ PHÂN TRANG VÀ L?C)
+        // ?? XEM L?CH S? HO?T ??NG (Cï¿½ PHï¿½N TRANG Vï¿½ L?C)
         [HttpGet]
         public async Task<IActionResult> GetLogs(string? keyword, string? actionType, string? entityName, int page = 1, int pageSize = 20)
         {
@@ -25,13 +25,13 @@ namespace backend.Controllers
                 .Include(a => a.User)
                 .AsQueryable();
 
-            // Tìm ki?m theo tên ho?c username ng??i th?c hi?n
+            // Tï¿½m ki?m theo tï¿½n ho?c username ng??i th?c hi?n
             if (!string.IsNullOrEmpty(keyword))
             {
                 query = query.Where(a => a.User.Username.Contains(keyword) || a.User.FullName.Contains(keyword));
             }
 
-            // L?c theo hành ??ng (VD: Create, Update, Delete, Login...)
+            // L?c theo hï¿½nh ??ng (VD: Create, Update, Delete, Login...)
             if (!string.IsNullOrEmpty(actionType))
             {
                 query = query.Where(a => a.Action.Contains(actionType));
@@ -64,12 +64,12 @@ namespace backend.Controllers
             return Ok(new { total, page, pageSize, totalPages, data = logs });
         }
 
-        // ?? XÓA L?CH S? C? (Bao g?m xóa hàng lo?t)
-        // Admin ch? ???c xóa các Log ?ã quá c? (ví d? tr??c 30 ngày) ?? gi?m nh? CSDL
+        // ?? Xï¿½A L?CH S? C? (Bao g?m xï¿½a hï¿½ng lo?t)
+        // Admin ch? ???c xï¿½a cï¿½c Log ?ï¿½ quï¿½ c? (vï¿½ d? tr??c 30 ngï¿½y) ?? gi?m nh? CSDL
         [HttpDelete("clean-old")]
         public async Task<IActionResult> CleanOldLogs(int daysOld = 30)
         {
-            var targetDate = DateTime.Now.AddDays(-daysOld);
+            var targetDate = GetVietnamNow().AddDays(-daysOld);
 
             var oldLogs = _context.AuditLogs.Where(a => a.CreatedAt <= targetDate);
             var deletedCount = await oldLogs.CountAsync();
@@ -78,6 +78,41 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = $"Successfully cleaned {deletedCount} old audit logs prior to {targetDate.ToString("dd/MM/yyyy")}." });
+        }
+
+        private static DateTime GetVietnamNow()
+        {
+            var utcNow = DateTime.UtcNow;
+            TimeZoneInfo? timeZone = null;
+
+            try
+            {
+                timeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+            }
+            catch (InvalidTimeZoneException)
+            {
+            }
+
+            if (timeZone == null)
+            {
+                try
+                {
+                    timeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                }
+                catch (InvalidTimeZoneException)
+                {
+                }
+            }
+
+            return timeZone == null
+                ? utcNow.AddHours(7)
+                : TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZone);
         }
     }
 }
