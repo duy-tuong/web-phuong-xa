@@ -1,6 +1,13 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ImagePlus, Loader2, RotateCcw, Trash2, Upload, X } from "lucide-react";
 
 import { getErrorMessage } from "@/services/admin/errors";
@@ -20,7 +27,17 @@ type ImageSize = {
   height: number;
 };
 
-type FieldErrors = Partial<Record<"avatar" | "fullName" | "email" | "phone" | "currentPassword" | "newPassword", string>>;
+type FieldErrors = Partial<
+  Record<
+    | "avatar"
+    | "fullName"
+    | "email"
+    | "phone"
+    | "currentPassword"
+    | "newPassword",
+    string
+  >
+>;
 
 const PREVIEW_SIZE = 160;
 const OUTPUT_SIZE = 320;
@@ -37,7 +54,8 @@ async function readFileAsDataUrl(file: File) {
 async function loadImageSize(src: string) {
   return new Promise<ImageSize>((resolve, reject) => {
     const image = new window.Image();
-    image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    image.onload = () =>
+      resolve({ width: image.naturalWidth, height: image.naturalHeight });
     image.onerror = () => reject(new Error("Không thể tải ảnh để chỉnh sửa."));
     image.src = src;
   });
@@ -67,11 +85,18 @@ async function renderAvatarDataUrl(input: {
     throw new Error("Không thể khởi tạo vùng xử lý ảnh.");
   }
 
-  const baseScale = Math.max(OUTPUT_SIZE / size.width, OUTPUT_SIZE / size.height);
+  const baseScale = Math.max(
+    OUTPUT_SIZE / size.width,
+    OUTPUT_SIZE / size.height,
+  );
   const drawWidth = size.width * baseScale * input.scale;
   const drawHeight = size.height * baseScale * input.scale;
-  const drawX = (OUTPUT_SIZE - drawWidth) / 2 + input.offsetX * (OUTPUT_SIZE / PREVIEW_SIZE);
-  const drawY = (OUTPUT_SIZE - drawHeight) / 2 + input.offsetY * (OUTPUT_SIZE / PREVIEW_SIZE);
+  const drawX =
+    (OUTPUT_SIZE - drawWidth) / 2 +
+    input.offsetX * (OUTPUT_SIZE / PREVIEW_SIZE);
+  const drawY =
+    (OUTPUT_SIZE - drawHeight) / 2 +
+    input.offsetY * (OUTPUT_SIZE / PREVIEW_SIZE);
 
   context.clearRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
   context.drawImage(image, drawX, drawY, drawWidth, drawHeight);
@@ -103,6 +128,9 @@ function validateForm(input: {
   const errors: FieldErrors = {};
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phonePattern = /^[0-9+\s()-]{8,20}$/;
+  const newPassword = input.newPassword.trim();
+  const passwordHasUppercase = /[A-Z]/.test(newPassword);
+  const passwordHasNumber = /\d/.test(newPassword);
 
   if (!input.fullName.trim()) {
     errors.fullName = "Vui lòng nhập họ và tên.";
@@ -118,15 +146,18 @@ function validateForm(input: {
     errors.phone = "Số điện thoại không hợp lệ.";
   }
 
-  if (input.newPassword.trim() && input.newPassword.trim().length < 6) {
-    errors.newPassword = "Mật khẩu mới phải có ít nhất 6 ký tự.";
+  if (
+    newPassword &&
+    (newPassword.length < 6 || !passwordHasUppercase || !passwordHasNumber)
+  ) {
+    errors.newPassword = "Mật khẩu mới phải ít nhất 6 ký tự, có chữ hoa và số.";
   }
 
-  if (input.newPassword.trim() && !input.currentPassword.trim()) {
+  if (newPassword && !input.currentPassword.trim()) {
     errors.currentPassword = "Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu.";
   }
 
-  if (input.currentPassword.trim() && !input.newPassword.trim()) {
+  if (input.currentPassword.trim() && !newPassword) {
     errors.newPassword = "Vui lòng nhập mật khẩu mới.";
   }
 
@@ -139,7 +170,12 @@ function getInputClassName(hasError: boolean) {
     : "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
 }
 
-export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: ProfileUpdateModalProps) {
+export default function ProfileUpdateModal({
+  isOpen,
+  onClose,
+  user,
+  onSaved,
+}: ProfileUpdateModalProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [formData, setFormData] = useState({
     fullName: user.fullName || "",
@@ -214,7 +250,10 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
       return null;
     }
 
-    const baseScale = Math.max(PREVIEW_SIZE / avatarSize.width, PREVIEW_SIZE / avatarSize.height);
+    const baseScale = Math.max(
+      PREVIEW_SIZE / avatarSize.width,
+      PREVIEW_SIZE / avatarSize.height,
+    );
     const drawWidth = avatarSize.width * baseScale * avatarScale;
     const drawHeight = avatarSize.height * baseScale * avatarScale;
     const left = (PREVIEW_SIZE - drawWidth) / 2 + avatarOffsetX;
@@ -236,14 +275,19 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
     setFormError("");
   };
 
-  const handleAvatarFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      setFieldErrors((prev) => ({ ...prev, avatar: "Vui lòng chọn đúng tệp ảnh." }));
+      setFieldErrors((prev) => ({
+        ...prev,
+        avatar: "Vui lòng chọn đúng tệp ảnh.",
+      }));
       return;
     }
 
@@ -291,7 +335,10 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
             offsetY: avatarOffsetY,
           });
           if (renderedDataUrl.startsWith("data:")) {
-            const avatarFile = dataUrlToFile(renderedDataUrl, `avatar-${user.id}.jpg`);
+            const avatarFile = dataUrlToFile(
+              renderedDataUrl,
+              `avatar-${user.id}.jpg`,
+            );
             const uploadData = new FormData();
             uploadData.append("file", avatarFile);
             const uploadResponse = await api.post("/media/avatar", uploadData);
@@ -337,7 +384,9 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
       <div className="relative z-[221] max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-[28px] bg-white shadow-2xl">
         <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Cập nhật thông tin tài khoản</h3>
+            <h3 className="text-xl font-bold text-slate-900">
+              Cập nhật thông tin tài khoản
+            </h3>
           </div>
           <button
             type="button"
@@ -355,7 +404,9 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
         >
           <form className="space-y-6" onSubmit={handleSubmit}>
             {formError ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{formError}</div>
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {formError}
+              </div>
             ) : null}
 
             <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -372,7 +423,9 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
                     ) : (
                       <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-slate-500">
                         <ImagePlus className="h-8 w-8" />
-                        <span className="text-xs font-medium">Chưa có avatar</span>
+                        <span className="text-xs font-medium">
+                          Chưa có avatar
+                        </span>
                       </div>
                     )}
                   </div>
@@ -411,20 +464,29 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
                     </button>
                   </div>
 
-                  {fieldErrors.avatar ? <p className="text-center text-sm text-red-600">{fieldErrors.avatar}</p> : null}
+                  {fieldErrors.avatar ? (
+                    <p className="text-center text-sm text-red-600">
+                      {fieldErrors.avatar}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex-1 space-y-4">
                   <div>
-                    <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-emerald-700">Căn chỉnh avatar</h4>
+                    <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                      Căn chỉnh avatar
+                    </h4>
                     <p className="mt-1 text-sm text-slate-500">
-                      Kéo thanh zoom và canh vị trí đến khi thấy vừa ý rồi bấm lưu thay đổi.
+                      Kéo thanh zoom và canh vị trí đến khi thấy vừa ý rồi bấm
+                      lưu thay đổi.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <label className="space-y-2">
-                      <span className="text-sm font-medium text-slate-700">Phóng to</span>
+                      <span className="text-sm font-medium text-slate-700">
+                        Phóng to
+                      </span>
                       <input
                         type="range"
                         min="1"
@@ -441,7 +503,9 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
                     </label>
 
                     <label className="space-y-2">
-                      <span className="text-sm font-medium text-slate-700">Dịch ngang</span>
+                      <span className="text-sm font-medium text-slate-700">
+                        Dịch ngang
+                      </span>
                       <input
                         type="range"
                         min="-80"
@@ -458,7 +522,9 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
                     </label>
 
                     <label className="space-y-2">
-                      <span className="text-sm font-medium text-slate-700">Dịch dọc</span>
+                      <span className="text-sm font-medium text-slate-700">
+                        Dịch dọc
+                      </span>
                       <input
                         type="range"
                         min="-80"
@@ -495,58 +561,92 @@ export default function ProfileUpdateModal({ isOpen, onClose, user, onSaved }: P
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <label className="space-y-2 md:col-span-2">
-                <span className="text-sm font-medium text-slate-700">Họ và tên</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Họ và tên
+                </span>
                 <input
                   type="text"
                   value={formData.fullName}
-                  onChange={(event) => updateField("fullName", event.target.value)}
+                  onChange={(event) =>
+                    updateField("fullName", event.target.value)
+                  }
                   className={getInputClassName(Boolean(fieldErrors.fullName))}
                 />
-                {fieldErrors.fullName ? <p className="text-sm text-red-600">{fieldErrors.fullName}</p> : null}
+                {fieldErrors.fullName ? (
+                  <p className="text-sm text-red-600">{fieldErrors.fullName}</p>
+                ) : null}
               </label>
 
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">Email</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Email
+                </span>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(event) => updateField("email", event.target.value)}
                   className={getInputClassName(Boolean(fieldErrors.email))}
                 />
-                {fieldErrors.email ? <p className="text-sm text-red-600">{fieldErrors.email}</p> : null}
+                {fieldErrors.email ? (
+                  <p className="text-sm text-red-600">{fieldErrors.email}</p>
+                ) : null}
               </label>
 
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">Số điện thoại</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Số điện thoại
+                </span>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(event) => updateField("phone", event.target.value)}
                   className={getInputClassName(Boolean(fieldErrors.phone))}
                 />
-                {fieldErrors.phone ? <p className="text-sm text-red-600">{fieldErrors.phone}</p> : null}
+                {fieldErrors.phone ? (
+                  <p className="text-sm text-red-600">{fieldErrors.phone}</p>
+                ) : null}
               </label>
 
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">Mật khẩu hiện tại</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Mật khẩu hiện tại
+                </span>
                 <input
                   type="password"
                   value={formData.currentPassword}
-                  onChange={(event) => updateField("currentPassword", event.target.value)}
-                  className={getInputClassName(Boolean(fieldErrors.currentPassword))}
+                  onChange={(event) =>
+                    updateField("currentPassword", event.target.value)
+                  }
+                  className={getInputClassName(
+                    Boolean(fieldErrors.currentPassword),
+                  )}
                 />
-                {fieldErrors.currentPassword ? <p className="text-sm text-red-600">{fieldErrors.currentPassword}</p> : null}
+                {fieldErrors.currentPassword ? (
+                  <p className="text-sm text-red-600">
+                    {fieldErrors.currentPassword}
+                  </p>
+                ) : null}
               </label>
 
               <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-700">Mật khẩu mới</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Mật khẩu mới
+                </span>
                 <input
                   type="password"
                   value={formData.newPassword}
-                  onChange={(event) => updateField("newPassword", event.target.value)}
-                  className={getInputClassName(Boolean(fieldErrors.newPassword))}
+                  onChange={(event) =>
+                    updateField("newPassword", event.target.value)
+                  }
+                  className={getInputClassName(
+                    Boolean(fieldErrors.newPassword),
+                  )}
                 />
-                {fieldErrors.newPassword ? <p className="text-sm text-red-600">{fieldErrors.newPassword}</p> : null}
+                {fieldErrors.newPassword ? (
+                  <p className="text-sm text-red-600">
+                    {fieldErrors.newPassword}
+                  </p>
+                ) : null}
               </label>
             </div>
 

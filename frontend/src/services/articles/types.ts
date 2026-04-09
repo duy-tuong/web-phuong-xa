@@ -18,6 +18,7 @@ export type ApiArticleListItem = {
   createdAt?: string | null;
   category?: string | null;
   author?: string | null;
+  authorAvatar?: string | null;
 };
 
 export type ApiArticleDetail = ApiArticleListItem & {

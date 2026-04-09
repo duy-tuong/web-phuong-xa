@@ -81,6 +81,13 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
+function getPasswordValidationError(password: string) {
+  if (password.length < 6 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+    return "Mật khẩu phải ít nhất 6 ký tự, có chữ hoa và số.";
+  }
+  return "";
+}
+
 export default function UsersPage() {
   // --- data state ---
   const [users, setUsers] = useState<User[]>([]);
@@ -101,6 +108,7 @@ export default function UsersPage() {
   const [formData, setFormData] = useState<UserFormData>(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const fetchRoles = async () => {
     const res = await api.get("/roles");
@@ -222,6 +230,7 @@ export default function UsersPage() {
     setEditingUser(null);
     setFormData(emptyForm);
     setShowPassword(false);
+    setFieldErrors({});
   };
 
   const isFormValid = useMemo(() => {
@@ -236,9 +245,35 @@ export default function UsersPage() {
 
   const handleSubmit = async () => {
     setErrorMessage("");
+    setFieldErrors({});
 
     if (!isFormValid) {
+      const nextErrors: Record<string, string> = {};
+      if (!formData.username.trim()) {
+        nextErrors.username = "Vui lòng nhập tên đăng nhập.";
+      }
+      if (!formData.email.trim()) {
+        nextErrors.email = "Vui lòng nhập email.";
+      }
+      if (!formData.roleId.trim()) {
+        nextErrors.roleId = "Vui lòng chọn vai trò.";
+      }
+      setFieldErrors(nextErrors);
       return;
+    }
+
+    const trimmedPassword = formData.password.trim();
+    if (!editingUser && !trimmedPassword) {
+      setFieldErrors({ password: "Vui lòng nhập mật khẩu." });
+      return;
+    }
+
+    if (trimmedPassword) {
+      const passwordError = getPasswordValidationError(trimmedPassword);
+      if (passwordError) {
+        setFieldErrors({ password: passwordError });
+        return;
+      }
     }
 
     const roleId = Number(formData.roleId);
@@ -296,6 +331,7 @@ export default function UsersPage() {
   // ---------- Form field updater ----------
   const updateField = (field: keyof UserFormData) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setFieldErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   const getRoleBadgeClass = (roleId: string, roleName?: string) => {
@@ -525,7 +561,7 @@ export default function UsersPage() {
             <Button
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
               onClick={handleSubmit}
-              disabled={isSaving || !isFormValid}
+              disabled={isSaving}
             >
               {editingUser ? "Cập nhật" : "Tạo mới"}
             </Button>
@@ -563,6 +599,9 @@ export default function UsersPage() {
               placeholder="Nhập tên đăng nhập"
               className="border-stone-200 focus:border-emerald-400 focus:ring-emerald-400"
             />
+            {fieldErrors.username ? (
+              <p className="text-xs text-red-500">{fieldErrors.username}</p>
+            ) : null}
           </div>
           <FormField
             type="text"
@@ -581,6 +620,9 @@ export default function UsersPage() {
             onChange={updateField("email")}
             placeholder="Nhập địa chỉ email"
           />
+          {fieldErrors.email ? (
+            <p className="text-xs text-red-500">{fieldErrors.email}</p>
+          ) : null}
           <div className="space-y-1.5">
             <Label
               htmlFor="password"
@@ -620,6 +662,9 @@ export default function UsersPage() {
                 )}
               </button>
             </div>
+            {fieldErrors.password ? (
+              <p className="text-xs text-red-500">{fieldErrors.password}</p>
+            ) : null}
             {editingUser && (
               <p className="text-xs text-stone-500">
                 Để trống nếu không muốn đổi mật khẩu.
@@ -640,6 +685,9 @@ export default function UsersPage() {
               value: role.id,
             }))}
           />
+          {fieldErrors.roleId ? (
+            <p className="text-xs text-red-500">{fieldErrors.roleId}</p>
+          ) : null}
         </div>
       </Modal>
 

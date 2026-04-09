@@ -15,6 +15,7 @@ export interface Article {
   date: string;
   author: string;
   authorId: string;
+  authorAvatar?: string;
   status: string;
   publishedAt: string;
   views: string;

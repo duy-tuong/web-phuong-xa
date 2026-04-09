@@ -248,10 +248,21 @@ export default function TinTucSlugPage() {
                 </span>
                 <span>{article.date}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-base">
-                  person
-                </span>
+              <div className="flex items-center gap-2">
+                {article.authorAvatar ? (
+                  <Image
+                    src={article.authorAvatar}
+                    alt={article.author}
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 rounded-full object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">
+                    {article.author.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
                 <span>{article.author}</span>
               </div>
               <div className="flex items-center gap-1.5 lg:ml-auto">

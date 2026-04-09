@@ -1,5 +1,6 @@
 ﻿using backend.Data;
 using backend.Services;
+using backend.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -137,6 +138,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddHostedService<AuditLogCleanupService>();
 
 builder.Services.AddAuthorization();
 
@@ -192,6 +195,7 @@ app.Use(async (context, next) =>
 
 app.UseAuthentication();  // phải trước UseAuthorization
 app.UseAuthorization();
+app.UseMiddleware<AuditLogMiddleware>();
 
 app.MapControllers();  // hoặc app.MapGroup nếu dùng Minimal API
 

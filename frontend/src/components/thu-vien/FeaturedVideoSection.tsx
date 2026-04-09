@@ -13,11 +13,11 @@ export default async function FeaturedVideoSection() {
               Video nổi bật
             </span>
             <h2 className="text-3xl font-black leading-tight text-slate-900 md:text-4xl">
-              {featuredVideo ? featuredVideo.title : "Kho video nổi bật đang được cập nhật"}
+              {featuredVideo ? featuredVideo.description : "Kho video nổi bật đang được cập nhật"}
             </h2>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
               {featuredVideo
-                ? "Kho video lấy dữ liệu trực tiếp từ media công khai. Khi có video mới, khu này sẽ tự cập nhật theo nội dung mới nhất."
+                ? "Kho video luôn cập nhật tự động từ nguồn công khai, mang đến cho bạn nội dung mới nhất."
                 : "Hiện chưa có video nào trong thư viện công khai. Khi admin thêm video, khu vực bên phải sẽ hiển thị ngay video nổi bật đầu tiên."}
             </p>
           </div>

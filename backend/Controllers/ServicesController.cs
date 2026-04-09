@@ -1,9 +1,11 @@
 ﻿using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace backend.Controllers
 {
@@ -12,10 +14,12 @@ namespace backend.Controllers
     public class ServicesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IAuditLogService _auditLogService;
 
-        public ServicesController(AppDbContext context)
+        public ServicesController(AppDbContext context, IAuditLogService auditLogService)
         {
             _context = context;
+            _auditLogService = auditLogService;
         }
 
         // 🔹 GET ALL
@@ -105,6 +109,17 @@ namespace backend.Controllers
             _context.Services.Add(service);
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Create",
+                    "Services",
+                    $"Service {service.Id}: {service.Name}"
+                );
+            }
+
             return Ok(new
             {
                 service.Id,
@@ -143,6 +158,17 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Update",
+                    "Services",
+                    $"Service {service.Id}: {service.Name}"
+                );
+            }
+
             return Ok(new
             {
                 service.Id,
@@ -168,6 +194,17 @@ namespace backend.Controllers
 
             _context.Services.Remove(service);
             await _context.SaveChangesAsync();
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Delete",
+                    "Services",
+                    $"Service {service.Id}: {service.Name}"
+                );
+            }
 
             return Ok(new
             {

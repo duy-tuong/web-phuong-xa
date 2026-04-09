@@ -20,7 +20,7 @@ export default async function UserHomePage() {
 
   const homepageTourismCards = libraryPhotos.length > 0
     ? libraryPhotos.slice(0, 4).map((photo, index) => ({
-        title: photo.title,
+        title: "",
         desc: photo.desc,
         tag: index % 2 === 0 ? "Thư viện" : "Văn hóa du lịch",
         href: "/thu-vien/hinh-anh",

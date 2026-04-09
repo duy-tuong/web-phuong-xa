@@ -1,7 +1,4 @@
-import type {
-  Application,
-  DashboardStats,
-} from "@/types";
+import type { Application, DashboardStats } from "@/types";
 
 export type PaginatedResponse<T> = {
   total: number;
@@ -74,6 +71,8 @@ export type ApiMedia = {
   type: string;
   fileType?: string | null;
   fileSize?: number | null;
+  description?: string | null;
+  isPublic?: boolean | null;
   uploadedBy: string;
   uploadedAt: string;
 };

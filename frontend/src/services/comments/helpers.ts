@@ -1,3 +1,4 @@
+import { resolveApiAssetUrl } from "@/lib/api-base-url";
 import type { ApiComment } from "@/services/comments/types";
 import type { Comment } from "@/types/comment";
 
@@ -10,26 +11,30 @@ function formatTimeAgo(createdAt: string) {
     return "Vua xong";
   }
 
-  const diffInMinutes = Math.max(1, Math.floor((Date.now() - createdTime) / 60000));
+  const diffInMinutes = Math.max(
+    1,
+    Math.floor((Date.now() - createdTime) / 60000),
+  );
   if (diffInMinutes < 60) {
     return `${diffInMinutes} phut truoc`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours} gio truoc`;
+    return `${diffInHours} giờ trước`;
   }
 
   const diffInDays = Math.floor(diffInHours / 24);
-  return `${diffInDays} ngay truoc`;
+  return `${diffInDays} ngày trước`;
 }
 
 export function adaptComment(comment: ApiComment): Comment {
+  const avatarUrl = resolveApiAssetUrl(comment.avatarUrl || "") || "";
   return {
     name: comment.userName,
     timeAgo: formatTimeAgo(comment.createdAt),
     likes: 0,
-    avatar: defaultAvatar,
+    avatar: avatarUrl || defaultAvatar,
     content: comment.content,
   };
 }

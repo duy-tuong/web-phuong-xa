@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,12 @@ namespace backend.Controllers
     public class ArticlesController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IAuditLogService _auditLogService;
 
-        public ArticlesController(AppDbContext context)
+        public ArticlesController(AppDbContext context, IAuditLogService auditLogService)
         {
             _context = context;
+            _auditLogService = auditLogService;
         }
 
         [AllowAnonymous]
@@ -55,7 +58,8 @@ namespace backend.Controllers
                     a.IsFeatured,
                     a.CreatedAt,
                     Category = a.Category.Name,
-                    Author = string.IsNullOrWhiteSpace(a.Author.FullName) ? a.Author.Username : a.Author.FullName
+                    Author = string.IsNullOrWhiteSpace(a.Author.FullName) ? a.Author.Username : a.Author.FullName,
+                    AuthorAvatar = a.Author.AvatarUrl
                 })
                 .ToListAsync();
 
@@ -82,7 +86,8 @@ namespace backend.Controllers
                     a.FeaturedImage,
                     a.CreatedAt,
                     Category = a.Category.Name,
-                    Author = a.Author.Username
+                    Author = a.Author.Username,
+                    AuthorAvatar = a.Author.AvatarUrl
                 })
                 .ToListAsync();
 
@@ -109,7 +114,8 @@ namespace backend.Controllers
                     a.Slug,
                     a.CreatedAt,
                     Category = a.Category.Name,
-                    Author = string.IsNullOrWhiteSpace(a.Author.FullName) ? a.Author.Username : a.Author.FullName
+                    Author = string.IsNullOrWhiteSpace(a.Author.FullName) ? a.Author.Username : a.Author.FullName,
+                    AuthorAvatar = a.Author.AvatarUrl
                 })
                 .FirstOrDefaultAsync();
 
@@ -144,7 +150,8 @@ namespace backend.Controllers
                     a.CategoryId,
                     Category = a.Category.Name,
                     a.AuthorId,
-                    Author = a.Author.Username
+                    Author = a.Author.Username,
+                    AuthorAvatar = a.Author.AvatarUrl
                 })
                 .ToListAsync();
 
@@ -191,6 +198,13 @@ namespace backend.Controllers
             _context.Articles.Add(article);
             await _context.SaveChangesAsync();
 
+            await _auditLogService.LogActionAsync(
+                currentUserId,
+                "Create",
+                "Articles",
+                $"Article {article.Id}: {article.Title}"
+            );
+
             return Ok(new { article.Id, article.Title, article.Status });
         }
 
@@ -231,6 +245,17 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Update",
+                    "Articles",
+                    $"Article {article.Id}: {article.Title}"
+                );
+            }
+
             return Ok(new { article.Id, article.Title, article.Status });
         }
 
@@ -249,6 +274,17 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Publish",
+                    "Articles",
+                    $"Article {article.Id}: {article.Title}"
+                );
+            }
+
             return Ok(new { message = "Published" });
         }
 
@@ -264,6 +300,17 @@ namespace backend.Controllers
 
             _context.Articles.Remove(article);
             await _context.SaveChangesAsync();
+
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Delete",
+                    "Articles",
+                    $"Article {article.Id}: {article.Title}"
+                );
+            }
 
             return Ok(new { message = "Deleted" });
         }

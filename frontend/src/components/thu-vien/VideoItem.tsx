@@ -3,6 +3,8 @@ export type VideoItemData = {
   date: string;
   image: string;
   sourceUrl: string;
+  description: string;
+  downloadUrl: string;
 };
 
 type VideoItemProps = {
@@ -23,8 +25,16 @@ export default function VideoItem({ video }: VideoItemProps) {
         </video>
       </div>
       <div className="space-y-2 p-5">
-        <h3 className="line-clamp-2 text-base font-bold text-slate-900">{video.title}</h3>
-        <p className="text-sm text-slate-500">{video.date}</p>
+        {video.description ? (
+          <p className="text-sm text-slate-600">{video.description}</p>
+        ) : null}
+        <a
+          href={video.downloadUrl}
+          download
+          className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Tải video
+        </a>
       </div>
     </article>
   );

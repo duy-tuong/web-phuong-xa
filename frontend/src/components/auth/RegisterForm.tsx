@@ -1,5 +1,5 @@
-/*Form đăng ký tài khoản mới, thu thập thông tin người dùng, 
- * gửi lên backend để tạo tài khoản. Xử lý kiểm tra hợp lệ, 
+/*Form đăng ký tài khoản mới, thu thập thông tin người dùng,
+ * gửi lên backend để tạo tài khoản. Xử lý kiểm tra hợp lệ,
  * báo lỗi, chuyển hướng sau khi đăng ký thành công. */
 "use client";
 
@@ -48,6 +48,8 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
     const email = registerForm.email.trim();
     const password = registerForm.password;
     const confirmPassword = registerForm.confirmPassword;
+    const passwordHasUppercase = /[A-Z]/.test(password);
+    const passwordHasNumber = /\d/.test(password);
 
     if (!fullName) {
       nextErrors.fullName = "Vui lòng nhập họ và tên.";
@@ -62,8 +64,12 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
     }
     if (!password) {
       nextErrors.password = "Vui lòng nhập mật khẩu.";
-    } else if (password.length < 6) {
-      nextErrors.password = "Mật khẩu tối thiểu 6 ký tự.";
+    } else if (
+      password.length < 6 ||
+      !passwordHasUppercase ||
+      !passwordHasNumber
+    ) {
+      nextErrors.password = "Mật khẩu phải ít nhất 6 ký tự, có chữ hoa và số.";
     }
     if (!confirmPassword) {
       nextErrors.confirmPassword = "Vui lòng nhập xác nhận mật khẩu.";
@@ -100,7 +106,9 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
       const role: string | undefined = loginResponse.data?.role;
 
       if (!token || !username) {
-        setErrorMessage("Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng thử đăng nhập lại.");
+        setErrorMessage(
+          "Đăng ký thành công nhưng đăng nhập tự động thất bại. Vui lòng thử đăng nhập lại.",
+        );
         return;
       }
 
@@ -138,7 +146,9 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
           typeof data === "string"
             ? data
             : data?.message || data?.error || data?.title || data?.detail;
-        setErrorMessage(serverMessage || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.");
+        setErrorMessage(
+          serverMessage || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.",
+        );
       } else {
         setErrorMessage("Đăng ký thất bại. Vui lòng thử lại.");
       }
@@ -307,7 +317,9 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
           </button>
         </div>
         {fieldErrors.confirmPassword ? (
-          <p className="mt-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
+          <p className="mt-1 text-xs text-red-500">
+            {fieldErrors.confirmPassword}
+          </p>
         ) : null}
 
         <button
@@ -332,9 +344,12 @@ export default function RegisterForm({ onSuccessAction }: RegisterFormProps) {
             className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline"
           >
             Điều khoản dịch vụ
-          </a>
-          {" "}và{" "}
-          <a href="#" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
+          </a>{" "}
+          và{" "}
+          <a
+            href="#"
+            className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline"
+          >
             Chính sách bảo mật
           </a>
           .

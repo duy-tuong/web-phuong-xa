@@ -1,9 +1,11 @@
 ﻿using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims; // Thêm Claims
 
 namespace backend.Controllers
 {
@@ -13,11 +15,13 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IAuditLogService _auditLogService;
 
-        public ApplicationsController(AppDbContext context, IWebHostEnvironment env)
+        public ApplicationsController(AppDbContext context, IWebHostEnvironment env, IAuditLogService auditLogService)
         {
             _context = context;
             _env = env;
+            _auditLogService = auditLogService;
         }
 
         // 🔹 UPLOAD TÀI LIỆU ĐÍNH KÈM (Dành cho người dân - Không cần đăng nhập)
@@ -98,6 +102,17 @@ namespace backend.Controllers
 
             _context.Applications.Add(application);
             await _context.SaveChangesAsync();
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Create",
+                    "Applications",
+                    $"Application {application.Id} for service {application.ServiceId}"
+                );
+            }
 
             return Ok(new
             {
@@ -235,6 +250,17 @@ namespace backend.Controllers
             application.Status = dto.Status;
             await _context.SaveChangesAsync();
 
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "UpdateStatus",
+                    "Applications",
+                    $"Application {application.Id} status {application.Status}"
+                );
+            }
+
             return Ok(new
             {
                 message = "Application status updated successfully",
@@ -255,6 +281,17 @@ namespace backend.Controllers
 
             _context.Applications.Remove(application);
             await _context.SaveChangesAsync();
+
+            var userIdClaim = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var currentUserId))
+            {
+                await _auditLogService.LogActionAsync(
+                    currentUserId,
+                    "Delete",
+                    "Applications",
+                    $"Application {application.Id}"
+                );
+            }
 
             return Ok(new { message = "Application deleted successfully." });
         }
