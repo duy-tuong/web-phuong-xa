@@ -8,7 +8,6 @@ import {
   Mail,
   MessageSquare,
   ScrollText,
-  Shield,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -22,7 +21,6 @@ export interface AdminNavItem {
 export const adminNavItems: AdminNavItem[] = [
   { label: "Bảng điều khiển", href: "/admin", icon: LayoutDashboard },
   { label: "Người dùng", href: "/admin/users", icon: Users },
-  { label: "Vai trò", href: "/admin/roles", icon: Shield },
   { label: "Bài viết", href: "/admin/articles", icon: FileText },
   { label: "Danh mục", href: "/admin/categories", icon: FolderTree },
   { label: "Phương tiện", href: "/admin/media", icon: MediaIcon },
