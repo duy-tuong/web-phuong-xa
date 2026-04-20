@@ -120,8 +120,14 @@ export default function Footer() {
             © 2025 Cổng Thông tin điện tử Phường Cao Lãnh - Thành phố Cao Lãnh,
             Tỉnh Đồng Tháp.
           </p>
-          <p className="font-medium">
-
+          <p className="flex flex-wrap items-center gap-3 font-medium">
+            <Link href="/dieu-khoan-dich-vu" className="hover:text-emerald-700">
+              Điều khoản dịch vụ
+            </Link>
+            <span className="h-4 w-px bg-slate-300" />
+            <Link href="/chinh-sach-bao-mat" className="hover:text-emerald-700">
+              Chính sách bảo mật
+            </Link>
           </p>
         </div>
       </div>

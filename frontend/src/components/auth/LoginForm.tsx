@@ -28,7 +28,10 @@ type LoginFormProps = {
   adminRedirectPath?: string | null;
 };
 
-export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginFormProps) {
+export default function LoginForm({
+  onSuccessAction,
+  adminRedirectPath,
+}: LoginFormProps) {
   const [loginForm, setLoginForm] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +61,9 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
       const fullName: string | undefined = response.data?.fullName;
 
       if (!token || !returnedUsername) {
-        setErrorMessage("Đăng nhập thất bại. Không nhận được dữ liệu người dùng từ máy chủ.");
+        setErrorMessage(
+          "Đăng nhập thất bại. Không nhận được dữ liệu người dùng từ máy chủ.",
+        );
         return;
       }
 
@@ -72,7 +77,10 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
     } catch (error: unknown) {
       if (axios.isAxiosError<BackendErrorPayload>(error)) {
         const data = error.response?.data;
-        const serverMessage = typeof data === "string" ? data : data?.message || data?.error || data?.title || data?.detail;
+        const serverMessage =
+          typeof data === "string"
+            ? data
+            : data?.message || data?.error || data?.title || data?.detail;
         const normalizedMessage = (serverMessage || "").toLowerCase();
         if (normalizedMessage.includes("invalid username")) {
           setErrorMessage("Tên tài khoản không đúng");
@@ -98,8 +106,6 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
 
   return (
     <>
-
-
       {errorMessage ? (
         <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
@@ -107,7 +113,10 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
       ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <label className="block text-sm font-medium text-slate-700" htmlFor="identifier">
+        <label
+          className="block text-sm font-medium text-slate-700"
+          htmlFor="identifier"
+        >
           Tên đăng nhập
         </label>
         <input
@@ -163,7 +172,10 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
         </div>
 
         <div className="pt-1 text-right">
-          <Link href="/lien-he" className="text-sm font-medium text-[#8b1d1d] hover:underline">
+          <Link
+            href="/lien-he"
+            className="text-sm font-medium text-[#8b1d1d] hover:underline"
+          >
             Cần hỗ trợ đăng nhập?
           </Link>
         </div>
@@ -185,11 +197,17 @@ export default function LoginForm({ onSuccessAction, adminRedirectPath }: LoginF
 
         <p className="mt-4 px-4 text-center text-xs leading-relaxed text-gray-500">
           Bằng việc đăng nhập, bạn đồng ý với{" "}
-          <Link href="/gioi-thieu" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
+          <Link
+            href="/dieu-khoan-dich-vu"
+            className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline"
+          >
             Điều khoản dịch vụ
-          </Link>
-          {" "}và{" "}
-          <Link href="/lien-he" className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline">
+          </Link>{" "}
+          và{" "}
+          <Link
+            href="/chinh-sach-bao-mat"
+            className="inline-block px-1 py-1 font-medium text-red-700 transition-colors hover:underline"
+          >
             Chính sách bảo mật
           </Link>
           .
