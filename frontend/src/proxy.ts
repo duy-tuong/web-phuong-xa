@@ -2,11 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_ADMIN_ROLES = new Set<string>(["Admin", "Editor"]);
-const RESTRICTED_EDITOR_PATHS: string[] = [
-  "/admin/users",
-  "/admin/roles",
-  "/admin/logs",
-];
+const RESTRICTED_EDITOR_PATHS: string[] = ["/admin/users", "/admin/logs"];
 
 export function proxy(request: NextRequest) {
   const isDevBypassEnabled =

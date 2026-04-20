@@ -31,11 +31,7 @@ export default function AdminSidebar({
     );
   });
   const logoPath = "/logo-admin.png";
-  const hiddenForEditor = new Set([
-    "/admin/users",
-    "/admin/roles",
-    "/admin/logs",
-  ]);
+  const hiddenForEditor = new Set(["/admin/users", "/admin/logs"]);
   const filteredNavItems =
     adminRole === "Editor"
       ? adminNavItems.filter((item) => !hiddenForEditor.has(item.href))

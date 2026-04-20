@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import AuthHeader from "@/components/auth/AuthHeader";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
-import SocialLogin from "@/components/auth/SocialLogin";
 import { fetchCurrentUser } from "@/services/admin/profile";
 import {
   USER_TOKEN_KEY,
@@ -26,14 +25,20 @@ function getSafeAdminRedirect() {
     return null;
   }
 
-  const redirectParam = new URLSearchParams(window.location.search).get("redirect");
-  return redirectParam && redirectParam.startsWith("/admin") ? redirectParam : null;
+  const redirectParam = new URLSearchParams(window.location.search).get(
+    "redirect",
+  );
+  return redirectParam && redirectParam.startsWith("/admin")
+    ? redirectParam
+    : null;
 }
 
 export default function LoginPageClient() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const [safeAdminRedirect] = useState<string | null>(() => getSafeAdminRedirect());
+  const [safeAdminRedirect] = useState<string | null>(() =>
+    getSafeAdminRedirect(),
+  );
 
   useEffect(() => {
     const adminToken = window.localStorage.getItem("admin_token");
@@ -50,7 +55,9 @@ export default function LoginPageClient() {
   }, [router, safeAdminRedirect]);
 
   const handleAuthSuccess = async (payload: LoginSuccessPayload) => {
-    const isAdmin = payload.role ? ["Admin", "Editor"].includes(payload.role) : false;
+    const isAdmin = payload.role
+      ? ["Admin", "Editor"].includes(payload.role)
+      : false;
     const displayName = payload.fullName?.trim() || payload.username;
 
     if (isAdmin) {
@@ -116,12 +123,13 @@ export default function LoginPageClient() {
       <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-xl shadow-slate-300/40 backdrop-blur-sm sm:p-7">
         <AuthHeader activeTab={activeTab} setActiveTab={setActiveTab} />
         {activeTab === "login" ? (
-          <LoginForm onSuccessAction={handleAuthSuccess} adminRedirectPath={safeAdminRedirect} />
+          <LoginForm
+            onSuccessAction={handleAuthSuccess}
+            adminRedirectPath={safeAdminRedirect}
+          />
         ) : (
           <RegisterForm onSuccessAction={handleAuthSuccess} />
         )}
-
-        <SocialLogin />
       </section>
     </main>
   );
