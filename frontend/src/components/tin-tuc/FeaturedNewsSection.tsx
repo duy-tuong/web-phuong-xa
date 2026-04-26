@@ -49,7 +49,7 @@ export default function FeaturedNewsSection({
                 )
               }
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1877F2] text-white shadow-sm transition-colors hover:bg-[#166FE5]"
-              title="Chia se Facebook"
+              title="Chia sẻ Facebook"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +79,7 @@ export default function FeaturedNewsSection({
                 )
               }
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0068FF] text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#005AE6]"
-              title="Chia se Zalo"
+              title="Chia sẻ Zalo"
             >
               Zalo
             </button>
@@ -87,7 +87,7 @@ export default function FeaturedNewsSection({
               type="button"
               onClick={() => void copyLink(articleUrl)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 shadow-sm transition-colors hover:bg-slate-200"
-              title="Sao chep lien ket"
+              title="Sao chép liên kết"
             >
               <span className="material-symbols-outlined text-[20px]">
                 link

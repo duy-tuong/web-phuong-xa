@@ -24,20 +24,6 @@ function toFieldValue(field: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function getLevelData(procedure: ProcedureDetail) {
-  if (procedure.wordTemplateHref && procedure.wordTemplateHref !== "#") {
-    return {
-      level: "Mức độ 4",
-      levelClass: "border-blue-200 bg-blue-50 text-blue-700",
-    };
-  }
-
-  return {
-    level: "Mức độ 3",
-    levelClass: "border-orange-200 bg-orange-50 text-orange-700",
-  };
-}
-
 function buildServiceDescription(procedure: ProcedureDetail) {
   const topRequirements = procedure.requirements.slice(0, 2);
   if (topRequirements.length === 0) {
@@ -51,7 +37,6 @@ function mapProcedureToCard(
   procedure: ProcedureDetail,
   index: number,
 ): ServiceCardData {
-  const { level, levelClass } = getLevelData(procedure);
   const normalizedField = procedure.field ? toFieldValue(procedure.field) : "";
   const resolvedField =
     !normalizedField || normalizedField === "hanh-chinh-cong"
@@ -63,8 +48,6 @@ function mapProcedureToCard(
     profileCode: procedure.id
       ? `DV-${String(procedure.id).padStart(3, "0")}`
       : `DV-${String(index + 1).padStart(3, "0")}`,
-    level,
-    levelClass,
     field: resolvedField,
     title: procedure.title,
     description: buildServiceDescription(procedure),

@@ -4,8 +4,6 @@ import Link from "next/link";
 export type ServiceCardData = {
   slug: string;
   profileCode: string;
-  level: string;
-  levelClass: string;
   field: string;
   title: string;
   description: string;
@@ -29,9 +27,6 @@ export default function ServiceCard({ service }: { service: ServiceCardData }) {
             {service.field}
           </span>
         </div>
-        <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-black uppercase tracking-wider ${service.levelClass}`}>
-          {service.level}
-        </span>
       </div>
       
       <h3 className="mb-2.5 text-xl font-bold leading-snug text-slate-900 transition-colors group-hover:text-[#1f7a5a] md:text-2xl">
