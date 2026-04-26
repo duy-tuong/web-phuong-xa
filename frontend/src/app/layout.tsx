@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   },
   description: "Cổng thông tin điện tử chính thức của Phường Cao Lãnh, Đồng Tháp. Cập nhật tin tức, thông báo, và hỗ trợ nộp hồ sơ dịch vụ hành chính công trực tuyến cho người dân.",
   keywords: ["Cổng thông tin", "Phường Cao Lãnh", "Đồng Tháp", "Dịch vụ công", "Hành chính", "Tin tức Cao Lãnh"],
+  icons: {
+    icon: "/logo-admin.png",
+    apple: "/logo-admin.png",
+  },
 };
 
 export default function RootLayout({
